@@ -1,0 +1,304 @@
+name: AUTO places docents 507-627
+
+on:
+  schedule:
+    - cron: '0 6,7,9,10,12,13,14,15 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      run_monitor:
+        description: Executa el monitor
+        type: boolean
+        default: true
+      force_run:
+        description: Omet la comprovació de frescor
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/auto-places-docents.yml'
+      - 'auto-places-docents/monitor.py'
+      - 'auto-places-docents/monitor_v2.py'
+      - 'auto-places-docents/edubcn_probe.py'
+      - 'auto-places-docents/edubcn_finalize.py'
+      - 'auto-places-docents/active_snapshot.py'
+      - 'auto-places-docents/active_snapshot_v2.py'
+      - 'auto-places-docents/normalize_report.py'
+      - 'auto-places-docents/requirements.txt'
+      - 'auto-places-docents/state/external-trigger.txt'
+permissions:
+  contents: write
+
+# Intentionally serialize runs. A duplicate push is not cancelled mid-scan: if the
+# first run fails before persistence, the queued duplicate can still act as fallback.
+# Successful duplicates are skipped by the processed-trigger SHA gate below.
+concurrency:
+  group: auto-places-docents
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout immutable triggering revision
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Decide whether this run is needed
+        id: gate
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REQUEST_RUN: ${{ github.event_name != 'workflow_dispatch' || inputs.run_monitor }}
+          FORCE_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.force_run }}
+          TRIGGER_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          RUN_MONITOR="$REQUEST_RUN"
+          GATE_REASON=run
+          if [[ "$RUN_MONITOR" != "true" ]]; then
+            GATE_REASON=disabled_by_input
+          fi
+
+          # Keep the worktree pinned to the immutable triggering revision, but inspect
+          # current origin/main separately for dedup/freshness decisions.
+          git fetch origin main
+
+          # Any already-successfully-persisted push SHA is a duplicate. The marker is
+          # written only at the end of a successful persistence step, so a queued copy
+          # remains available as fallback if the first run fails before persistence.
+          if [[ "$RUN_MONITOR" == "true" && "$FORCE_RUN" != "true" && "$EVENT_NAME" == "push" ]]; then
+            PROCESSED_SHA="$(git show origin/main:auto-places-docents/state/processed-trigger-sha.txt 2>/dev/null | tr -d '\r\n' || true)"
+            echo "Trigger SHA: $TRIGGER_SHA"
+            echo "Processed SHA on origin/main: ${PROCESSED_SHA:-none}"
+            if [[ -n "$PROCESSED_SHA" && "$PROCESSED_SHA" == "$TRIGGER_SHA" ]]; then
+              echo "Duplicate push already persisted; skipping expensive scan."
+              RUN_MONITOR=false
+              GATE_REASON=duplicate_push
+            fi
+          fi
+
+          # Skip a scheduled scan if a recent successful manual/push run already
+          # produced canonical state in this repository.
+          if [[ "$RUN_MONITOR" == "true" && "$FORCE_RUN" != "true" && "$EVENT_NAME" == "schedule" ]]; then
+            AGE_MIN="$(git show origin/main:auto-places-docents/state/health.json 2>/dev/null | python -c '
+          import json, sys
+          from datetime import datetime, timezone
+          try:
+              generated = json.load(sys.stdin)["generated_at"]
+              dt = datetime.fromisoformat(generated)
+              if dt.tzinfo is None:
+                  dt = dt.replace(tzinfo=timezone.utc)
+              age = (datetime.now(timezone.utc) - dt.astimezone(timezone.utc)).total_seconds() / 60
+              print(max(0, int(age)))
+          except Exception:
+              print("unknown")
+          ' )"
+            echo "Canonical freshness age: ${AGE_MIN} minutes"
+
+            if [[ "$AGE_MIN" =~ ^[0-9]+$ ]] && (( AGE_MIN <= 25 )); then
+              echo "A fresh canonical snapshot already exists; scheduled run will skip the expensive scan."
+              RUN_MONITOR=false
+              GATE_REASON=fresh_schedule
+            else
+              echo "No sufficiently fresh canonical snapshot exists; scheduled run will execute the scan."
+            fi
+          fi
+
+          echo "run_monitor=$RUN_MONITOR" >> "$GITHUB_OUTPUT"
+          echo "gate_reason=$GATE_REASON" >> "$GITHUB_OUTPUT"
+
+      - name: Run skipped by dedup/freshness gate
+        if: steps.gate.outputs.run_monitor == 'false'
+        run: echo "AUTO scan skipped — reason=${{ steps.gate.outputs.gate_reason }}"
+
+      - name: Python
+        if: steps.gate.outputs.run_monitor == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: auto-places-docents/requirements.txt
+
+      - name: Install dependencies
+        if: steps.gate.outputs.run_monitor == 'true'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r auto-places-docents/requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Fetch official sources
+        if: steps.gate.outputs.run_monitor == 'true'
+        run: python auto-places-docents/monitor_v2.py
+
+      - name: Revalidate EDUBCN dynamically
+        if: steps.gate.outputs.run_monitor == 'true'
+        run: python auto-places-docents/edubcn_probe.py
+
+      - name: Finalize EDUBCN document-only classification
+        if: steps.gate.outputs.run_monitor == 'true'
+        run: python auto-places-docents/edubcn_finalize.py
+
+      - name: Build current-presence active snapshot
+        if: steps.gate.outputs.run_monitor == 'true'
+        run: python auto-places-docents/active_snapshot_v2.py
+
+      - name: Normalize human-readable report from final state
+        if: steps.gate.outputs.run_monitor == 'true'
+        run: python auto-places-docents/normalize_report.py
+
+      - name: Verify compact consumer state
+        if: steps.gate.outputs.run_monitor == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          p = Path("auto-places-docents/state/consumer.json")
+          data = json.loads(p.read_text(encoding="utf-8"))
+          if not data.get("generated_at") or not isinstance(data.get("territories"), dict):
+              raise SystemExit("consumer.json is missing required canonical fields")
+          if len(data["territories"]) != 12:
+              raise SystemExit(f"consumer.json expected 12 scopes, got {len(data['territories'])}")
+          if p.stat().st_size >= 512 * 1024:
+              raise SystemExit(f"consumer.json too large: {p.stat().st_size} bytes")
+          print(f"consumer.json OK: {p.stat().st_size} bytes, {len(data['territories'])} scopes")
+          PY
+
+      - name: Persist compact state safely
+        if: steps.gate.outputs.run_monitor == 'true'
+        shell: bash
+        env:
+          TRIGGER_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          STATE_DIR="auto-places-docents/state"
+          TMP_STATE="$(mktemp -d)"
+          trap 'rm -rf "$TMP_STATE"' EXIT
+
+          # Candidate state produced by THIS immutable run.
+          cp -a "$STATE_DIR/." "$TMP_STATE/"
+
+          CANDIDATE_TS="$(python - "$TMP_STATE/health.json" <<'PY'
+          import json, sys
+          from pathlib import Path
+          try:
+              print(json.loads(Path(sys.argv[1]).read_text())['generated_at'])
+          except Exception:
+              print('')
+          PY
+          )"
+          echo "Candidate generated_at: ${CANDIDATE_TS:-unknown}"
+
+          for attempt in 1 2 3; do
+            echo "Persist attempt $attempt/3"
+            git fetch origin main
+            git reset --hard origin/main
+
+            # Normalize the preserved canonical state too. This matters when the
+            # candidate is lower quality and anti-regression correctly keeps the
+            # previous latest.json/health.json: latest.md must still be repaired from
+            # that preserved final state rather than retaining an old provisional row.
+            if git cat-file -e "HEAD:$STATE_DIR/latest.json" 2>/dev/null && git cat-file -e "HEAD:$STATE_DIR/health.json" 2>/dev/null && git cat-file -e "HEAD:$STATE_DIR/latest.md" 2>/dev/null; then
+              python auto-places-docents/normalize_report.py
+            fi
+
+            # Decide whether candidate compact state may replace canonical latest.
+            # Quality is monotonic: a newer PARCIAL/CACHE_OBSOLETA snapshot must not
+            # overwrite an older, more authoritative snapshot. Equal-quality newer
+            # candidates are allowed. Candidate history is preserved either way.
+            REPLACE_CANONICAL="$(python - "$TMP_STATE/health.json" "$STATE_DIR/health.json" <<'PY'
+          import json, sys
+          from datetime import datetime
+          from pathlib import Path
+
+          def load(path):
+              try:
+                  return json.loads(Path(path).read_text())
+              except Exception:
+                  return None
+
+          def ts(v):
+              try:
+                  return datetime.fromisoformat(v or '')
+              except Exception:
+                  return None
+
+          def quality(h):
+              if not h:
+                  return (-1, -1, -999, -999)
+              return (
+                  int(h.get('fresh', 0)),
+                  int(h.get('presence_authoritative', 0)),
+                  -int(h.get('partial', 0)),
+                  -int(h.get('cache_obsoleta', 0)),
+              )
+
+          cand = load(sys.argv[1])
+          remote = load(sys.argv[2])
+          if cand is None:
+              print('0')
+              raise SystemExit
+          if remote is None:
+              print('1')
+              raise SystemExit
+
+          cq, rq = quality(cand), quality(remote)
+          ct, rt = ts(cand.get('generated_at')), ts(remote.get('generated_at'))
+          print(f'candidate_quality={cq} remote_quality={rq}', file=sys.stderr)
+
+          if cq > rq:
+              print('1')
+          elif cq < rq:
+              print('0')
+          else:
+              # Same quality: never move canonical time backwards.
+              print('1' if (rt is None or (ct is not None and ct >= rt)) else '0')
+          PY
+          )"
+
+            mkdir -p "$STATE_DIR/history"
+            if [[ -d "$TMP_STATE/history" ]]; then
+              cp -a "$TMP_STATE/history/." "$STATE_DIR/history/"
+            fi
+
+            if [[ "$REPLACE_CANONICAL" == "1" ]]; then
+              echo "Candidate quality is acceptable; replacing canonical compact state."
+              # Preserve remote history merged above, replace compact files from candidate.
+              find "$TMP_STATE" -maxdepth 1 -type f -print0 | while IFS= read -r -d '' f; do
+                cp -a "$f" "$STATE_DIR/"
+              done
+            else
+              echo "Candidate is lower quality or older at equal quality; preserving canonical compact state."
+            fi
+
+            # Successful completion marker for exact-SHA deduplication. This file is
+            # deliberately NOT in workflow push paths, so persisting it cannot recurse.
+            printf '%s\n' "$TRIGGER_SHA" > "$STATE_DIR/processed-trigger-sha.txt"
+
+            git add "$STATE_DIR/"
+            if git diff --cached --quiet; then
+              echo "No state changes to persist"
+              exit 0
+            fi
+
+            git commit -m "auto: places docents $(date -u +'%Y-%m-%dT%H:%MZ') [run ${GITHUB_RUN_ID}]"
+
+            if git push origin HEAD:main; then
+              echo "State persisted successfully"
+              exit 0
+            fi
+
+            echo "Push raced with a newer main; retrying from fresh origin/main..."
+          done
+
+          echo "Could not persist state after 3 attempts" >&2
+          exit 1

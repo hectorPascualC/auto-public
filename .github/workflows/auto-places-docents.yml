@@ -2,7 +2,8 @@ name: AUTO places docents 507-627
 
 on:
   schedule:
-    - cron: '0 6,7,9,10,12,13,14,15 * * 1-5'
+    - cron: '0 8,11,14,16 * * 1-5'
+      timezone: 'Europe/Madrid'
   workflow_dispatch:
     inputs:
       run_monitor:

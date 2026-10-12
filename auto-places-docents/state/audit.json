@@ -1,0 +1,212 @@
+{
+  "audit_version": 2,
+  "generated_at": "2026-10-12T20:29:27+02:00",
+  "source_generated_at": "2026-10-12T20:23:27+02:00",
+  "status": "PASS",
+  "sstt_checked": 11,
+  "scopes_checked": 12,
+  "errors": [],
+  "territories": {
+    "Alt Pirineu i Aran": {
+      "freshness": "FRESC",
+      "presence_authoritative": true,
+      "current_offer_sources": 8,
+      "raw_target_hits": 1,
+      "parsed_target_hits": 1,
+      "unidentified_target_hits": 0,
+      "active_positions": 1,
+      "id_kinds": [
+        "APA"
+      ],
+      "parsed_ids": [
+        {
+          "code": "627",
+          "id": "APA-2627-S056",
+          "kind": "APA"
+        }
+      ]
+    },
+    "Baix Llobregat": {
+      "freshness": "FRESC",
+      "presence_authoritative": true,
+      "current_offer_sources": 7,
+      "raw_target_hits": 1,
+      "parsed_target_hits": 1,
+      "unidentified_target_hits": 0,
+      "active_positions": 1,
+      "id_kinds": [
+        "NUMERIC"
+      ],
+      "parsed_ids": [
+        {
+          "code": "627",
+          "id": "19754265",
+          "kind": "NUMERIC"
+        }
+      ]
+    },
+    "Barcelonès": {
+      "freshness": "FRESC",
+      "presence_authoritative": true,
+      "current_offer_sources": 7,
+      "raw_target_hits": 5,
+      "parsed_target_hits": 5,
+      "unidentified_target_hits": 0,
+      "active_positions": 5,
+      "id_kinds": [
+        "NUMERIC"
+      ],
+      "parsed_ids": [
+        {
+          "code": "507",
+          "id": "19736796",
+          "kind": "NUMERIC"
+        },
+        {
+          "code": "507",
+          "id": "19659466",
+          "kind": "NUMERIC"
+        },
+        {
+          "code": "507",
+          "id": "19697257",
+          "kind": "NUMERIC"
+        },
+        {
+          "code": "627",
+          "id": "19650726",
+          "kind": "NUMERIC"
+        },
+        {
+          "code": "627",
+          "id": "19664257",
+          "kind": "NUMERIC"
+        }
+      ]
+    },
+    "Catalunya Central": {
+      "freshness": "FRESC",
+      "presence_authoritative": true,
+      "current_offer_sources": 7,
+      "raw_target_hits": 0,
+      "parsed_target_hits": 0,
+      "unidentified_target_hits": 0,
+      "active_positions": 0,
+      "id_kinds": [],
+      "parsed_ids": []
+    },
+    "Girona": {
+      "freshness": "FRESC",
+      "presence_authoritative": true,
+      "current_offer_sources": 7,
+      "raw_target_hits": 2,
+      "parsed_target_hits": 2,
+      "unidentified_target_hits": 0,
+      "active_positions": 2,
+      "id_kinds": [
+        "GIRONA"
+      ],
+      "parsed_ids": [
+        {
+          "code": "507",
+          "id": "193S/2026-2027",
+          "kind": "GIRONA"
+        },
+        {
+          "code": "507",
+          "id": "204S/2026-2027",
+          "kind": "GIRONA"
+        }
+      ]
+    },
+    "Lleida": {
+      "freshness": "FRESC",
+      "presence_authoritative": true,
+      "current_offer_sources": 8,
+      "raw_target_hits": 1,
+      "parsed_target_hits": 1,
+      "unidentified_target_hits": 0,
+      "active_positions": 1,
+      "id_kinds": [
+        "SEC"
+      ],
+      "parsed_ids": [
+        {
+          "code": "507",
+          "id": "2026/SEC/089",
+          "kind": "SEC"
+        }
+      ]
+    },
+    "Maresme-Vallès Oriental": {
+      "freshness": "FRESC",
+      "presence_authoritative": true,
+      "current_offer_sources": 7,
+      "raw_target_hits": 0,
+      "parsed_target_hits": 0,
+      "unidentified_target_hits": 0,
+      "active_positions": 0,
+      "id_kinds": [],
+      "parsed_ids": []
+    },
+    "Penedès": {
+      "freshness": "FRESC",
+      "presence_authoritative": true,
+      "current_offer_sources": 7,
+      "raw_target_hits": 0,
+      "parsed_target_hits": 0,
+      "unidentified_target_hits": 0,
+      "active_positions": 0,
+      "id_kinds": [],
+      "parsed_ids": []
+    },
+    "Tarragona": {
+      "freshness": "FRESC",
+      "presence_authoritative": true,
+      "current_offer_sources": 6,
+      "raw_target_hits": 0,
+      "parsed_target_hits": 0,
+      "unidentified_target_hits": 0,
+      "active_positions": 0,
+      "id_kinds": [],
+      "parsed_ids": []
+    },
+    "Terres de l'Ebre": {
+      "freshness": "FRESC",
+      "presence_authoritative": true,
+      "current_offer_sources": 7,
+      "raw_target_hits": 0,
+      "parsed_target_hits": 0,
+      "unidentified_target_hits": 0,
+      "active_positions": 0,
+      "id_kinds": [],
+      "parsed_ids": []
+    },
+    "Vallès Occidental": {
+      "freshness": "FRESC",
+      "presence_authoritative": true,
+      "current_offer_sources": 7,
+      "raw_target_hits": 1,
+      "parsed_target_hits": 1,
+      "unidentified_target_hits": 0,
+      "active_positions": 1,
+      "id_kinds": [
+        "LOCAL_DATED"
+      ],
+      "parsed_ids": [
+        {
+          "code": "627",
+          "id": "627-09/10",
+          "kind": "LOCAL_DATED"
+        }
+      ]
+    },
+    "EDUBCN": {
+      "freshness": "FRESC",
+      "presence_authoritative": true,
+      "active_positions": 7,
+      "unidentified_target_hits": 0,
+      "mode": "edubcn-document-verified"
+    }
+  }
+}

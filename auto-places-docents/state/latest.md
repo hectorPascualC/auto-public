@@ -1,0 +1,111 @@
+# Passada directa 2026-10-12T20:23:27+02:00
+
+Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
+
+| Àmbit | Frescor | 507 hits (diag.) | F57 hits (diag.) | 627 hits (diag.) | F87 hits (diag.) | Àncora global |
+|---|---|---:|---:|---:|---:|---|
+| Alt Pirineu i Aran | **FRESC** | 0 | 0 | 7 | 0 | APA-2627-S059 |
+| Baix Llobregat | **FRESC** | 1 | 0 | 6 | 0 | 19762774 |
+| Barcelonès | **FRESC** | 3 | 0 | 2 | 0 | 19737769 |
+| Catalunya Central | **FRESC** | 0 | 1 | 0 | 0 | — |
+| Girona | **FRESC** | 5 | 0 | 1 | 0 | — |
+| Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/105 |
+| Maresme-Vallès Oriental | **FRESC** | 0 | 0 | 0 | 0 | — |
+| Penedès | **FRESC** | 0 | 0 | 0 | 1 | 19756305 |
+| Tarragona | **FRESC** | 0 | 3 | 0 | 0 | — |
+| Terres de l'Ebre | **FRESC** | 0 | 0 | 1 | 0 | — |
+| Vallès Occidental | **FRESC** | 7 | 2 | 9 | 1 | — |
+| EDUBCN | **FRESC** | 3 | 1 | 3 | 3 | GENSEC_2627_185 |
+
+## Notes de frescor
+- Cap incidència final de frescor.
+## Ús
+Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la shortlist, cal llegir `latest.json`, aplicar RESULTAT/cobertura i la regla de caducitat per `Fins a`.
+
+## EDUBCN probe v3 override
+- Frescor: **FRESC**
+- Àncora global: `GENSEC_2627_185`
+- GENSEC visibles: 56
+- Documents GENSEC recuperats: 68
+- Places target validades en el mateix document: 10
+- Estratègia: agrupació per GENSEC + validació d'especialitat dins del mateix PDF/fitxa
+- `GENSEC_2627_034`: F87 | INSTITUT ESCOLA DEL TREBALL | SENCERA | fi 31/08/2027 | resultat=True
+- `GENSEC_2627_064`: 627,F87 | Institut Mare de Déu de la Mercè | sencera de docent de PFI. | fi 31/08/2027 | resultat=False
+- `GENSEC_2627_138`: F87 | Institut Tecnològic de Barcelona | Sencera | fi 31/08/2027 | resultat=True
+- `GENSEC_2627_139`: F87 | ? | ? | fi ? | resultat=False
+- `GENSEC_2627_162`: 507 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=False
+- `GENSEC_2627_163`: 627 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=False
+- `GENSEC_2627_171`: 507 | Institut Tecnològic de Barcelona | Sencera | fi 31/08/2027 | resultat=False
+- `GENSEC_2627_175`: 627 | Institut Tecnològic de Barcelona | 0’5 | fi 31/08/2027 | resultat=False
+- `GENSEC_2627_180`: 507 | Institut TIC de Barcelona | SENCERA | fi Alta titular o 30/06/2027 | resultat=False
+- `GENSEC_2627_182`: F57 | Institut TIC de Barcelona | SENCERA | fi 28/10/2026 | resultat=False
+
+## EDUBCN probe v4 final
+- Regla: especialitat target només si apareix al mateix document oficial de la plaça.
+- Identitat: es conserva el codi complet, inclosos sufixos (`_SCO`, etc.); el número base només serveix per frescor.
+- Places documentals target verificades: 9
+- `GENSEC_2627_034`: F87 | INSTITUT ESCOLA DEL TREBALL | SENCERA | fi 31/08/2027 | resultat=True
+- `GENSEC_2627_064`: 627,F87 | Institut Mare de Déu de la Mercè | sencera de docent de PFI. | fi 31/08/2027 | resultat=False
+- `GENSEC_2627_138`: F87 | Institut Tecnològic de Barcelona | Sencera | fi 31/08/2027 | resultat=True
+- `GENSEC_2627_162`: 507 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=False
+- `GENSEC_2627_163`: 627 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=False
+- `GENSEC_2627_171`: 507 | Institut Tecnològic de Barcelona | Sencera | fi 31/08/2027 | resultat=False
+- `GENSEC_2627_175`: 627 | Institut Tecnològic de Barcelona | 0’5 | fi 31/08/2027 | resultat=False
+- `GENSEC_2627_180`: 507 | Institut TIC de Barcelona | SENCERA | fi Alta titular o 30/06/2027 | resultat=False
+- `GENSEC_2627_182`: F57 | Institut TIC de Barcelona | SENCERA | fi 28/10/2026 | resultat=False
+- `GENSEC_2627_139`: **NO VERIFICADA COM A TARGET** | hints DOM=F87 | No official Convocatòria/Resultat document was linked or retrieved for this code; not counted as a target place.
+
+## Presència activa v1 — autoritativa
+- Regla: una plaça continua activa mentre apareix al PDF/llistat oficial ACTUAL, encara que el termini de sol·licitud hagi vençut.
+- Si desapareix d'una font **FRESCA** i la presència és autoritativa, surt de la llista activa.
+- Si la font és PARCIAL/CACHE OBSOLETA o l'extracció no és segura, **no es poda** per desaparició.
+- Els `hits` bruts són només diagnòstic; el recompte següent és de **places úniques actuals**.
+
+| Àmbit | Frescor | Autoritativa | 507 | F57 | 627 | F87 | Mode |
+|---|---|---|---:|---:|---:|---:|---|
+| Alt Pirineu i Aran | FRESC | sí | 0 | 0 | 1 | 0 | offer-documents |
+| Baix Llobregat | FRESC | sí | 0 | 0 | 1 | 0 | offer-documents |
+| Barcelonès | FRESC | sí | 3 | 0 | 2 | 0 | offer-documents |
+| Catalunya Central | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
+| Girona | FRESC | sí | 2 | 0 | 0 | 0 | offer-documents |
+| Lleida | FRESC | sí | 1 | 0 | 0 | 0 | offer-documents |
+| Maresme-Vallès Oriental | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
+| Penedès | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
+| Tarragona | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
+| Terres de l'Ebre | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
+| Vallès Occidental | FRESC | sí | 0 | 0 | 1 | 0 | offer-documents |
+| EDUBCN | FRESC | sí | 3 | 1 | 3 | 1 | edubcn-document-verified |
+
+### Places actuals detectades
+- **Alt Pirineu i Aran**: `APA-2627-S056` (627)
+- **Baix Llobregat**: `19754265` (627)
+- **Barcelonès**: `19650726` (627), `19659466` (507), `19664257` (627), `19697257` (507), `19736796` (507)
+- **Catalunya Central**: cap
+- **Girona**: `193S/2026-2027` (507), `204S/2026-2027` (507)
+- **Lleida**: `2026/SEC/089` (507)
+- **Maresme-Vallès Oriental**: cap
+- **Penedès**: cap
+- **Tarragona**: cap
+- **Terres de l'Ebre**: cap
+- **Vallès Occidental**: `627-09/10` (627)
+- **EDUBCN**: `GENSEC_2627_064` (627,F87), `GENSEC_2627_162` (507), `GENSEC_2627_163` (627), `GENSEC_2627_171` (507), `GENSEC_2627_175` (627), `GENSEC_2627_180` (507), `GENSEC_2627_182` (F57)
+
+## Auditoria SSTT v2
+- Estat: **PASS**
+- SSTT auditats: **11/11**
+- Àmbits totals auditats (inclòs EDUBCN): **12/12**
+- Errors d'identificació: **0**
+
+| Àmbit | FRESC | Autoritativa | Hits actuals | Hits identificats | Sense ID | Places actives |
+|---|---|---|---:|---:|---:|---:|
+| Alt Pirineu i Aran | sí | sí | 1 | 1 | 0 | 1 |
+| Baix Llobregat | sí | sí | 1 | 1 | 0 | 1 |
+| Barcelonès | sí | sí | 5 | 5 | 0 | 5 |
+| Catalunya Central | sí | sí | 0 | 0 | 0 | 0 |
+| Girona | sí | sí | 2 | 2 | 0 | 2 |
+| Lleida | sí | sí | 1 | 1 | 0 | 1 |
+| Maresme-Vallès Oriental | sí | sí | 0 | 0 | 0 | 0 |
+| Penedès | sí | sí | 0 | 0 | 0 | 0 |
+| Tarragona | sí | sí | 0 | 0 | 0 | 0 |
+| Terres de l'Ebre | sí | sí | 0 | 0 | 0 | 0 |
+| Vallès Occidental | sí | sí | 1 | 1 | 0 | 1 |

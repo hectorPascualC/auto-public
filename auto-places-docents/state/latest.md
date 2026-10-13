@@ -1,4 +1,4 @@
-# Passada directa 2026-10-13T15:14:20+02:00
+# Passada directa 2026-10-13T16:03:01+02:00
 
 Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
 
@@ -78,7 +78,6 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - **Barcelonès**: `19650726` (627), `19659466` (507), `19664257` (627), `19697257` (507), `19736796` (507)
 - **Catalunya Central**: cap
 - **Girona**: cap
-  - Desaparegudes des de la passada anterior: `193S/2026-2027`, `204S/2026-2027`
 - **Lleida**: `2026/SEC/089` (507)
 - **Maresme-Vallès Oriental**: cap
 - **Penedès**: cap

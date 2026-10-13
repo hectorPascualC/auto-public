@@ -1,4 +1,4 @@
-# Passada directa 2026-10-13T14:01:27+02:00
+# Passada directa 2026-10-13T15:14:20+02:00
 
 Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
 
@@ -8,8 +8,8 @@ Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Fir
 | Baix Llobregat | **FRESC** | 1 | 0 | 6 | 0 | 19762774 |
 | Barcelonès | **FRESC** | 3 | 0 | 2 | 0 | 19737769 |
 | Catalunya Central | **FRESC** | 0 | 1 | 0 | 0 | — |
-| Girona | **FRESC** | 5 | 0 | 1 | 0 | — |
-| Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/106 |
+| Girona | **FRESC** | 3 | 0 | 1 | 0 | — |
+| Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/108 |
 | Maresme-Vallès Oriental | **FRESC** | 0 | 0 | 0 | 0 | — |
 | Penedès | **FRESC** | 0 | 0 | 0 | 1 | 19756305 |
 | Tarragona | **FRESC** | 0 | 3 | 0 | 0 | — |
@@ -63,7 +63,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | Baix Llobregat | FRESC | sí | 0 | 0 | 1 | 0 | offer-documents |
 | Barcelonès | FRESC | sí | 3 | 0 | 2 | 0 | offer-documents |
 | Catalunya Central | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
-| Girona | FRESC | sí | 2 | 0 | 0 | 0 | offer-documents |
+| Girona | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Lleida | FRESC | sí | 1 | 0 | 0 | 0 | offer-documents |
 | Maresme-Vallès Oriental | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Penedès | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
@@ -77,7 +77,8 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - **Baix Llobregat**: `19754265` (627)
 - **Barcelonès**: `19650726` (627), `19659466` (507), `19664257` (627), `19697257` (507), `19736796` (507)
 - **Catalunya Central**: cap
-- **Girona**: `193S/2026-2027` (507), `204S/2026-2027` (507)
+- **Girona**: cap
+  - Desaparegudes des de la passada anterior: `193S/2026-2027`, `204S/2026-2027`
 - **Lleida**: `2026/SEC/089` (507)
 - **Maresme-Vallès Oriental**: cap
 - **Penedès**: cap
@@ -98,7 +99,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | Baix Llobregat | sí | sí | 1 | 1 | 0 | 1 |
 | Barcelonès | sí | sí | 5 | 5 | 0 | 5 |
 | Catalunya Central | sí | sí | 0 | 0 | 0 | 0 |
-| Girona | sí | sí | 2 | 2 | 0 | 2 |
+| Girona | sí | sí | 0 | 0 | 0 | 0 |
 | Lleida | sí | sí | 1 | 1 | 0 | 1 |
 | Maresme-Vallès Oriental | sí | sí | 0 | 0 | 0 | 0 |
 | Penedès | sí | sí | 0 | 0 | 0 | 0 |

@@ -1,15 +1,15 @@
-# Passada directa 2026-10-13T08:16:23+02:00
+# Passada directa 2026-10-13T11:01:52+02:00
 
 Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
 
 | Àmbit | Frescor | 507 hits (diag.) | F57 hits (diag.) | 627 hits (diag.) | F87 hits (diag.) | Àncora global |
 |---|---|---:|---:|---:|---:|---|
-| Alt Pirineu i Aran | **FRESC** | 0 | 0 | 7 | 0 | APA-2627-S059 |
+| Alt Pirineu i Aran | **FRESC** | 0 | 0 | 7 | 0 | APA-2627-S058 |
 | Baix Llobregat | **FRESC** | 1 | 0 | 6 | 0 | 19762774 |
 | Barcelonès | **FRESC** | 3 | 0 | 2 | 0 | 19737769 |
 | Catalunya Central | **FRESC** | 0 | 1 | 0 | 0 | — |
 | Girona | **FRESC** | 5 | 0 | 1 | 0 | — |
-| Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/105 |
+| Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/106 |
 | Maresme-Vallès Oriental | **FRESC** | 0 | 0 | 0 | 0 | — |
 | Penedès | **FRESC** | 0 | 0 | 0 | 1 | 19756305 |
 | Tarragona | **FRESC** | 0 | 3 | 0 | 0 | — |

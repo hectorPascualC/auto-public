@@ -328,6 +328,38 @@ def extract_pdf_text(path: Path) -> tuple[str, int, str | None]:
         return "", 0, f"{type(e).__name__}: {e}"
 
 
+def normalize_penedes_offer_page(text: str) -> str:
+    """Restore field boundaries lost in pypdf's concatenated Penedes form text.
+
+    Example: `plaça19764334Especialitat627` must become
+    `plaça 19764334 Especialitat 627` before positional matching.
+    """
+    text = re.sub(
+        r"(pla[cç]a)\s*((?:19|20)\d{6})\s*(Especialitat)",
+        r"\1 \2 \3", text, flags=re.I,
+    )
+    text = re.sub(
+        r"(Especialitat)\s*(507|627|F57|F87)(?=\s|$)",
+        r"\1 \2", text, flags=re.I,
+    )
+    return text
+
+
+def penedes_offer_page_hits(path: Path) -> list[dict]:
+    """Extract each official Penedes offer sheet independently.
+
+    One PDF page corresponds to one placement. Never allow a target hit to
+    inherit the numeric ID of the previous or following page.
+    """
+    reader = PdfReader(str(path))
+    all_hits: list[dict] = []
+    for page_no, page in enumerate(reader.pages, 1):
+        normalized = normalize_penedes_offer_page(page.extract_text() or "")
+        for hit in context_hits(normalized):
+            all_hits.append({**hit, "page": page_no})
+    return all_hits
+
+
 def save_raw(territory: str, role: str, url: str, content: bytes, ext: str) -> Path:
     td = RUN_DIR / safe_slug(territory)
     td.mkdir(parents=True, exist_ok=True)
@@ -413,7 +445,13 @@ def scrape_document(fetcher: DirectFetcher, territory: str, doc: dict) -> dict:
         out["pages"] = pages
         if err: out["parse_error"] = err
         out["anchors"] = extract_anchors(text)
-        out["target_hits"] = context_hits(text)
+        if (territory == "Penedès"
+                and "PEN-SEC-dificil-cobertura-oferta-vacants.pdf" in doc["url"]):
+            # This rolling PDF is one placement per page; pypdf often glues
+            # `plaça19764334Especialitat627` into a single word.
+            out["target_hits"] = penedes_offer_page_hits(p)
+        else:
+            out["target_hits"] = context_hits(text)
         out["text_sha256"] = hashlib.sha256(text.encode("utf-8")).hexdigest()
         out["text_excerpt"] = text[:5000]
         return out

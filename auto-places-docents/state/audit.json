@@ -1,7 +1,7 @@
 {
   "audit_version": 2,
-  "generated_at": "2026-10-14T18:15:51+02:00",
-  "source_generated_at": "2026-10-14T18:09:50+02:00",
+  "generated_at": "2026-10-14T18:24:36+02:00",
+  "source_generated_at": "2026-10-14T18:16:29+02:00",
   "status": "PASS",
   "sstt_checked": 11,
   "scopes_checked": 12,
@@ -140,12 +140,25 @@
       "freshness": "FRESC",
       "presence_authoritative": true,
       "current_offer_sources": 7,
-      "raw_target_hits": 0,
-      "parsed_target_hits": 0,
+      "raw_target_hits": 2,
+      "parsed_target_hits": 2,
       "unidentified_target_hits": 0,
-      "active_positions": 0,
-      "id_kinds": [],
-      "parsed_ids": []
+      "active_positions": 2,
+      "id_kinds": [
+        "NUMERIC"
+      ],
+      "parsed_ids": [
+        {
+          "code": "627",
+          "id": "19764334",
+          "kind": "NUMERIC"
+        },
+        {
+          "code": "507",
+          "id": "19742262",
+          "kind": "NUMERIC"
+        }
+      ]
     },
     "Tarragona": {
       "freshness": "FRESC",

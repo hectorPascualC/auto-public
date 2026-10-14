@@ -1,4 +1,4 @@
-# Passada directa 2026-10-14T18:09:50+02:00
+# Passada directa 2026-10-14T18:16:29+02:00
 
 Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
 
@@ -11,7 +11,7 @@ Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Fir
 | Girona | **FRESC** | 3 | 0 | 1 | 0 | — |
 | Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/109 |
 | Maresme-Vallès Oriental | **FRESC** | 0 | 0 | 0 | 0 | — |
-| Penedès | **FRESC** | 0 | 0 | 0 | 1 | 19772254 |
+| Penedès | **FRESC** | 1 | 0 | 1 | 1 | 19772254 |
 | Tarragona | **FRESC** | 0 | 3 | 0 | 0 | — |
 | Terres de l'Ebre | **FRESC** | 0 | 0 | 1 | 0 | — |
 | Vallès Occidental | **FRESC** | 7 | 2 | 9 | 1 | — |
@@ -66,7 +66,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | Girona | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Lleida | FRESC | sí | 1 | 0 | 0 | 0 | offer-documents |
 | Maresme-Vallès Oriental | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
-| Penedès | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
+| Penedès | FRESC | sí | 1 | 0 | 1 | 0 | offer-documents |
 | Tarragona | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Terres de l'Ebre | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Vallès Occidental | FRESC | sí | 0 | 0 | 1 | 0 | offer-documents |
@@ -80,7 +80,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - **Girona**: cap
 - **Lleida**: `2026/SEC/089` (507)
 - **Maresme-Vallès Oriental**: cap
-- **Penedès**: cap
+- **Penedès**: `19742262` (507), `19764334` (627)
 - **Tarragona**: cap
 - **Terres de l'Ebre**: cap
 - **Vallès Occidental**: `627-09/10` (627)
@@ -101,7 +101,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | Girona | sí | sí | 0 | 0 | 0 | 0 |
 | Lleida | sí | sí | 1 | 1 | 0 | 1 |
 | Maresme-Vallès Oriental | sí | sí | 0 | 0 | 0 | 0 |
-| Penedès | sí | sí | 0 | 0 | 0 | 0 |
+| Penedès | sí | sí | 2 | 2 | 0 | 2 |
 | Tarragona | sí | sí | 0 | 0 | 0 | 0 |
 | Terres de l'Ebre | sí | sí | 0 | 0 | 0 | 0 |
 | Vallès Occidental | sí | sí | 1 | 1 | 0 | 1 |

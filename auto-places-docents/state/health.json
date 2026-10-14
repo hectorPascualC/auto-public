@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-10-14T16:24:00+02:00",
-  "edubcn_probe_at": "2026-10-14T16:31:23+02:00",
+  "generated_at": "2026-10-14T16:53:03+02:00",
+  "edubcn_probe_at": "2026-10-14T17:00:10+02:00",
   "fresh": 12,
   "partial": 0,
   "cache_obsoleta": 0,
   "total": 12,
-  "active_snapshot_at": "2026-10-14T16:31:23+02:00",
+  "active_snapshot_at": "2026-10-14T17:00:11+02:00",
   "presence_authoritative": 12,
   "presence_non_authoritative": 0,
-  "audit_at": "2026-10-14T16:31:24+02:00",
+  "audit_at": "2026-10-14T17:00:11+02:00",
   "audit_status": "PASS",
   "audit_sstt_checked": 11,
   "audit_errors": 0

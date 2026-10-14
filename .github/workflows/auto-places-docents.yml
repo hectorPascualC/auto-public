@@ -20,6 +20,7 @@ on:
       - '.github/workflows/auto-places-docents.yml'
       - 'auto-places-docents/monitor.py'
       - 'auto-places-docents/monitor_v2.py'
+      - 'auto-places-docents/pdf_diagnostics.py'
       - 'auto-places-docents/edubcn_probe.py'
       - 'auto-places-docents/edubcn_finalize.py'
       - 'auto-places-docents/active_snapshot.py'
@@ -133,6 +134,20 @@ jobs:
       - name: Fetch official sources
         if: steps.gate.outputs.run_monitor == 'true'
         run: python auto-places-docents/monitor_v2.py
+
+      - name: Diagnose Penedes rolling secondary PDF (metadata only)
+        if: ${{ always() && steps.gate.outputs.run_monitor == 'true' }}
+        run: python auto-places-docents/pdf_diagnostics.py
+
+      - name: Upload sanitized Penedes diagnostics
+        if: ${{ always() && steps.gate.outputs.run_monitor == 'true' }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: penedes-pdf-diagnostic-${{ github.run_id }}
+          path: auto-places-docents/state/penedes_diagnostic.json
+          if-no-files-found: warn
+          retention-days: 1
 
       - name: Revalidate EDUBCN dynamically
         if: steps.gate.outputs.run_monitor == 'true'

@@ -339,7 +339,7 @@ def normalize_penedes_offer_page(text: str) -> str:
         r"\1 \2 \3", text, flags=re.I,
     )
     text = re.sub(
-        r"(Especialitat)\s*(507|627|F57|F87)(?=\s|$)",
+        r"(Especialitat)\s*(507|627|F57|F87)(?!\d)",
         r"\1 \2", text, flags=re.I,
     )
     return text

@@ -111,6 +111,16 @@ def compare_freshness_v2(current: dict, previous: dict | None) -> tuple[str, lis
     if current.get("error"):
         return "PARCIAL", [current["error"]]
 
+    # PDF variant disagreement must propagate to territory freshness.
+    # A successful HTTP response is not evidence of a current document.
+    pdf_errors = [
+        d.get("error")
+        for d in (current.get("documents") or [])
+        if (d.get("error") or "").startswith("PDF_CACHE_")
+    ]
+    if pdf_errors:
+        return "PARCIAL", ["PDF cache verification failed: " + "; ".join(pdf_errors)]
+
     prev_fp = (previous or {}).get("fingerprint") or {}
     cur_fp = current.get("fingerprint") or {}
     prev_anchors = prev_fp.get("anchors") or {}

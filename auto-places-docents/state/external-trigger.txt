@@ -1,4 +1,4 @@
 external scheduler trigger
-slot=2026-10-14T08:00:00+02:00
-recovery_timestamp_utc=2026-10-14T06:03:00Z
+slot=2026-10-14T11:00:00+02:00
+recovery_timestamp_utc=2026-10-14T09:04:35Z
 reason=github_schedule_missing

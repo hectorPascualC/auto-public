@@ -149,6 +149,8 @@ class DirectFetcher:
 
     def get(self, url: str, *, binary: bool = True) -> tuple[FetchMeta, bytes | None]:
         last_meta = FetchMeta(requested_url=url)
+        is_pdf = urlparse(url).path.lower().endswith(".pdf")
+        successes = []
         for i, variant in enumerate(cache_variants(url)):
             try:
                 r = self.s.get(variant, timeout=TIMEOUT, allow_redirects=True)
@@ -166,15 +168,28 @@ class DirectFetcher:
                 )
                 last_meta = meta
                 if r.ok and r.content:
-                    return meta, r.content
-                meta.error = f"HTTP {r.status_code}"
+                    successes.append((meta, r.content))
+                    if not is_pdf:
+                        return meta, r.content
+                else:
+                    meta.error = f"HTTP {r.status_code}"
             except requests.RequestException as e:
                 last_meta = FetchMeta(
                     requested_url=variant,
                     fetched_at=datetime.now(TZ).isoformat(timespec="seconds"),
                     error=f"{type(e).__name__}: {e}",
                 )
-            time.sleep(0.7 * (i + 1))
+            if i < 2:
+                time.sleep(0.7 * (i + 1))
+        if successes:
+            hashes = {meta.sha256 for meta, _ in successes}
+            meta, content = successes[-1]
+            if len(hashes) > 1:
+                meta.error = "PDF_CACHE_VARIANTS_DISAGREE: " + ",".join(sorted(hashes))
+                log(f"PDF variants disagree: {url}")
+            elif len(successes) < 2:
+                meta.error = "PDF_CACHE_UNCONFIRMED: only one successful variant"
+            return meta, content
         return last_meta, None
 
 
@@ -391,6 +406,8 @@ def scrape_document(fetcher: DirectFetcher, territory: str, doc: dict) -> dict:
     ctype = (meta.content_type or "").lower()
     is_pdf = "pdf" in ctype or doc["url"].lower().split("?")[0].endswith(".pdf")
     if is_pdf:
+        if meta.error and meta.error.startswith("PDF_CACHE_"):
+            out["error"] = meta.error
         p = save_raw(territory, out["role"], doc["url"], content, ".pdf")
         text, pages, err = extract_pdf_text(p)
         out["pages"] = pages

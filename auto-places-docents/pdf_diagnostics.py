@@ -40,7 +40,7 @@ def analyse_pdf(data: bytes) -> dict:
         for n, page in enumerate(reader.pages, 1):
             txt = page.extract_text() or ""
             text_chars += len(txt)
-            codes = [c for c in CODES if re.search(r"(?<![A-Za-z0-9])" + c + r"(?![A-Za-z0-9])", txt, re.I)]
+            codes = [c for c in CODES if re.search(r"Especialitat\\s*" + c + r"(?!\\d)", txt, re.I) or re.search(r"(?<![A-Za-z0-9])" + c + r"(?![A-Za-z0-9])", txt, re.I)]
             ids = [i for i in IDS if i in txt]
             if codes or ids:
                 page_results.append({"page": n, "codes": codes, "reference_ids": ids})

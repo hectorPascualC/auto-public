@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-10-14T16:15:05.618157+00:00",
+  "git_sha": "0728610efc3927a52f09307867e841379fbbb27b",
+  "source_url": "https://educacio.gencat.cat/web/.content/home/departament/serveis-territorials/penedes/personal-docent/nomenaments-telematics/dificil-cobertura/secundaria/PEN-SEC-dificil-cobertura-oferta-vacants.pdf",
+  "privacy": "metadata-only: no document bodies or extracted text stored",
+  "run_id": "20261014T180950+0200",
+  "territory_freshness": "FRESC",
+  "territory_target_hits": 1,
+  "official_pdf_in_monitor": true,
+  "monitor_document": {
+    "role": "offer",
+    "error": null,
+    "parse_error": null,
+    "status": 200,
+    "final_url": "https://educacio.gencat.cat/web/.content/home/departament/serveis-territorials/penedes/personal-docent/nomenaments-telematics/dificil-cobertura/secundaria/PEN-SEC-dificil-cobertura-oferta-vacants.pdf?versio=last&nocache=17919943710352",
+    "etag": "\"21407-65dca3f81f720\"",
+    "last_modified": "Wed, 14 Oct 2026 10:18:10 GMT",
+    "content_type": "application/pdf",
+    "bytes": 136199,
+    "sha256": "9649c15d941d5890855e185ad8dd07b7fc00dbe272431719d2fd51987c9908f1",
+    "cache_error": null,
+    "pages": 11,
+    "target_hit_counts": {
+      "507": 0,
+      "627": 0,
+      "F57": 0,
+      "F87": 0
+    },
+    "reference_ids_in_excerpt": {
+      "19742262": true,
+      "19764334": true
+    }
+  },
+  "monitor_raw_present": true,
+  "monitor_raw_pdf": {
+    "bytes": 136199,
+    "sha256": "9649c15d941d5890855e185ad8dd07b7fc00dbe272431719d2fd51987c9908f1",
+    "pdf_signature": true,
+    "pages": 11,
+    "text_chars": 6651,
+    "target_pages": [
+      {
+        "page": 4,
+        "codes": [],
+        "reference_ids": [
+          "19764334"
+        ]
+      },
+      {
+        "page": 5,
+        "codes": [],
+        "reference_ids": [
+          "19742262"
+        ]
+      }
+    ],
+    "reference_ids_found": {
+      "19742262": true,
+      "19764334": true
+    }
+  },
+  "independent_http_probes": [
+    {
+      "variant": "canonical",
+      "status": 200,
+      "content_type": "application/pdf",
+      "etag": "\"21407-65dca3f81f720\"",
+      "last_modified": "Wed, 14 Oct 2026 10:18:10 GMT",
+      "cache_control": "max-age=2400",
+      "age": null,
+      "final_url": "https://educacio.gencat.cat/web/.content/home/departament/serveis-territorials/penedes/personal-docent/nomenaments-telematics/dificil-cobertura/secundaria/PEN-SEC-dificil-cobertura-oferta-vacants.pdf",
+      "pdf": {
+        "bytes": 136199,
+        "sha256": "9649c15d941d5890855e185ad8dd07b7fc00dbe272431719d2fd51987c9908f1",
+        "pdf_signature": true,
+        "pages": 11,
+        "text_chars": 6651,
+        "target_pages": [
+          {
+            "page": 4,
+            "codes": [],
+            "reference_ids": [
+              "19764334"
+            ]
+          },
+          {
+            "page": 5,
+            "codes": [],
+            "reference_ids": [
+              "19742262"
+            ]
+          }
+        ],
+        "reference_ids_found": {
+          "19742262": true,
+          "19764334": true
+        }
+      }
+    },
+    {
+      "variant": "no_cache_query",
+      "status": 200,
+      "content_type": "application/pdf",
+      "etag": "\"21407-65dca3f81f720\"",
+      "last_modified": "Wed, 14 Oct 2026 10:18:10 GMT",
+      "cache_control": "max-age=2400",
+      "age": null,
+      "final_url": "https://educacio.gencat.cat/web/.content/home/departament/serveis-territorials/penedes/personal-docent/nomenaments-telematics/dificil-cobertura/secundaria/PEN-SEC-dificil-cobertura-oferta-vacants.pdf?diagnostic=1791994505",
+      "pdf": {
+        "bytes": 136199,
+        "sha256": "9649c15d941d5890855e185ad8dd07b7fc00dbe272431719d2fd51987c9908f1",
+        "pdf_signature": true,
+        "pages": 11,
+        "text_chars": 6651,
+        "target_pages": [
+          {
+            "page": 4,
+            "codes": [],
+            "reference_ids": [
+              "19764334"
+            ]
+          },
+          {
+            "page": 5,
+            "codes": [],
+            "reference_ids": [
+              "19742262"
+            ]
+          }
+        ],
+        "reference_ids_found": {
+          "19742262": true,
+          "19764334": true
+        }
+      }
+    }
+  ]
+}

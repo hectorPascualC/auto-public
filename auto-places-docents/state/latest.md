@@ -1,4 +1,4 @@
-# Passada directa 2026-10-14T14:02:19+02:00
+# Passada directa 2026-10-14T16:01:34+02:00
 
 Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
 
@@ -9,7 +9,7 @@ Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Fir
 | Barcelonès | **FRESC** | 3 | 0 | 2 | 0 | 19737769 |
 | Catalunya Central | **FRESC** | 0 | 1 | 0 | 0 | — |
 | Girona | **FRESC** | 3 | 0 | 1 | 0 | — |
-| Lleida | **FRESC** | 3 | 0 | 0 | 0 | 2026/SEC/109 |
+| Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/109 |
 | Maresme-Vallès Oriental | **FRESC** | 0 | 0 | 0 | 0 | — |
 | Penedès | **FRESC** | 0 | 0 | 0 | 1 | 19772254 |
 | Tarragona | **FRESC** | 0 | 3 | 0 | 0 | — |
@@ -26,7 +26,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - Frescor: **FRESC**
 - Àncora global: `GENSEC_2627_185`
 - GENSEC visibles: 48
-- Documents GENSEC recuperats: 52
+- Documents GENSEC recuperats: 53
 - Places target validades en el mateix document: 8
 - Estratègia: agrupació per GENSEC + validació d'especialitat dins del mateix PDF/fitxa
 - `GENSEC_2627_034`: F87 | INSTITUT ESCOLA DEL TREBALL | SENCERA | fi 31/08/2027 | resultat=True

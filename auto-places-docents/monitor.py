@@ -458,6 +458,14 @@ def scrape_territory(fetcher: DirectFetcher, name: str, slug: str, previous: dic
             "text_excerpt": text[:7000], "selected_links": selected,
         })
         landing_texts.append(text); landings.append(landing); docs.extend(selected)
+    # The Penedes rolling secondary-offer PDF is a known authoritative source.
+    # Landing-page ranking/limits must never silently omit it.
+    if slug == "penedes":
+        docs.append({
+            "url": "https://educacio.gencat.cat/web/.content/home/departament/serveis-territorials/penedes/personal-docent/nomenaments-telematics/dificil-cobertura/secundaria/PEN-SEC-dificil-cobertura-oferta-vacants.pdf",
+            "text": "Penedès oferta vacants secundària PDF oficial",
+            "role": "offer",
+        })
     unique, seen = [], set()
     for d in docs:
         u = d["url"].split("#")[0]
@@ -470,14 +478,24 @@ def scrape_territory(fetcher: DirectFetcher, name: str, slug: str, previous: dic
         if d["url"].lower().split("?")[0].endswith(".pdf"): n += 5
         return n
     unique.sort(key=doc_score, reverse=True)
+    # Keep mandatory official rolling sources even if they rank below the cap.
+    mandatory = [d for d in unique if slug == "penedes" and "PEN-SEC-dificil-cobertura-oferta-vacants.pdf" in d["url"]]
+    selected_docs = unique[:12]
+    selected_urls = {d["url"] for d in selected_docs}
+    selected_docs.extend(d for d in mandatory if d["url"] not in selected_urls)
     document_records = []
-    for d in unique[:12]:
+    for d in selected_docs:
         log(f"{name}: {d.get('role')} {d['url']}")
         document_records.append(scrape_document(fetcher, name, d))
     all_sources = landings + document_records
     anchors = merge_anchors(all_sources)
     total_hits = sum(len(x.get("target_hits") or []) for x in all_sources)
     offers_ok = sum(1 for x in document_records if x.get("role") in {"offer","pfi"} and not x.get("error") and (x.get("pages",1) or 1)>0)
+    if slug == "penedes":
+        mandatory_records = [x for x in document_records if "PEN-SEC-dificil-cobertura-oferta-vacants.pdf" in x.get("url", "")]
+        if not mandatory_records or any(x.get("error") or x.get("parse_error") for x in mandatory_records):
+            log("Penedès mandatory official secondary PDF missing or unreadable")
+            offers_ok = 0
     combined_landing = "\n".join(landing_texts)
     cur = {
         "name": name, "slug": slug, "provider": "direct-http",

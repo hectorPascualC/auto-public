@@ -239,6 +239,24 @@ Institut Manuel Vázquez Montalbán"""
     if "19662328" in hit["snippet"]:
         raise RuntimeError("target-hit regression: non-target neighbouring placement leaked into 507 evidence")
 
+    # Penedes one-page forms are frequently extracted without spaces at the
+    # placement-ID / specialty-label boundaries. Both matches must survive.
+    for placement_id, specialty in (("19764334", "627"), ("19742262", "507")):
+        sample = (
+            "Oferta de vacants o substitucionsDades de la plaça"
+            f"Identificador de laplaça{placement_id}Especialitat{specialty} "
+            "InformàticaPresentaciódesol·licituds"
+        )
+        normalized = core.normalize_penedes_offer_page(sample)
+        hits = context_hits_v2(normalized)
+        matching = [h for h in hits if h["code"] == specialty]
+        if len(matching) != 1 or not re.search(
+            rf"\b{placement_id}\b", matching[0]["snippet"]
+        ):
+            raise RuntimeError(
+                f"Penedes glued-form regression: {placement_id}/{specialty}"
+            )
+
 
 _assert_target_hit_regressions()
 core.context_hits = context_hits_v2

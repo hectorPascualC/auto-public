@@ -11,6 +11,16 @@ on:
     - cron: '0 13 * * 1-5'
     - cron: '0 14 * * 1-5'
     - cron: '0 15 * * 1-5'
+    # Independent delayed backup within each UTC slot; only runs if primary
+    # has not persisted a healthy snapshot for this slot.
+    - cron: '17 6 * * 1-5'
+    - cron: '17 7 * * 1-5'
+    - cron: '17 9 * * 1-5'
+    - cron: '17 10 * * 1-5'
+    - cron: '17 12 * * 1-5'
+    - cron: '17 13 * * 1-5'
+    - cron: '17 14 * * 1-5'
+    - cron: '17 15 * * 1-5'
   workflow_dispatch:
     inputs:
       run_monitor:
@@ -70,6 +80,7 @@ jobs:
             # github.event.schedule identifies the original UTC slot even if
             # GitHub starts this job late. Evaluate DST for that slot.
             SCHEDULE_CRON="${{ github.event.schedule }}"
+            SLOT_UTC_MINUTE="$(printf '%s' "$SCHEDULE_CRON" | awk '{print $1}')"
             SLOT_UTC_HOUR="$(printf '%s' "$SCHEDULE_CRON" | awk '{print $2}')"
             if [[ ! "$SLOT_UTC_HOUR" =~ ^([0-9]|1[0-9]|2[0-3])$ ]]; then
               echo "Unexpected scheduled cron: $SCHEDULE_CRON" >&2
@@ -87,6 +98,29 @@ jobs:
             GATE_REASON=run
           else
             GATE_REASON=${GATE_REASON:-disabled_by_input}
+          fi
+
+          # Delayed scheduled backup: avoid duplicate scans only when a healthy
+          # snapshot from this same local slot has already been persisted.
+          # The primary minute-0 schedule always executes a fresh scan.
+          if [[ "$EVENT_NAME" == "schedule" && "${SLOT_UTC_MINUTE:-0}" == "17" && "$RUN_MONITOR" == "true" ]]; then
+            git fetch origin main
+            BACKUP_FRESH="$(git show origin/main:auto-places-docents/state/health.json 2>/dev/null | python -c '
+          import json,sys
+          from datetime import datetime,timezone
+          try:
+              h=json.load(sys.stdin)
+              t=datetime.fromisoformat(h["generated_at"]).astimezone(timezone.utc)
+              now=datetime.now(timezone.utc)
+              age=(now-t).total_seconds()/60
+              print("yes" if h.get("audit_status")=="PASS" and h.get("fresh")==12 and 0<=age<=35 else "no")
+          except Exception: print("no")
+          ')"
+            if [[ "$BACKUP_FRESH" == "yes" ]]; then
+              RUN_MONITOR=false
+              GATE_REASON=healthy_primary_snapshot
+              echo "Backup suppressed: fresh PASS snapshot already persisted."
+            fi
           fi
 
           # Keep the worktree pinned to the immutable triggering revision, but inspect

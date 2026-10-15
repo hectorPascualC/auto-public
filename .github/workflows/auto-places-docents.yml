@@ -3,7 +3,14 @@ name: AUTO places docents 507-627
 on:
   schedule:
     # UTC: winter Madrid UTC+1, summer Madrid UTC+2. Gate by local hour.
-    - cron: '0 6,7,9,10,12,13,14,15 * * 1-5'
+    - cron: '0 6 * * 1-5'
+    - cron: '0 7 * * 1-5'
+    - cron: '0 9 * * 1-5'
+    - cron: '0 10 * * 1-5'
+    - cron: '0 12 * * 1-5'
+    - cron: '0 13 * * 1-5'
+    - cron: '0 14 * * 1-5'
+    - cron: '0 15 * * 1-5'
   workflow_dispatch:
     inputs:
       run_monitor:
@@ -60,20 +67,25 @@ jobs:
           set -euo pipefail
           RUN_MONITOR="$REQUEST_RUN"
           if [[ "$EVENT_NAME" == "schedule" ]]; then
-            # GitHub scheduled workflows can start late. Determine the intended
-            # slot from the UTC cron expression, not the runner's start hour.
+            # github.event.schedule identifies the original UTC slot even if
+            # GitHub starts this job late. Evaluate DST for that slot.
             SCHEDULE_CRON="${{ github.event.schedule }}"
-            UTC_SLOT="${SCHEDULE_CRON#0 }"
-            UTC_SLOT="${UTC_SLOT%% *}"
-            UTC_HOUR="$(date -u +%H)"
-            # A late start must not turn an intended scan into a false skip.
-            # All scheduled UTC hours are eligible; the freshness gate below
-            # avoids unnecessary duplicate scans.
-            echo "Scheduled cron: $SCHEDULE_CRON; actual UTC hour: $UTC_HOUR"
+            SLOT_UTC_HOUR="$(printf '%s' "$SCHEDULE_CRON" | awk '{print $2}')"
+            if [[ ! "$SLOT_UTC_HOUR" =~ ^([0-9]|1[0-9]|2[0-3])$ ]]; then
+              echo "Unexpected scheduled cron: $SCHEDULE_CRON" >&2
+              exit 1
+            fi
+            SLOT_DATE_UTC="$(date -u +%Y-%m-%d)"
+            SLOT_LOCAL_HOUR="$(TZ=Europe/Madrid date -d "${SLOT_DATE_UTC} ${SLOT_UTC_HOUR}:00 UTC" +%H)"
+            echo "Scheduled UTC hour=$SLOT_UTC_HOUR, Madrid hour=$SLOT_LOCAL_HOUR"
+            if [[ ! " 08 11 14 16 " == *" $SLOT_LOCAL_HOUR "* ]]; then
+              RUN_MONITOR=false
+              GATE_REASON=outside_madrid_hours
+            fi
           fi
           GATE_REASON=${GATE_REASON:-run}
           if [[ "$RUN_MONITOR" != "true" ]]; then
-            GATE_REASON=disabled_by_input
+            GATE_REASON=${GATE_REASON:-disabled_by_input}
           fi
 
           # Keep the worktree pinned to the immutable triggering revision, but inspect

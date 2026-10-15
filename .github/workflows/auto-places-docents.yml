@@ -2,8 +2,8 @@ name: AUTO places docents 507-627
 
 on:
   schedule:
-    - cron: '0 8,11,14,16 * * 1-5'
-      timezone: 'Europe/Madrid'
+    # UTC: winter Madrid UTC+1, summer Madrid UTC+2. Gate by local hour.
+    - cron: '0 6,7,9,10,12,13,14,15 * * 1-5'
   workflow_dispatch:
     inputs:
       run_monitor:
@@ -59,7 +59,14 @@ jobs:
         run: |
           set -euo pipefail
           RUN_MONITOR="$REQUEST_RUN"
-          GATE_REASON=run
+          if [[ "$EVENT_NAME" == "schedule" ]]; then
+            LOCAL_HOUR="$(TZ=Europe/Madrid date +%H)"
+            if [[ ! " 08 11 14 16 " == *" $LOCAL_HOUR "* ]]; then
+              RUN_MONITOR=false
+              GATE_REASON=outside_madrid_hours
+            fi
+          fi
+          GATE_REASON=${GATE_REASON:-run}
           if [[ "$RUN_MONITOR" != "true" ]]; then
             GATE_REASON=disabled_by_input
           fi

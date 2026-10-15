@@ -1,7 +1,7 @@
 {
   "audit_version": 2,
-  "generated_at": "2026-10-14T18:38:59+02:00",
-  "source_generated_at": "2026-10-14T18:32:31+02:00",
+  "generated_at": "2026-10-15T09:22:24+02:00",
+  "source_generated_at": "2026-10-15T09:15:12+02:00",
   "status": "PASS",
   "sstt_checked": 11,
   "scopes_checked": 12,
@@ -186,20 +186,12 @@
       "freshness": "FRESC",
       "presence_authoritative": true,
       "current_offer_sources": 7,
-      "raw_target_hits": 1,
-      "parsed_target_hits": 1,
+      "raw_target_hits": 0,
+      "parsed_target_hits": 0,
       "unidentified_target_hits": 0,
-      "active_positions": 1,
-      "id_kinds": [
-        "LOCAL_DATED"
-      ],
-      "parsed_ids": [
-        {
-          "code": "627",
-          "id": "627-09/10",
-          "kind": "LOCAL_DATED"
-        }
-      ]
+      "active_positions": 0,
+      "id_kinds": [],
+      "parsed_ids": []
     },
     "EDUBCN": {
       "freshness": "FRESC",

@@ -1,3 +1,4 @@
-test run request
-requested_at_utc=2026-10-15T07:20:00Z
-reason=verify_schedule_fix_and_full_monitor
+manual verification trigger
+requested_at_utc=2026-10-14T16:30:57.598Z
+reason=final_end_to_end_penedes_verification
+expected_placement_ids=19742262,19764334

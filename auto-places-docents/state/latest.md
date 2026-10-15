@@ -1,20 +1,20 @@
-# Passada directa 2026-10-14T18:32:31+02:00
+# Passada directa 2026-10-15T09:15:12+02:00
 
 Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
 
 | Àmbit | Frescor | 507 hits (diag.) | F57 hits (diag.) | 627 hits (diag.) | F87 hits (diag.) | Àncora global |
 |---|---|---:|---:|---:|---:|---|
-| Alt Pirineu i Aran | **FRESC** | 0 | 0 | 7 | 0 | APA-2627-S058 |
+| Alt Pirineu i Aran | **FRESC** | 0 | 0 | 7 | 0 | APA-2627-S061 |
 | Baix Llobregat | **FRESC** | 1 | 0 | 6 | 0 | 19762774 |
 | Barcelonès | **FRESC** | 3 | 0 | 2 | 0 | 19737769 |
 | Catalunya Central | **FRESC** | 0 | 1 | 0 | 0 | — |
 | Girona | **FRESC** | 3 | 0 | 1 | 0 | — |
-| Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/109 |
+| Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/110 |
 | Maresme-Vallès Oriental | **FRESC** | 0 | 0 | 0 | 0 | — |
 | Penedès | **FRESC** | 1 | 0 | 1 | 1 | 19772254 |
 | Tarragona | **FRESC** | 0 | 3 | 0 | 0 | — |
 | Terres de l'Ebre | **FRESC** | 0 | 0 | 1 | 0 | — |
-| Vallès Occidental | **FRESC** | 7 | 2 | 9 | 1 | — |
+| Vallès Occidental | **FRESC** | 7 | 2 | 8 | 1 | — |
 | EDUBCN | **FRESC** | 3 | 1 | 3 | 2 | GENSEC_2627_185 |
 
 ## Notes de frescor
@@ -69,7 +69,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | Penedès | FRESC | sí | 1 | 0 | 1 | 0 | offer-documents |
 | Tarragona | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Terres de l'Ebre | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
-| Vallès Occidental | FRESC | sí | 0 | 0 | 1 | 0 | offer-documents |
+| Vallès Occidental | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | EDUBCN | FRESC | sí | 3 | 1 | 3 | 1 | edubcn-document-verified |
 
 ### Places actuals detectades
@@ -83,7 +83,8 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - **Penedès**: `19742262` (507), `19764334` (627)
 - **Tarragona**: cap
 - **Terres de l'Ebre**: cap
-- **Vallès Occidental**: `627-09/10` (627)
+- **Vallès Occidental**: cap
+  - Desaparegudes des de la passada anterior: `627-09/10`
 - **EDUBCN**: `GENSEC_2627_064` (627,F87), `GENSEC_2627_162` (507), `GENSEC_2627_163` (627), `GENSEC_2627_171` (507), `GENSEC_2627_175` (627), `GENSEC_2627_180` (507), `GENSEC_2627_182` (F57)
 
 ## Auditoria SSTT v2
@@ -104,4 +105,4 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | Penedès | sí | sí | 2 | 2 | 0 | 2 |
 | Tarragona | sí | sí | 0 | 0 | 0 | 0 |
 | Terres de l'Ebre | sí | sí | 0 | 0 | 0 | 0 |
-| Vallès Occidental | sí | sí | 1 | 1 | 0 | 1 |
+| Vallès Occidental | sí | sí | 0 | 0 | 0 | 0 |

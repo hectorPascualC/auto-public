@@ -1,4 +1,4 @@
-# Passada directa 2026-10-15T18:28:11+02:00
+# Passada directa 2026-10-15T19:57:40+02:00
 
 Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
 

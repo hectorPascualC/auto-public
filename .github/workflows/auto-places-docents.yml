@@ -83,8 +83,9 @@ jobs:
               GATE_REASON=outside_madrid_hours
             fi
           fi
-          GATE_REASON=${GATE_REASON:-run}
-          if [[ "$RUN_MONITOR" != "true" ]]; then
+          if [[ "$RUN_MONITOR" == "true" ]]; then
+            GATE_REASON=run
+          else
             GATE_REASON=${GATE_REASON:-disabled_by_input}
           fi
 
@@ -106,31 +107,10 @@ jobs:
             fi
           fi
 
-          # Skip a scheduled scan if a recent successful manual/push run already
-          # produced canonical state in this repository.
-          if [[ "$RUN_MONITOR" == "true" && "$FORCE_RUN" != "true" && "$EVENT_NAME" == "schedule" ]]; then
-            AGE_MIN="$(git show origin/main:auto-places-docents/state/health.json 2>/dev/null | python -c '
-          import json, sys
-          from datetime import datetime, timezone
-          try:
-              generated = json.load(sys.stdin)["generated_at"]
-              dt = datetime.fromisoformat(generated)
-              if dt.tzinfo is None:
-                  dt = dt.replace(tzinfo=timezone.utc)
-              age = (datetime.now(timezone.utc) - dt.astimezone(timezone.utc)).total_seconds() / 60
-              print(max(0, int(age)))
-          except Exception:
-              print("unknown")
-          ' )"
-            echo "Canonical freshness age: ${AGE_MIN} minutes"
-
-            if [[ "$AGE_MIN" =~ ^[0-9]+$ ]] && (( AGE_MIN <= 25 )); then
-              echo "A fresh canonical snapshot already exists; scheduled run will skip the expensive scan."
-              RUN_MONITOR=false
-              GATE_REASON=fresh_schedule
-            else
-              echo "No sufficiently fresh canonical snapshot exists; scheduled run will execute the scan."
-            fi
+          # A scheduled slot must actually run its scan. Never report a green
+          # scheduled job that merely reused a prior snapshot.
+          if [[ "$RUN_MONITOR" == "true" && "$EVENT_NAME" == "schedule" ]]; then
+            echo "Scheduled slot accepted: execute full scan and persist a new snapshot."
           fi
 
           echo "run_monitor=$RUN_MONITOR" >> "$GITHUB_OUTPUT"

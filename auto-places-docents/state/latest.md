@@ -1,10 +1,10 @@
-# Passada directa 2026-10-15T09:23:00+02:00
+# Passada directa 2026-10-15T11:58:10+02:00
 
 Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
 
 | Àmbit | Frescor | 507 hits (diag.) | F57 hits (diag.) | 627 hits (diag.) | F87 hits (diag.) | Àncora global |
 |---|---|---:|---:|---:|---:|---|
-| Alt Pirineu i Aran | **FRESC** | 0 | 0 | 7 | 0 | APA-2627-S061 |
+| Alt Pirineu i Aran | **FRESC** | 0 | 0 | 8 | 0 | APA-2627-S061 |
 | Baix Llobregat | **FRESC** | 1 | 0 | 6 | 0 | 19762774 |
 | Barcelonès | **FRESC** | 3 | 0 | 2 | 0 | 19737769 |
 | Catalunya Central | **FRESC** | 0 | 1 | 0 | 0 | — |
@@ -15,7 +15,7 @@ Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Fir
 | Tarragona | **FRESC** | 0 | 3 | 0 | 0 | — |
 | Terres de l'Ebre | **FRESC** | 0 | 0 | 1 | 0 | — |
 | Vallès Occidental | **FRESC** | 7 | 2 | 8 | 1 | — |
-| EDUBCN | **FRESC** | 3 | 1 | 3 | 2 | GENSEC_2627_185 |
+| EDUBCN | **FRESC** | 3 | 1 | 3 | 2 | GENSEC_2627_186 |
 
 ## Notes de frescor
 - Cap incidència final de frescor.
@@ -24,9 +24,9 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 
 ## EDUBCN probe v3 override
 - Frescor: **FRESC**
-- Àncora global: `GENSEC_2627_185`
-- GENSEC visibles: 48
-- Documents GENSEC recuperats: 53
+- Àncora global: `GENSEC_2627_186`
+- GENSEC visibles: 49
+- Documents GENSEC recuperats: 54
 - Places target validades en el mateix document: 8
 - Estratègia: agrupació per GENSEC + validació d'especialitat dins del mateix PDF/fitxa
 - `GENSEC_2627_034`: F87 | INSTITUT ESCOLA DEL TREBALL | SENCERA | fi 31/08/2027 | resultat=True
@@ -84,7 +84,6 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - **Tarragona**: cap
 - **Terres de l'Ebre**: cap
 - **Vallès Occidental**: cap
-  - Desaparegudes des de la passada anterior: `627-09/10`
 - **EDUBCN**: `GENSEC_2627_064` (627,F87), `GENSEC_2627_162` (507), `GENSEC_2627_163` (627), `GENSEC_2627_171` (507), `GENSEC_2627_175` (627), `GENSEC_2627_180` (507), `GENSEC_2627_182` (F57)
 
 ## Auditoria SSTT v2

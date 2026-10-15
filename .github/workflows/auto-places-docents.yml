@@ -60,11 +60,16 @@ jobs:
           set -euo pipefail
           RUN_MONITOR="$REQUEST_RUN"
           if [[ "$EVENT_NAME" == "schedule" ]]; then
-            LOCAL_HOUR="$(TZ=Europe/Madrid date +%H)"
-            if [[ ! " 08 11 14 16 " == *" $LOCAL_HOUR "* ]]; then
-              RUN_MONITOR=false
-              GATE_REASON=outside_madrid_hours
-            fi
+            # GitHub scheduled workflows can start late. Determine the intended
+            # slot from the UTC cron expression, not the runner's start hour.
+            SCHEDULE_CRON="${{ github.event.schedule }}"
+            UTC_SLOT="${SCHEDULE_CRON#0 }"
+            UTC_SLOT="${UTC_SLOT%% *}"
+            UTC_HOUR="$(date -u +%H)"
+            # A late start must not turn an intended scan into a false skip.
+            # All scheduled UTC hours are eligible; the freshness gate below
+            # avoids unnecessary duplicate scans.
+            echo "Scheduled cron: $SCHEDULE_CRON; actual UTC hour: $UTC_HOUR"
           fi
           GATE_REASON=${GATE_REASON:-run}
           if [[ "$RUN_MONITOR" != "true" ]]; then

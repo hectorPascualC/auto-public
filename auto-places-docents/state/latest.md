@@ -1,4 +1,4 @@
-# Passada directa 2026-10-16T08:03:42+02:00
+# Passada directa 2026-10-16T11:01:31+02:00
 
 Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
 
@@ -9,7 +9,7 @@ Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Fir
 | Barcelonès | **FRESC** | 3 | 0 | 2 | 0 | 19737769 |
 | Catalunya Central | **FRESC** | 0 | 1 | 0 | 0 | — |
 | Girona | **FRESC** | 3 | 0 | 1 | 0 | — |
-| Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/110 |
+| Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/111 |
 | Maresme-Vallès Oriental | **FRESC** | 0 | 0 | 0 | 0 | — |
 | Penedès | **FRESC** | 1 | 0 | 1 | 1 | 19772254 |
 | Tarragona | **FRESC** | 0 | 3 | 0 | 0 | — |
@@ -26,7 +26,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - Frescor: **FRESC**
 - Àncora global: `GENSEC_2627_186`
 - GENSEC visibles: 49
-- Documents GENSEC recuperats: 54
+- Documents GENSEC recuperats: 55
 - Places target validades en el mateix document: 8
 - Estratègia: agrupació per GENSEC + validació d'especialitat dins del mateix PDF/fitxa
 - `GENSEC_2627_034`: F87 | INSTITUT ESCOLA DEL TREBALL | SENCERA | fi 31/08/2027 | resultat=True
@@ -36,7 +36,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - `GENSEC_2627_171`: 507 | Institut Tecnològic de Barcelona | Sencera | fi 31/08/2027 | resultat=False
 - `GENSEC_2627_175`: 627 | Institut Tecnològic de Barcelona | 0’5 | fi 31/08/2027 | resultat=False
 - `GENSEC_2627_180`: 507 | Institut TIC de Barcelona | SENCERA | fi Alta titular o 30/06/2027 | resultat=False
-- `GENSEC_2627_182`: F57 | Institut TIC de Barcelona | SENCERA | fi 28/10/2026 | resultat=False
+- `GENSEC_2627_182`: F57 | Institut TIC de Barcelona | SENCERA | fi 28/10/2026 | resultat=True
 
 ## EDUBCN probe v4 final
 - Regla: especialitat target només si apareix al mateix document oficial de la plaça.
@@ -49,7 +49,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - `GENSEC_2627_171`: 507 | Institut Tecnològic de Barcelona | Sencera | fi 31/08/2027 | resultat=False
 - `GENSEC_2627_175`: 627 | Institut Tecnològic de Barcelona | 0’5 | fi 31/08/2027 | resultat=False
 - `GENSEC_2627_180`: 507 | Institut TIC de Barcelona | SENCERA | fi Alta titular o 30/06/2027 | resultat=False
-- `GENSEC_2627_182`: F57 | Institut TIC de Barcelona | SENCERA | fi 28/10/2026 | resultat=False
+- `GENSEC_2627_182`: F57 | Institut TIC de Barcelona | SENCERA | fi 28/10/2026 | resultat=True
 
 ## Presència activa v1 — autoritativa
 - Regla: una plaça continua activa mentre apareix al PDF/llistat oficial ACTUAL, encara que el termini de sol·licitud hagi vençut.
@@ -70,7 +70,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | Tarragona | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Terres de l'Ebre | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Vallès Occidental | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
-| EDUBCN | FRESC | sí | 3 | 1 | 3 | 1 | edubcn-document-verified |
+| EDUBCN | FRESC | sí | 3 | 0 | 3 | 1 | edubcn-document-verified |
 
 ### Places actuals detectades
 - **Alt Pirineu i Aran**: `APA-2627-S056` (627)
@@ -84,7 +84,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - **Tarragona**: cap
 - **Terres de l'Ebre**: cap
 - **Vallès Occidental**: cap
-- **EDUBCN**: `GENSEC_2627_064` (627,F87), `GENSEC_2627_162` (507), `GENSEC_2627_163` (627), `GENSEC_2627_171` (507), `GENSEC_2627_175` (627), `GENSEC_2627_180` (507), `GENSEC_2627_182` (F57)
+- **EDUBCN**: `GENSEC_2627_064` (627,F87), `GENSEC_2627_162` (507), `GENSEC_2627_163` (627), `GENSEC_2627_171` (507), `GENSEC_2627_175` (627), `GENSEC_2627_180` (507)
 
 ## Auditoria SSTT v2
 - Estat: **PASS**

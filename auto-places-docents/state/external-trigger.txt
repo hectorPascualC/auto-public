@@ -1,5 +1,5 @@
 AUTO-PUBLIC scheduled-slot rescue
-slot_local=2026-10-16T08:00:00+02:00
-requested_at_utc=2026-10-16T06:03:04Z
+slot_local=2026-10-16T11:00:00+02:00
+requested_at_utc=2026-10-16T09:00:27Z
 reason=no_run_or_fresh_snapshot_for_slot
 public_data_only=true

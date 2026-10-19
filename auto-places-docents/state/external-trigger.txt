@@ -1,3 +1,4 @@
-AUTO-PUBLIC scheduled-slot rescue
-slot_local=2026-10-19T11:00:00+02:00
+AUTO-PUBLIC one-time automated test
+requested_slot_local=2026-10-19T17:30:00+02:00
+run_once_id=auto-test-20261019-1730-madrid
 public_data_only=true

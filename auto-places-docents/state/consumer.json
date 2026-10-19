@@ -1,20 +1,20 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-19T11:26:45+02:00",
-  "run_id": "20261019T112645+0200",
+  "generated_at": "2026-10-19T14:20:52+02:00",
+  "run_id": "20261019T142052+0200",
   "source_strategy": "direct-http+cachebuster+validators+sha256; playwright-direct-edubcn",
   "activity_rule": "current-presence: keep while present in current official offer PDF/list even after deadline; remove on disappearance only from authoritative FRESH current source",
   "health": {
-    "generated_at": "2026-10-19T11:26:45+02:00",
-    "edubcn_probe_at": "2026-10-19T11:34:34+02:00",
+    "generated_at": "2026-10-19T14:20:52+02:00",
+    "edubcn_probe_at": "2026-10-19T14:27:49+02:00",
     "fresh": 12,
     "partial": 0,
     "cache_obsoleta": 0,
     "total": 12,
-    "active_snapshot_at": "2026-10-19T11:34:34+02:00",
+    "active_snapshot_at": "2026-10-19T14:27:49+02:00",
     "presence_authoritative": 12,
     "presence_non_authoritative": 0,
-    "audit_at": "2026-10-19T11:34:34+02:00",
+    "audit_at": "2026-10-19T14:27:50+02:00",
     "audit_status": "PASS",
     "audit_sstt_checked": 11,
     "audit_errors": 0
@@ -85,25 +85,7 @@
           ]
         }
       ],
-      "removed_since_previous": [
-        {
-          "placement_id": "19754265",
-          "display_id": "19754265",
-          "id_kind": "NUMERIC",
-          "target_codes": [
-            "627"
-          ],
-          "source_urls": [
-            "https://educacio.gencat.cat/web/.content/home/departament/serveis-territorials/baix-llobregat/personal-docent/nomenaments-telematics/dificil-cobertura/secundaria/PENDENTS_BLL-SEC-dificil-cobertura-oferta-vacants.pdf"
-          ],
-          "source_kinds": [
-            "offer"
-          ],
-          "evidence_snippets": [
-            "Oferta de vacants o substitucions de difícil cobertura Dades de la plaça Identificador de la plaça Especialitat Presentació de s ol·licituds 627 - Sistemes i aplicacions informàtiques 19754265 Fins a les 8:00:00 del dia 13/10/2026 Institut Bernat el Ferrer Nom del centre Municipi"
-          ]
-        }
-      ],
+      "removed_since_previous": [],
       "status_note": null
     },
     "Barcelonès": {
@@ -231,12 +213,13 @@
       "presence_authoritative": true,
       "source_mode": "offer-documents",
       "current_target_counts": {
-        "507": 2,
+        "507": 0,
         "F57": 0,
         "627": 0,
         "F87": 0
       },
-      "current_target_placements": [
+      "current_target_placements": [],
+      "removed_since_previous": [
         {
           "placement_id": "193S/2026-2027",
           "display_id": "193S/2026-2027",
@@ -272,7 +255,6 @@
           ]
         }
       ],
-      "removed_since_previous": [],
       "status_note": null
     },
     "Lleida": {

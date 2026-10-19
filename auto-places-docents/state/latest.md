@@ -1,4 +1,4 @@
-# Passada directa 2026-10-19T11:26:45+02:00
+# Passada directa 2026-10-19T14:20:52+02:00
 
 Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
 
@@ -8,14 +8,14 @@ Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Fir
 | Baix Llobregat | **FRESC** | 2 | 0 | 5 | 0 | 19780786 |
 | Barcelonès | **FRESC** | 3 | 0 | 2 | 0 | 19764412 |
 | Catalunya Central | **FRESC** | 0 | 1 | 0 | 0 | — |
-| Girona | **FRESC** | 5 | 0 | 1 | 0 | — |
+| Girona | **FRESC** | 3 | 0 | 1 | 0 | — |
 | Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/111 |
 | Maresme-Vallès Oriental | **FRESC** | 0 | 0 | 0 | 0 | — |
 | Penedès | **FRESC** | 1 | 0 | 1 | 1 | 19772254 |
 | Tarragona | **FRESC** | 0 | 3 | 0 | 0 | — |
 | Terres de l'Ebre | **FRESC** | 0 | 0 | 1 | 0 | — |
 | Vallès Occidental | **FRESC** | 8 | 2 | 8 | 1 | — |
-| EDUBCN | **FRESC** | 3 | 1 | 3 | 2 | GENSEC_2627_186 |
+| EDUBCN | **FRESC** | 3 | 1 | 3 | 1 | GENSEC_2627_186 |
 
 ## Notes de frescor
 - Cap incidència final de frescor.
@@ -25,11 +25,10 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 ## EDUBCN probe v3 override
 - Frescor: **FRESC**
 - Àncora global: `GENSEC_2627_186`
-- GENSEC visibles: 49
-- Documents GENSEC recuperats: 59
-- Places target validades en el mateix document: 8
+- GENSEC visibles: 45
+- Documents GENSEC recuperats: 51
+- Places target validades en el mateix document: 7
 - Estratègia: agrupació per GENSEC + validació d'especialitat dins del mateix PDF/fitxa
-- `GENSEC_2627_034`: F87 | INSTITUT ESCOLA DEL TREBALL | SENCERA | fi 31/08/2027 | resultat=True
 - `GENSEC_2627_064`: 627,F87 | Institut Mare de Déu de la Mercè | sencera de docent de PFI. | fi 31/08/2027 | resultat=False
 - `GENSEC_2627_162`: 507 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=False
 - `GENSEC_2627_163`: 627 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=False
@@ -41,8 +40,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 ## EDUBCN probe v4 final
 - Regla: especialitat target només si apareix al mateix document oficial de la plaça.
 - Identitat: es conserva el codi complet, inclosos sufixos (`_SCO`, etc.); el número base només serveix per frescor.
-- Places documentals target verificades: 8
-- `GENSEC_2627_034`: F87 | INSTITUT ESCOLA DEL TREBALL | SENCERA | fi 31/08/2027 | resultat=True
+- Places documentals target verificades: 7
 - `GENSEC_2627_064`: 627,F87 | Institut Mare de Déu de la Mercè | sencera de docent de PFI. | fi 31/08/2027 | resultat=False
 - `GENSEC_2627_162`: 507 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=False
 - `GENSEC_2627_163`: 627 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=False
@@ -63,7 +61,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | Baix Llobregat | FRESC | sí | 1 | 0 | 0 | 0 | offer-documents |
 | Barcelonès | FRESC | sí | 3 | 0 | 2 | 0 | offer-documents |
 | Catalunya Central | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
-| Girona | FRESC | sí | 2 | 0 | 0 | 0 | offer-documents |
+| Girona | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Lleida | FRESC | sí | 1 | 0 | 0 | 0 | offer-documents |
 | Maresme-Vallès Oriental | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Penedès | FRESC | sí | 1 | 0 | 1 | 0 | offer-documents |
@@ -75,10 +73,10 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 ### Places actuals detectades
 - **Alt Pirineu i Aran**: `APA-2627-S056` (627)
 - **Baix Llobregat**: `19711802` (507)
-  - Desaparegudes des de la passada anterior: `19754265`
 - **Barcelonès**: `19650726` (627), `19659466` (507), `19664257` (627), `19697257` (507), `19736796` (507)
 - **Catalunya Central**: cap
-- **Girona**: `193S/2026-2027` (507), `204S/2026-2027` (507)
+- **Girona**: cap
+  - Desaparegudes des de la passada anterior: `193S/2026-2027`, `204S/2026-2027`
 - **Lleida**: `2026/SEC/089` (507)
 - **Maresme-Vallès Oriental**: cap
 - **Penedès**: `19742262` (507), `19764334` (627)
@@ -99,7 +97,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | Baix Llobregat | sí | sí | 1 | 1 | 0 | 1 |
 | Barcelonès | sí | sí | 5 | 5 | 0 | 5 |
 | Catalunya Central | sí | sí | 0 | 0 | 0 | 0 |
-| Girona | sí | sí | 2 | 2 | 0 | 2 |
+| Girona | sí | sí | 0 | 0 | 0 | 0 |
 | Lleida | sí | sí | 1 | 1 | 0 | 1 |
 | Maresme-Vallès Oriental | sí | sí | 0 | 0 | 0 | 0 |
 | Penedès | sí | sí | 2 | 2 | 0 | 2 |

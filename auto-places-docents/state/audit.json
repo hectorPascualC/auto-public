@@ -1,7 +1,7 @@
 {
   "audit_version": 2,
-  "generated_at": "2026-10-16T19:55:33+02:00",
-  "source_generated_at": "2026-10-16T19:47:06+02:00",
+  "generated_at": "2026-10-19T11:34:34+02:00",
+  "source_generated_at": "2026-10-19T11:26:45+02:00",
   "status": "PASS",
   "sstt_checked": 11,
   "scopes_checked": 12,
@@ -39,8 +39,8 @@
       ],
       "parsed_ids": [
         {
-          "code": "627",
-          "id": "19754265",
+          "code": "507",
+          "id": "19711802",
           "kind": "NUMERIC"
         }
       ]

@@ -1,11 +1,11 @@
-# Passada directa 2026-10-16T19:47:06+02:00
+# Passada directa 2026-10-19T11:26:45+02:00
 
 Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
 
 | Àmbit | Frescor | 507 hits (diag.) | F57 hits (diag.) | 627 hits (diag.) | F87 hits (diag.) | Àncora global |
 |---|---|---:|---:|---:|---:|---|
 | Alt Pirineu i Aran | **FRESC** | 0 | 0 | 8 | 0 | APA-2627-S061 |
-| Baix Llobregat | **FRESC** | 1 | 0 | 6 | 0 | 19762774 |
+| Baix Llobregat | **FRESC** | 2 | 0 | 5 | 0 | 19780786 |
 | Barcelonès | **FRESC** | 3 | 0 | 2 | 0 | 19764412 |
 | Catalunya Central | **FRESC** | 0 | 1 | 0 | 0 | — |
 | Girona | **FRESC** | 5 | 0 | 1 | 0 | — |
@@ -60,7 +60,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | Àmbit | Frescor | Autoritativa | 507 | F57 | 627 | F87 | Mode |
 |---|---|---|---:|---:|---:|---:|---|
 | Alt Pirineu i Aran | FRESC | sí | 0 | 0 | 1 | 0 | offer-documents |
-| Baix Llobregat | FRESC | sí | 0 | 0 | 1 | 0 | offer-documents |
+| Baix Llobregat | FRESC | sí | 1 | 0 | 0 | 0 | offer-documents |
 | Barcelonès | FRESC | sí | 3 | 0 | 2 | 0 | offer-documents |
 | Catalunya Central | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Girona | FRESC | sí | 2 | 0 | 0 | 0 | offer-documents |
@@ -74,7 +74,8 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 
 ### Places actuals detectades
 - **Alt Pirineu i Aran**: `APA-2627-S056` (627)
-- **Baix Llobregat**: `19754265` (627)
+- **Baix Llobregat**: `19711802` (507)
+  - Desaparegudes des de la passada anterior: `19754265`
 - **Barcelonès**: `19650726` (627), `19659466` (507), `19664257` (627), `19697257` (507), `19736796` (507)
 - **Catalunya Central**: cap
 - **Girona**: `193S/2026-2027` (507), `204S/2026-2027` (507)

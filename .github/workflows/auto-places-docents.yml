@@ -88,7 +88,7 @@ jobs:
             fi
             SLOT_DATE_UTC="$(date -u +%Y-%m-%d)"
             SLOT_LOCAL_HOUR="$(TZ=Europe/Madrid date -d "${SLOT_DATE_UTC} ${SLOT_UTC_HOUR}:00 UTC" +%H)"
-            echo "Scheduled UTC hour=$SLOT_UTC_HOUR, Madrid hour=$SLOT_LOCAL_HOUR"
+            echo "Scheduled UTC hour=$SLOT_UTC_HOUR, Madrid hour=$SLOT_LOCAL_HOUR"\n            echo "Scheduled expression: $SCHEDULE_CRON"
             if [[ ! " 08 11 14 16 " == *" $SLOT_LOCAL_HOUR "* ]]; then
               RUN_MONITOR=false
               GATE_REASON=outside_madrid_hours
@@ -105,15 +105,21 @@ jobs:
           # The primary minute-0 schedule always executes a fresh scan.
           if [[ "$EVENT_NAME" == "schedule" && "${SLOT_UTC_MINUTE:-0}" == "17" && "$RUN_MONITOR" == "true" ]]; then
             git fetch origin main
-            BACKUP_FRESH="$(git show origin/main:auto-places-docents/state/health.json 2>/dev/null | python -c '
+            export EXPECTED_SLOT_HOUR="$SLOT_LOCAL_HOUR"\n            BACKUP_FRESH="$(git show origin/main:auto-places-docents/state/health.json 2>/dev/null | python -c '
           import json,sys
           from datetime import datetime,timezone
           try:
               h=json.load(sys.stdin)
               t=datetime.fromisoformat(h["generated_at"]).astimezone(timezone.utc)
               now=datetime.now(timezone.utc)
+              from zoneinfo import ZoneInfo
+              madrid=ZoneInfo("Europe/Madrid")
+              slot_date=now.astimezone(madrid).date()
+              expected_hour=int(__import__("os").environ["EXPECTED_SLOT_HOUR"])
+              local=t.astimezone(madrid)
+              same_slot=(local.date()==slot_date and local.hour==expected_hour)
               age=(now-t).total_seconds()/60
-              print("yes" if h.get("audit_status")=="PASS" and h.get("fresh")==12 and 0<=age<=35 else "no")
+              print("yes" if h.get("audit_status")=="PASS" and h.get("fresh")==12 and h.get("presence_authoritative")==12 and h.get("audit_errors")==0 and same_slot and 0<=age<=180 else "no")
           except Exception: print("no")
           ')"
             if [[ "$BACKUP_FRESH" == "yes" ]]; then
@@ -148,7 +154,7 @@ jobs:
           fi
 
           echo "run_monitor=$RUN_MONITOR" >> "$GITHUB_OUTPUT"
-          echo "gate_reason=$GATE_REASON" >> "$GITHUB_OUTPUT"
+          echo "gate_reason=$GATE_REASON" >> "$GITHUB_OUTPUT"\n          echo "AUTO_GATE_RESULT run_monitor=$RUN_MONITOR reason=$GATE_REASON event=$EVENT_NAME"\n          echo "### AUTO gate: $GATE_REASON (run_monitor=$RUN_MONITOR)" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Run skipped by dedup/freshness gate
         if: steps.gate.outputs.run_monitor == 'false'

@@ -34,6 +34,11 @@ on:
     paths:
       - '.github/workflows/auto-places-docents.yml'
       - 'auto-places-docents/monitor.py'
+      - 'auto-places-docents/coverage.py'
+      - 'auto-places-docents/schedule_gate.py'
+      - 'auto-places-docents/slot_ledger.py'
+      - 'auto-places-docents/finalize_history.py'
+      - 'auto-places-docents/tests/test_monitor_regressions.py'
       - 'auto-places-docents/monitor_v2.py'
       - 'auto-places-docents/pdf_diagnostics.py'
       - 'auto-places-docents/edubcn_probe.py'

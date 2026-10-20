@@ -82,6 +82,24 @@ class TestResults(unittest.TestCase):
         self.assertEqual(classify("Resultat de la convocatòria: pendent"),"UNKNOWN")
         self.assertEqual(classify("Plaça adjudicada però declarada deserta"),"UNKNOWN")
 
+    def test_territorial_result_matches_exact_id(self):
+        snap = importlib.import_module("active_snapshot_v2")
+        doc_offer = {"url":"https://educacio.gencat.cat/DC_oferta.pdf", "label":"Oferta",
+                     "role":"offer", "target_hits":[
+                       {"code":"507","snippet":"Identificador plaça 19659466 Especialitat 507"}]}
+        def check(result_text):
+            doc_result = {"url":"https://educacio.gencat.cat/DC_resultat.pdf",
+                          "label":"Resultat", "role":"result", "target_hits":[
+                            {"code":"507","snippet":"19659466 Especialitat 507 "+result_text}]}
+            return snap.derive_non_edubcn_v2({"freshness":"FRESC",
+                        "documents":[doc_offer,doc_result], "landings":[]})
+        empty=check("RESULTAT DESERTA")
+        self.assertEqual(len(empty["current_target_placements"]),1)
+        self.assertEqual(len(empty["covered_by_results"]),0)
+        filled=check("RESULTAT: plaça adjudicada")
+        self.assertEqual(len(filled["current_target_placements"]),0)
+        self.assertEqual(filled["covered_by_results"][0]["placement_id"],"19659466")
+
     def test_edubcn_finalizer(self):
         ed = importlib.import_module("edubcn_finalize")
         with tempfile.TemporaryDirectory() as tmp:

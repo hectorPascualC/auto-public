@@ -21,6 +21,10 @@ on:
     - cron: '22 14 * * 1-5'
     - cron: '5 15 * * 1-5'
     - cron: '22 15 * * 1-5'
+    # Extra 18:30 Europe/Madrid test: summer 16:30 UTC, winter 17:30 UTC.
+    # The gate rejects the off-season candidate and confirms local 18:30.
+    - cron: '30 16 * * 1-5'
+    - cron: '30 17 * * 1-5'
   workflow_dispatch:
     inputs:
       run_monitor:

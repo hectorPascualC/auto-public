@@ -52,6 +52,24 @@ class TestSchedule(unittest.TestCase):
                 now=at(f"2026-10-20T{hour:02}:{minute:02}:00+02:00")
                 self.assertTrue(schedule_gate.decide("schedule",f"{minute} {hour} * * 1-5",now,{}, {})[0])
 
+    def test_extra_1830_both_dst_offsets_and_fresh_snapshot(self):
+        for cron, now in (
+            ("30 16 * * 1-5", "2026-10-20T18:30:00+02:00"),
+            ("30 17 * * 1-5", "2026-10-26T18:30:00+01:00"),
+        ):
+            out = schedule_gate.decide("schedule", cron, at(now),
+                health("2026-10-20T18:13:00+02:00",
+                       "2026-10-20T18:20:00+02:00"), {})
+            self.assertEqual(out[0], True)
+            self.assertEqual(out[3], "extra_1830")
+            self.assertTrue(out[2].endswith("T18:00"))
+        self.assertFalse(schedule_gate.decide(
+            "schedule", "30 17 * * 1-5",
+            at("2026-10-20T19:30:00+02:00"), {}, {})[0])
+        self.assertFalse(schedule_gate.decide(
+            "schedule", "30 16 * * 1-5",
+            at("2026-10-26T17:30:00+01:00"), {}, {})[0])
+
     def test_late_next_day_and_old_cron(self):
         for d in ("2026-10-20T10:36:00+02:00","2026-10-21T11:05:00+02:00"):
             a=schedule_gate.decide("schedule","5 9 * * 1-5",at(d),{}, {})
@@ -177,10 +195,11 @@ class TestWorkflow(unittest.TestCase):
         on = data.get("on",data.get(True))
         times = on["schedule"]
         # UTC candidates cover both CET and CEST; schedule_gate checks Madrid local time.
-        self.assertEqual(len(times), 16)
+        self.assertEqual(len(times), 18)
         self.assertEqual({x["cron"] for x in times},
             {f"{minute} {hour} * * 1-5" for minute in (5, 22)
-             for hour in (7, 8, 9, 10, 12, 13, 14, 15)})
+             for hour in (7, 8, 9, 10, 12, 13, 14, 15)} |
+            {"30 16 * * 1-5", "30 17 * * 1-5"})
         self.assertTrue(all("timezone" not in x for x in times))
         self.assertEqual(data["concurrency"]["queue"],"max")
         self.assertFalse(data["concurrency"]["cancel-in-progress"])

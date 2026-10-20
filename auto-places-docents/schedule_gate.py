@@ -4,7 +4,7 @@ import json
 import os
 import re
 import subprocess
-from datetime import datetime
+from datetime import datetime, time, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -61,14 +61,28 @@ def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
     key, kind = "", "manual"
     local = now.astimezone(TZ)
     if event == "schedule":
-        m = re.fullmatch(r"(5|22) (9|11|14|16) \* \* 1-5", cron.strip())
-        if not m:
-            return False, "unknown_schedule", "", "unknown"
-        minute, hour = map(int, m.groups())
-        if local.weekday() > 4 or local.hour != hour or local.minute < minute:
-            return False, "stale_or_early_schedule", "", "stale"
-        key = local.strftime("%Y-%m-%dT%H:00")
-        kind = "backup" if minute == 22 else "primary"
+        extra = re.fullmatch(r"30 (16|17) \* \* 1-5", cron.strip())
+        if extra:
+            # Github cron is UTC. Only one of these two UTC hours is 18:30
+            # in Madrid for the current DST regime. Reject the other.
+            utc_trigger = datetime.combine(
+                local.date(), time(int(extra.group(1)), 30), tzinfo=timezone.utc)
+            local_trigger = utc_trigger.astimezone(TZ)
+            delay = (now - utc_trigger).total_seconds()
+            if (local.weekday() > 4 or local_trigger.hour != 18 or
+                    local_trigger.minute != 30 or not 0 <= delay <= 5400):
+                return False, "stale_or_offseason_extra", "", "stale"
+            key = local_trigger.strftime("%Y-%m-%dT18:00")
+            kind = "extra_1830"
+        else:
+            m = re.fullmatch(r"(5|22) (9|11|14|16) \* \* 1-5", cron.strip())
+            if not m:
+                return False, "unknown_schedule", "", "unknown"
+            minute, hour = map(int, m.groups())
+            if local.weekday() > 4 or local.hour != hour or local.minute < minute:
+                return False, "stale_or_early_schedule", "", "stale"
+            key = local.strftime("%Y-%m-%dT%H:00")
+            kind = "backup" if minute == 22 else "primary"
     elif event == "push":
         if not force and trigger_sha and trigger_sha == processed_sha:
             return False, "duplicate_push", "", "push"
@@ -81,7 +95,8 @@ def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
                     return False, "rescue_slot_expired", key, kind
     elif event != "workflow_dispatch":
         return False, "unsupported_event", "", "unknown"
-    if key and not force:
+    # Extra 18:30 is a real test scan, even if an earlier 18:00 snapshot exists.
+    if key and not force and kind != "extra_1830":
         slots = ledger.get("slots", {})
         if isinstance(slots, dict):
             entry = slots.get(key, {})

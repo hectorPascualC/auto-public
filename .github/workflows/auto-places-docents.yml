@@ -2,23 +2,25 @@ name: AUTO places docents 507-627
 
 on:
   schedule:
-    # Four Europe/Madrid slots, with 17-minute delayed backup. DST handled natively.
+    # UTC cron candidates for Madrid slots; schedule_gate.py validates local time.
+    # Winter UTC: 08/10/13/15; summer UTC: 07/09/12/14.
+    # Include both candidates; off-season runs are skipped by the gate.
+    - cron: '5 7 * * 1-5'
+    - cron: '22 7 * * 1-5'
+    - cron: '5 8 * * 1-5'
+    - cron: '22 8 * * 1-5'
     - cron: '5 9 * * 1-5'
-      timezone: 'Europe/Madrid'
-    - cron: '5 11 * * 1-5'
-      timezone: 'Europe/Madrid'
-    - cron: '5 14 * * 1-5'
-      timezone: 'Europe/Madrid'
-    - cron: '5 16 * * 1-5'
-      timezone: 'Europe/Madrid'
     - cron: '22 9 * * 1-5'
-      timezone: 'Europe/Madrid'
-    - cron: '22 11 * * 1-5'
-      timezone: 'Europe/Madrid'
+    - cron: '5 10 * * 1-5'
+    - cron: '22 10 * * 1-5'
+    - cron: '5 12 * * 1-5'
+    - cron: '22 12 * * 1-5'
+    - cron: '5 13 * * 1-5'
+    - cron: '22 13 * * 1-5'
+    - cron: '5 14 * * 1-5'
     - cron: '22 14 * * 1-5'
-      timezone: 'Europe/Madrid'
-    - cron: '22 16 * * 1-5'
-      timezone: 'Europe/Madrid'
+    - cron: '5 15 * * 1-5'
+    - cron: '22 15 * * 1-5'
   workflow_dispatch:
     inputs:
       run_monitor:

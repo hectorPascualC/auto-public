@@ -32,25 +32,25 @@ def health(ts="2026-10-20T09:07:00+02:00", audit="2026-10-20T09:12:00+02:00"):
 class TestSchedule(unittest.TestCase):
     def test_primary_backup_and_dedup(self):
         now=at("2026-10-20T09:22:00+02:00")
-        a=schedule_gate.decide("schedule","5 9 * * 1-5",now,{}, {})
+        a=schedule_gate.decide("schedule","5 7 * * 1-5",now,{}, {})
         self.assertEqual(a, (True,"RUN_SCAN","2026-10-20T09:00","primary"))
-        b=schedule_gate.decide("schedule","22 9 * * 1-5",now,health(),{})
+        b=schedule_gate.decide("schedule","22 7 * * 1-5",now,health(),{})
         self.assertEqual(b[1],"SKIPPED_ALREADY_VALID_SNAPSHOT")
-        c=schedule_gate.decide("schedule","22 9 * * 1-5",now,{},{"slots":{"2026-10-20T09:00":{"status":"PASS"}}})
+        c=schedule_gate.decide("schedule","22 7 * * 1-5",now,{},{"slots":{"2026-10-20T09:00":{"status":"PASS"}}})
         self.assertEqual(c[:2],(True,"RUN_SCAN"))  # Unverified ledger must never suppress a scan
         matching = {"slots":{"2026-10-20T09:00":{
             "status":"PASS","generated_at":health()["generated_at"],
             "audit_at":health()["audit_at"],"snapshot_run_id":"RUN7"}}}
-        verified=schedule_gate.decide("schedule","22 9 * * 1-5",now,health(),matching)
+        verified=schedule_gate.decide("schedule","22 7 * * 1-5",now,health(),matching)
         self.assertEqual(verified[1],"SKIPPED_ALREADY_VALID_LEDGER")
-        d=schedule_gate.decide("schedule","22 9 * * 1-5",now,{}, {})
+        d=schedule_gate.decide("schedule","22 7 * * 1-5",now,{}, {})
         self.assertEqual(d[:2],(True,"RUN_SCAN"))
 
     def test_other_slots(self):
         for hour in (9,11,14,16):
             for minute in (5,22):
                 now=at(f"2026-10-20T{hour:02}:{minute:02}:00+02:00")
-                self.assertTrue(schedule_gate.decide("schedule",f"{minute} {hour} * * 1-5",now,{}, {})[0])
+                self.assertTrue(schedule_gate.decide("schedule",f"{minute} {hour-2} * * 1-5",now,{}, {})[0])
 
     def test_extra_1830_both_dst_offsets_and_fresh_snapshot(self):
         for cron, now in (
@@ -72,15 +72,38 @@ class TestSchedule(unittest.TestCase):
 
     def test_late_next_day_and_old_cron(self):
         for d in ("2026-10-20T10:36:00+02:00","2026-10-21T11:05:00+02:00"):
-            a=schedule_gate.decide("schedule","5 9 * * 1-5",at(d),{}, {})
+            a=schedule_gate.decide("schedule","5 7 * * 1-5",at(d),{}, {})
             self.assertFalse(a[0])
         self.assertFalse(schedule_gate.decide("schedule","0 6 * * 1-5",at("2026-10-20T09:05:00+02:00"),{}, {})[0])
 
     def test_dst_october(self):
-        a=schedule_gate.decide("schedule","5 9 * * 1-5",at("2026-10-26T09:05:00+01:00"),{}, {})
+        a=schedule_gate.decide("schedule","5 8 * * 1-5",at("2026-10-26T09:05:00+01:00"),{}, {})
         self.assertEqual(a[2],"2026-10-26T09:00")
-        a=schedule_gate.decide("schedule","5 9 * * 1-5",at("2026-07-06T09:05:00+02:00"),{}, {})
+        a=schedule_gate.decide("schedule","5 7 * * 1-5",at("2026-07-06T09:05:00+02:00"),{}, {})
         self.assertTrue(a[0])
+
+    def test_utc_candidates_offseason_and_delays(self):
+        # Scheduled strings are UTC, including across the DST boundary.
+        for cron, when, slot in (
+            ("5 7 * * 1-5", "2026-10-20T09:05:00+02:00", "2026-10-20T09:00"),
+            ("22 9 * * 1-5", "2026-10-20T11:30:00+02:00", "2026-10-20T11:00"),
+            ("5 12 * * 1-5", "2026-10-20T14:09:00+02:00", "2026-10-20T14:00"),
+            ("5 14 * * 1-5", "2026-10-20T16:05:00+02:00", "2026-10-20T16:00"),
+            ("5 8 * * 1-5", "2026-10-26T09:05:00+01:00", "2026-10-26T09:00"),
+            ("22 10 * * 1-5", "2026-10-26T11:22:00+01:00", "2026-10-26T11:00"),
+            ("5 13 * * 1-5", "2026-10-26T14:05:00+01:00", "2026-10-26T14:00"),
+            ("22 15 * * 1-5", "2026-10-26T16:25:00+01:00", "2026-10-26T16:00"),
+        ):
+            decision = schedule_gate.decide("schedule", cron, at(when), {}, {})
+            self.assertEqual(decision[:3], (True, "RUN_SCAN", slot), (cron, when))
+        for cron, when in (
+            ("5 8 * * 1-5", "2026-10-20T10:05:00+02:00"),
+            ("5 7 * * 1-5", "2026-10-26T08:05:00+01:00"),
+            ("5 7 * * 1-5", "2026-10-20T09:04:00+02:00"),
+            ("5 7 * * 1-5", "2026-10-20T10:05:00+02:00"),
+        ):
+            self.assertFalse(schedule_gate.decide(
+                "schedule", cron, at(when), {}, {})[0], (cron, when))
 
     def test_rescue_once_and_expiry(self):
         marker="AUTO-PUBLIC scheduled-slot rescue\nslot_local=2026-10-20T09:00:00+02:00\npublic_data_only=true\n"

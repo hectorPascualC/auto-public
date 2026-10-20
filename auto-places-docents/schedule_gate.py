@@ -75,13 +75,20 @@ def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
             key = local_trigger.strftime("%Y-%m-%dT18:00")
             kind = "extra_1830"
         else:
-            m = re.fullmatch(r"(5|22) (9|11|14|16) \* \* 1-5", cron.strip())
+            # Convert UTC cron candidates into Madrid-local nominal slots.
+            m = re.fullmatch(r"(5|22) (7|8|9|10|12|13|14|15) \* \* 1-5", cron.strip())
             if not m:
                 return False, "unknown_schedule", "", "unknown"
-            minute, hour = map(int, m.groups())
-            if local.weekday() > 4 or local.hour != hour or local.minute < minute:
-                return False, "stale_or_early_schedule", "", "stale"
-            key = local.strftime("%Y-%m-%dT%H:00")
+            minute, hour_utc = map(int, m.groups())
+            utc_trigger = datetime.combine(
+                local.date(), time(hour_utc, minute), tzinfo=timezone.utc)
+            scheduled_local = utc_trigger.astimezone(TZ)
+            if (scheduled_local.weekday() > 4 or scheduled_local.hour not in HOURS or
+                    scheduled_local.minute != minute or
+                    local.date() != scheduled_local.date() or
+                    local.hour != scheduled_local.hour or local.minute < minute):
+                return False, "stale_or_offseason_schedule", "", "stale"
+            key = scheduled_local.strftime("%Y-%m-%dT%H:00")
             kind = "backup" if minute == 22 else "primary"
     elif event == "push":
         if not force and trigger_sha and trigger_sha == processed_sha:

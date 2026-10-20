@@ -1,20 +1,20 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-20T10:33:22+02:00",
-  "run_id": "20261020T103322+0200",
+  "generated_at": "2026-10-20T13:18:36+02:00",
+  "run_id": "20261020T131836+0200",
   "source_strategy": "direct-http+cachebuster+validators+sha256; playwright-direct-edubcn",
   "activity_rule": "current-presence: keep while present in current official offer PDF/list even after deadline; remove on disappearance only from authoritative FRESH current source",
   "health": {
-    "generated_at": "2026-10-20T10:33:22+02:00",
-    "edubcn_probe_at": "2026-10-20T10:39:32+02:00",
+    "generated_at": "2026-10-20T13:18:36+02:00",
+    "edubcn_probe_at": "2026-10-20T13:25:41+02:00",
     "fresh": 12,
     "partial": 0,
     "cache_obsoleta": 0,
     "total": 12,
-    "active_snapshot_at": "2026-10-20T10:39:32+02:00",
+    "active_snapshot_at": "2026-10-20T13:25:41+02:00",
     "presence_authoritative": 12,
     "presence_non_authoritative": 0,
-    "audit_at": "2026-10-20T10:39:32+02:00",
+    "audit_at": "2026-10-20T13:25:42+02:00",
     "audit_status": "PASS",
     "audit_sstt_checked": 11,
     "audit_errors": 0
@@ -54,7 +54,11 @@
       "removed_since_previous": [],
       "covered_by_results": [],
       "unresolved_result_ids": [
-        "APA-2627-S014",
+        "APA-2627-S031",
+        "APA-2627-S035",
+        "APA-2627-S057",
+        "APA-2627-S058",
+        "APA-2627-S059",
         "APA-2627-S061"
       ],
       "source_selection_diagnostics": {
@@ -291,7 +295,10 @@
     },
     "Lleida": {
       "freshness": "FRESC",
-      "freshness_notes": [],
+      "freshness_notes": [
+        "sec regressa: 2026/SEC/108 < 2026/SEC/111",
+        "regressió d'àncora acceptada: document d'oferta actualitzat (Fri, 16 Oct 2026 13:45:18 GMT → Tue, 20 Oct 2026 10:47:51 GMT; SHA canviat)"
+      ],
       "error": null,
       "presence_authoritative": true,
       "source_mode": "offer-documents",
@@ -517,7 +524,7 @@
       "presence_authoritative": true,
       "source_mode": "edubcn-document-verified",
       "current_target_counts": {
-        "507": 2,
+        "507": 3,
         "F57": 0,
         "627": 2,
         "F87": 1
@@ -619,41 +626,40 @@
           "source_kinds": [
             "document-verified"
           ]
-        }
-      ],
-      "removed_since_previous": [
+        },
         {
-          "placement_id": "GENSEC_2627_182",
-          "display_id": "GENSEC_2627_182",
+          "placement_id": "GENSEC_2627_187",
+          "display_id": "GENSEC_2627_187",
           "id_kind": "GENSEC",
           "target_codes": [
-            "F57"
+            "507"
           ],
-          "centre": "Institut TIC de Barcelona",
-          "centre_code": "08078385",
-          "profile": "DE CENTRE: Institut TIC de Barcelona",
-          "start": "Immediata",
-          "end": "28/10/2026",
-          "jornada": "SENCERA",
-          "result_present": true,
-          "result_document_present": true,
+          "centre": "Institut Poblenou",
+          "centre_code": "08034138",
+          "profile": "DE CENTRE: Institut Poblenou",
+          "start": "Immediat",
+          "end": "20/11/26",
+          "jornada": "Sencera",
+          "result_present": false,
+          "result_document_present": false,
           "result_classification": "UNKNOWN",
           "coverage_confirmed": false,
           "source_urls": [
-            "https://www.edubcn.cat/rcs_gene/seleccio/GENSEC_2627_182__INS_TIC_PFI_F57_INFORMATICA.pdf"
+            "https://www.edubcn.cat/rcs_gene/seleccio/GENSEC_2627_187_Ins_Poblenou_507.pdf"
           ],
           "source_kinds": [
             "document-verified"
           ]
         }
       ],
+      "removed_since_previous": [],
       "covered_by_results": [],
       "unresolved_result_ids": [],
       "source_selection_diagnostics": {},
       "discovery_diagnostics": {
-        "dom_gensec_observed": 45,
-        "documents_fetched": 55,
-        "documents_verified": 55,
+        "dom_gensec_observed": 46,
+        "documents_fetched": 59,
+        "documents_verified": 59,
         "complete_catalog_verified": false
       },
       "status_note": null

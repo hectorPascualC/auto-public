@@ -1,7 +1,7 @@
 {
   "audit_version": 2,
-  "generated_at": "2026-10-20T10:39:32+02:00",
-  "source_generated_at": "2026-10-20T10:33:22+02:00",
+  "generated_at": "2026-10-20T13:25:42+02:00",
+  "source_generated_at": "2026-10-20T13:18:36+02:00",
   "status": "PASS",
   "sstt_checked": 11,
   "scopes_checked": 12,
@@ -17,7 +17,11 @@
       "active_positions": 1,
       "covered_by_results": [],
       "unresolved_result_ids": [
-        "APA-2627-S014",
+        "APA-2627-S031",
+        "APA-2627-S035",
+        "APA-2627-S057",
+        "APA-2627-S058",
+        "APA-2627-S059",
         "APA-2627-S061"
       ],
       "id_kinds": [
@@ -247,7 +251,7 @@
     "EDUBCN": {
       "freshness": "FRESC",
       "presence_authoritative": true,
-      "active_positions": 4,
+      "active_positions": 5,
       "unidentified_target_hits": 0,
       "mode": "edubcn-document-verified"
     }

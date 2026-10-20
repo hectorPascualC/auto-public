@@ -1,7 +1,7 @@
 {
   "audit_version": 2,
-  "generated_at": "2026-10-20T13:25:42+02:00",
-  "source_generated_at": "2026-10-20T13:18:36+02:00",
+  "generated_at": "2026-10-20T15:21:37+02:00",
+  "source_generated_at": "2026-10-20T15:15:08+02:00",
   "status": "PASS",
   "sstt_checked": 11,
   "scopes_checked": 12,
@@ -236,7 +236,7 @@
       "active_positions": 0,
       "covered_by_results": [],
       "unresolved_result_ids": [
-        "507-09/09",
+        "507-09/09 (3) I. La Ferreria Montcada i Reixac",
         "507-09/09 (4) I. Nicolau Copèrnic Terrassa",
         "507-30/09 (1) I. La Ferreria Montcada i Reixac",
         "627-09/09 (1) I. Sabadell Sabadell",

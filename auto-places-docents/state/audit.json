@@ -1,7 +1,7 @@
 {
   "audit_version": 2,
-  "generated_at": "2026-10-20T10:20:19+02:00",
-  "source_generated_at": "2026-10-20T10:14:10+02:00",
+  "generated_at": "2026-10-20T10:39:32+02:00",
+  "source_generated_at": "2026-10-20T10:33:22+02:00",
   "status": "PASS",
   "sstt_checked": 11,
   "scopes_checked": 12,
@@ -247,7 +247,7 @@
     "EDUBCN": {
       "freshness": "FRESC",
       "presence_authoritative": true,
-      "active_positions": 5,
+      "active_positions": 4,
       "unidentified_target_hits": 0,
       "mode": "edubcn-document-verified"
     }

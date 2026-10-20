@@ -1,7 +1,7 @@
 {
   "audit_version": 2,
-  "generated_at": "2026-10-19T22:05:20+02:00",
-  "source_generated_at": "2026-10-19T21:59:10+02:00",
+  "generated_at": "2026-10-20T09:30:36+02:00",
+  "source_generated_at": "2026-10-20T09:24:05+02:00",
   "status": "PASS",
   "sstt_checked": 11,
   "scopes_checked": 12,
@@ -10,7 +10,7 @@
     "Alt Pirineu i Aran": {
       "freshness": "FRESC",
       "presence_authoritative": true,
-      "current_offer_sources": 8,
+      "current_offer_sources": 9,
       "raw_target_hits": 1,
       "parsed_target_hits": 1,
       "unidentified_target_hits": 0,

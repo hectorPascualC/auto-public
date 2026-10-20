@@ -16,7 +16,7 @@ UNCOVERED = re.compile(
     re.I,
 )
 COVERED = re.compile(
-    r"\b(?:placa|lloc|vacant)\s+(?:ha\s+estat\s+)?(?:adjudicad|cobert)[aoes]?\b|"
+    r"\b(?:placa|lloc|vacant)\s+(?:(?:ha\s+estat|es\s+troba|esta)\s+)?(?:adjudicad|cobert)[aoes]?\b|"
     r"\bs.adjudica\b|\badjudicatari[ae]\b|"
     r"\bpersona\s+(?:adjudicataria|seleccionada|assignada)\b|"
     r"\bdocent\s+(?:assignat|seleccionat)\b|"

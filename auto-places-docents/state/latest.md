@@ -1,4 +1,4 @@
-# Passada directa 2026-10-20T09:24:05+02:00
+# Passada directa 2026-10-20T10:14:10+02:00
 
 Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
 
@@ -68,7 +68,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | Tarragona | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Terres de l'Ebre | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Vallès Occidental | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
-| EDUBCN | FRESC | sí | 2 | 0 | 2 | 1 | edubcn-document-verified |
+| EDUBCN | FRESC | sí | 2 | 1 | 2 | 1 | edubcn-document-verified |
 
 ### Places actuals detectades
 - **Alt Pirineu i Aran**: `APA-2627-S056` (627)
@@ -82,7 +82,8 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - **Tarragona**: cap
 - **Terres de l'Ebre**: cap
 - **Vallès Occidental**: cap
-- **EDUBCN**: `GENSEC_2627_064` (627,F87), `GENSEC_2627_162` (507), `GENSEC_2627_163` (627), `GENSEC_2627_180` (507)
+- **EDUBCN**: `GENSEC_2627_064` (627,F87), `GENSEC_2627_162` (507), `GENSEC_2627_163` (627), `GENSEC_2627_180` (507), `GENSEC_2627_182` (F57)
+  - Desaparegudes des de la passada anterior: `GENSEC_2627_171`, `GENSEC_2627_175`
 
 ## Auditoria SSTT v2
 - Estat: **PASS**

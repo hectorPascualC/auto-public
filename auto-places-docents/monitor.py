@@ -521,8 +521,9 @@ def scrape_territory(fetcher: DirectFetcher, name: str, slug: str, previous: dic
     selected_docs = unique[:24]
     selected_urls = {d["url"] for d in selected_docs}
     selected_docs.extend(d for d in mandatory if d["url"] not in selected_urls)
-    omitted = [d for d in unique if d["url"] not in {v["url"] for v in selected_docs}]
-               and d.get("role") in {"offer", "pfi"}]
+    selected_set = {v["url"] for v in selected_docs}
+    omitted = [d for d in unique
+               if d["url"] not in selected_set and d.get("role") in {"offer", "pfi"}]
     document_records = []
     for d in selected_docs:
         log(f"{name}: {d.get('role')} {d['url']}")

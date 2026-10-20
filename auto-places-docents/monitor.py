@@ -489,7 +489,7 @@ def scrape_territory(fetcher: DirectFetcher, name: str, slug: str, previous: dic
         html = decode_html(content, meta.content_type)
         text = html_to_text(html)
         links = extract_links(meta.final_url or logical, html)
-        selected = likely_relevant_links(links, max_links=16 if kind == "secondary" else 12)
+        selected = likely_relevant_links(links, max_links=8 if kind == "secondary" else 6)
         landing.update({
             "update_date": extract_update_date(text), "anchors": extract_anchors(text),
             "target_hits": context_hits(text), "text_sha256": hashlib.sha256(text.encode()).hexdigest(),
@@ -518,7 +518,7 @@ def scrape_territory(fetcher: DirectFetcher, name: str, slug: str, previous: dic
     unique.sort(key=doc_score, reverse=True)
     # Keep mandatory official rolling sources even if they rank below the cap.
     mandatory = [d for d in unique if slug == "penedes" and "PEN-SEC-dificil-cobertura-oferta-vacants.pdf" in d["url"]]
-    selected_docs = unique[:24]
+    selected_docs = unique[:12]
     selected_urls = {d["url"] for d in selected_docs}
     selected_docs.extend(d for d in mandatory if d["url"] not in selected_urls)
     selected_set = {v["url"] for v in selected_docs}

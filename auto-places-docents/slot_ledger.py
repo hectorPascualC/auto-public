@@ -6,6 +6,7 @@ import os
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
+from schedule_gate import valid_health
 
 TZ = ZoneInfo("Europe/Madrid")
 def load(p):
@@ -30,14 +31,11 @@ def main():
         audited = datetime.fromisoformat(health["audit_at"]).astimezone(TZ)
     except (TypeError, ValueError, KeyError):
         raise SystemExit("Missing timestamps for slot ledger")
-    actual = generated.strftime("%Y-%m-%dT%H:00")
-    valid = (
-        actual == slot and audited >= generated and
-        health.get("fresh") == 12 and health.get("presence_authoritative") == 12 and
-        health.get("audit_status") == "PASS" and health.get("audit_errors") == 0 and
-        consumer.get("generated_at") == health.get("generated_at"))
+    actual = generated.strftime("%Y-%m-%dT%H:%M")
+    valid = (valid_health(health, slot) and audited >= generated and
+             consumer.get("generated_at") == health.get("generated_at"))
     if not valid:
-        print(f"No slot claimed: candidate/remote validated data is not this slot ({slot} != {actual})")
+        print(f"No slot claimed: snapshot is not valid for {slot} (scan at {actual})")
         return 0
     slots[slot] = {
         "status": "PASS",

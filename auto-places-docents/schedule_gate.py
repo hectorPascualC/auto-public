@@ -4,7 +4,7 @@ import json
 import os
 import re
 import subprocess
-from datetime import datetime, time, timezone
+from datetime import datetime, time, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -26,12 +26,19 @@ def key_for(dt):
     return dt.astimezone(TZ).strftime("%Y-%m-%dT%H:00")
 
 def valid_health(h, slot):
+    """Validate a PASS snapshot for a nominal slot, including pre-hour scans."""
     try:
-        gen = datetime.fromisoformat(h["generated_at"])
-        audit = datetime.fromisoformat(h["audit_at"])
-    except (KeyError, ValueError, TypeError):
+        generated = datetime.fromisoformat(h["generated_at"])
+        audited = datetime.fromisoformat(h["audit_at"])
+        nominal = datetime.strptime(slot, "%Y-%m-%dT%H:00").replace(tzinfo=TZ)
+        if generated.tzinfo is None or audited.tzinfo is None:
+            return False
+        generated, audited = generated.astimezone(TZ), audited.astimezone(TZ)
+    except (ValueError, TypeError, KeyError):
         return False
-    return (key_for(gen) == slot and key_for(audit) == slot and
+    return (nominal - timedelta(minutes=25) <= generated <
+            nominal + timedelta(minutes=45) and
+            generated <= audited <= generated + timedelta(minutes=35) and
             h.get("fresh") == 12 and h.get("total") == 12 and
             h.get("partial") == 0 and h.get("cache_obsoleta") == 0 and
             h.get("presence_authoritative") == 12 and
@@ -75,21 +82,24 @@ def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
             key = local_trigger.strftime("%Y-%m-%dT18:00")
             kind = "extra_1830"
         else:
-            # Convert UTC cron candidates into Madrid-local nominal slots.
-            m = re.fullmatch(r"(5|22) (7|8|9|10|12|13|14|15) \* \* 1-5", cron.strip())
+            # Two UTC cron candidates per local slot, one for each DST regime.
+            # GitHub schedules 12 minutes apart. Backup skips a prior PASS.
+            m = re.fullmatch(r"(35|47) (6|7|8|9|11|12|13|14) \* \* 1-5", cron.strip())
             if not m:
                 return False, "unknown_schedule", "", "unknown"
             minute, hour_utc = map(int, m.groups())
-            utc_trigger = datetime.combine(
-                local.date(), time(hour_utc, minute), tzinfo=timezone.utc)
-            scheduled_local = utc_trigger.astimezone(TZ)
-            if (scheduled_local.weekday() > 4 or scheduled_local.hour not in HOURS or
-                    scheduled_local.minute != minute or
-                    local.date() != scheduled_local.date() or
-                    local.hour != scheduled_local.hour or local.minute < minute):
+            intended_utc = datetime.combine(
+                now.astimezone(timezone.utc).date(),
+                time(hour_utc, minute), tzinfo=timezone.utc)
+            intended_local = intended_utc.astimezone(TZ)
+            nominal = intended_local + timedelta(hours=1)
+            delay = (now - intended_utc).total_seconds()
+            if (intended_local.weekday() > 4 or
+                    intended_local.hour not in (8, 10, 13, 15) or
+                    nominal.hour not in HOURS or not 0 <= delay <= 3600):
                 return False, "stale_or_offseason_schedule", "", "stale"
-            key = scheduled_local.strftime("%Y-%m-%dT%H:00")
-            kind = "backup" if minute == 22 else "primary"
+            key = nominal.strftime("%Y-%m-%dT%H:00")
+            kind = "backup" if minute == 47 else "primary"
     elif event == "push":
         if not force and trigger_sha and trigger_sha == processed_sha:
             return False, "duplicate_push", "", "push"

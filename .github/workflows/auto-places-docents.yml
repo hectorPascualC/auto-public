@@ -2,25 +2,25 @@ name: AUTO places docents 507-627
 
 on:
   schedule:
-    # UTC cron candidates for Madrid slots; schedule_gate.py validates local time.
-    # Winter UTC: 08/10/13/15; summer UTC: 07/09/12/14.
-    # Include both candidates; off-season runs are skipped by the gate.
-    - cron: '5 7 * * 1-5'
-    - cron: '22 7 * * 1-5'
-    - cron: '5 8 * * 1-5'
-    - cron: '22 8 * * 1-5'
-    - cron: '5 9 * * 1-5'
-    - cron: '22 9 * * 1-5'
-    - cron: '5 10 * * 1-5'
-    - cron: '22 10 * * 1-5'
-    - cron: '5 12 * * 1-5'
-    - cron: '22 12 * * 1-5'
-    - cron: '5 13 * * 1-5'
-    - cron: '22 13 * * 1-5'
-    - cron: '5 14 * * 1-5'
-    - cron: '22 14 * * 1-5'
-    - cron: '5 15 * * 1-5'
-    - cron: '22 15 * * 1-5'
+    # GitHub cron UTC. Pre-slot Madrid schedule at (HH-1):35 primary
+    # and (HH-1):47 conditional backup for nominal HH=09,11,14,16.
+    # Gate converts CET/CEST and ignores off-season UTC candidates.
+    - cron: '35 6 * * 1-5'
+    - cron: '47 6 * * 1-5'
+    - cron: '35 7 * * 1-5'
+    - cron: '47 7 * * 1-5'
+    - cron: '35 8 * * 1-5'
+    - cron: '47 8 * * 1-5'
+    - cron: '35 9 * * 1-5'
+    - cron: '47 9 * * 1-5'
+    - cron: '35 11 * * 1-5'
+    - cron: '47 11 * * 1-5'
+    - cron: '35 12 * * 1-5'
+    - cron: '47 12 * * 1-5'
+    - cron: '35 13 * * 1-5'
+    - cron: '47 13 * * 1-5'
+    - cron: '35 14 * * 1-5'
+    - cron: '47 14 * * 1-5'
     # Extra 18:30 Europe/Madrid test: summer 16:30 UTC, winter 17:30 UTC.
     # The gate rejects the off-season candidate and confirms local 18:30.
     - cron: '30 16 * * 1-5'

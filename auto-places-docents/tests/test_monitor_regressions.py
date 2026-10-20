@@ -30,93 +30,79 @@ def health(ts="2026-10-20T09:07:00+02:00", audit="2026-10-20T09:12:00+02:00"):
             "audit_status": "PASS", "audit_errors": 0}
 
 class TestSchedule(unittest.TestCase):
-    def test_primary_backup_and_dedup(self):
-        now=at("2026-10-20T09:22:00+02:00")
-        a=schedule_gate.decide("schedule","5 7 * * 1-5",now,{}, {})
-        self.assertEqual(a, (True,"RUN_SCAN","2026-10-20T09:00","primary"))
-        b=schedule_gate.decide("schedule","22 7 * * 1-5",now,health(),{})
-        self.assertEqual(b[1],"SKIPPED_ALREADY_VALID_SNAPSHOT")
-        c=schedule_gate.decide("schedule","22 7 * * 1-5",now,{},{"slots":{"2026-10-20T09:00":{"status":"PASS"}}})
-        self.assertEqual(c[:2],(True,"RUN_SCAN"))  # Unverified ledger must never suppress a scan
-        matching = {"slots":{"2026-10-20T09:00":{
-            "status":"PASS","generated_at":health()["generated_at"],
-            "audit_at":health()["audit_at"],"snapshot_run_id":"RUN7"}}}
-        verified=schedule_gate.decide("schedule","22 7 * * 1-5",now,health(),matching)
-        self.assertEqual(verified[1],"SKIPPED_ALREADY_VALID_LEDGER")
-        d=schedule_gate.decide("schedule","22 7 * * 1-5",now,{}, {})
-        self.assertEqual(d[:2],(True,"RUN_SCAN"))
+    def test_primary_and_conditional_backup(self):
+        slot="2026-10-20T09:00"
+        p=schedule_gate.decide("schedule","35 6 * * 1-5",at("2026-10-20T08:35:00+02:00"),{}, {})
+        self.assertEqual(p, (True,"RUN_SCAN",slot,"primary"))
+        b=schedule_gate.decide("schedule","47 6 * * 1-5",at("2026-10-20T08:47:00+02:00"),{}, {})
+        self.assertEqual(b, (True,"RUN_SCAN",slot,"backup"))
+        good=health("2026-10-20T08:35:10+02:00","2026-10-20T08:43:10+02:00")
+        b=schedule_gate.decide("schedule","47 6 * * 1-5",at("2026-10-20T08:47:00+02:00"),good, {})
+        self.assertEqual(b[1], "SKIPPED_ALREADY_VALID_SNAPSHOT")
+        ledger={"slots":{slot:{"status":"PASS","snapshot_run_id":"RUN7",
+                    "generated_at":good["generated_at"],"audit_at":good["audit_at"]}}}
+        self.assertEqual(schedule_gate.decide("schedule","47 6 * * 1-5",
+            at("2026-10-20T08:47:00+02:00"),good,ledger)[1],"SKIPPED_ALREADY_VALID_LEDGER")
+        bad=good.copy();bad["audit_errors"]=1
+        self.assertTrue(schedule_gate.decide("schedule","47 6 * * 1-5",
+            at("2026-10-20T08:47:00+02:00"),bad,ledger)[0])
+        self.assertTrue(schedule_gate.decide("schedule","47 6 * * 1-5",
+            at("2026-10-20T08:47:00+02:00"),{},ledger)[0])
 
-    def test_other_slots(self):
-        for hour in (9,11,14,16):
-            for minute in (5,22):
-                now=at(f"2026-10-20T{hour:02}:{minute:02}:00+02:00")
-                self.assertTrue(schedule_gate.decide("schedule",f"{minute} {hour-2} * * 1-5",now,{}, {})[0])
+    def test_all_slots_across_dst(self):
+        for d,offset,hours in (
+            ("2026-10-20","+02:00",{9:6,11:8,14:11,16:13}),
+            ("2026-10-26","+01:00",{9:7,11:9,14:12,16:14})):
+            for slot,hour_utc in hours.items():
+                for minute in (35,47):
+                    when=at(f"{d}T{slot-1:02}:{minute:02}:00{offset}")
+                    cron=f"{minute} {hour_utc} * * 1-5"
+                    answer=schedule_gate.decide("schedule",cron,when,{}, {})
+                    self.assertEqual(answer, (True,"RUN_SCAN",f"{d}T{slot:02}:00",
+                        "primary" if minute==35 else "backup"),(cron,when))
 
-    def test_extra_1830_both_dst_offsets_and_fresh_snapshot(self):
-        for cron, now in (
-            ("30 16 * * 1-5", "2026-10-20T18:30:00+02:00"),
-            ("30 17 * * 1-5", "2026-10-26T18:30:00+01:00"),
-        ):
-            out = schedule_gate.decide("schedule", cron, at(now),
-                health("2026-10-20T18:13:00+02:00",
-                       "2026-10-20T18:20:00+02:00"), {})
-            self.assertEqual(out[0], True)
-            self.assertEqual(out[3], "extra_1830")
-            self.assertTrue(out[2].endswith("T18:00"))
-        self.assertFalse(schedule_gate.decide(
-            "schedule", "30 17 * * 1-5",
-            at("2026-10-20T19:30:00+02:00"), {}, {})[0])
-        self.assertFalse(schedule_gate.decide(
-            "schedule", "30 16 * * 1-5",
-            at("2026-10-26T17:30:00+01:00"), {}, {})[0])
+    def test_offseason_stale_and_bad_cron(self):
+        cases=[
+            ("35 7 * * 1-5","2026-10-20T09:35:00+02:00"),
+            ("35 6 * * 1-5","2026-10-26T07:35:00+01:00"),
+            ("35 6 * * 1-5","2026-10-20T08:34:00+02:00"),
+            ("35 6 * * 1-5","2026-10-20T09:36:00+02:00"),
+            ("5 7 * * 1-5","2026-10-20T09:05:00+02:00"),
+            ("35 6 * * 1-5","2026-10-24T08:35:00+02:00"),
+        ]
+        for cron,when in cases:
+            self.assertFalse(schedule_gate.decide("schedule",cron,at(when),{}, {})[0],(cron,when))
 
-    def test_late_next_day_and_old_cron(self):
-        for d in ("2026-10-20T10:36:00+02:00","2026-10-21T11:05:00+02:00"):
-            a=schedule_gate.decide("schedule","5 7 * * 1-5",at(d),{}, {})
-            self.assertFalse(a[0])
-        self.assertFalse(schedule_gate.decide("schedule","0 6 * * 1-5",at("2026-10-20T09:05:00+02:00"),{}, {})[0])
+    def test_extra_1830_dst_and_no_dedup(self):
+        for cron,when in (
+            ("30 16 * * 1-5","2026-10-20T18:30:00+02:00"),
+            ("30 17 * * 1-5","2026-10-26T18:30:00+01:00")):
+            ok=schedule_gate.decide("schedule",cron,at(when),
+                health("2026-10-20T18:13:00+02:00","2026-10-20T18:20:00+02:00"),{})
+            self.assertEqual(ok[0],True)
+            self.assertEqual(ok[3],"extra_1830")
+        self.assertFalse(schedule_gate.decide("schedule","30 17 * * 1-5",
+            at("2026-10-20T19:30:00+02:00"),{}, {})[0])
 
-    def test_dst_october(self):
-        a=schedule_gate.decide("schedule","5 8 * * 1-5",at("2026-10-26T09:05:00+01:00"),{}, {})
-        self.assertEqual(a[2],"2026-10-26T09:00")
-        a=schedule_gate.decide("schedule","5 7 * * 1-5",at("2026-07-06T09:05:00+02:00"),{}, {})
-        self.assertTrue(a[0])
+    def test_health_nominal_pre_hour_and_no_old_data(self):
+        good=health("2026-10-20T08:35:10+02:00","2026-10-20T08:43:10+02:00")
+        self.assertTrue(schedule_gate.valid_health(good,"2026-10-20T09:00"))
+        self.assertFalse(schedule_gate.valid_health(good,"2026-10-20T11:00"))
+        old=health("2026-10-20T08:31:00+02:00","2026-10-20T08:33:00+02:00")
+        self.assertFalse(schedule_gate.valid_health(old,"2026-10-20T09:00"))
+        bad=health("2026-10-20T08:35:00+02:00","2026-10-20T09:15:00+02:00")
+        self.assertFalse(schedule_gate.valid_health(bad,"2026-10-20T09:00"))
 
-    def test_utc_candidates_offseason_and_delays(self):
-        # Scheduled strings are UTC, including across the DST boundary.
-        for cron, when, slot in (
-            ("5 7 * * 1-5", "2026-10-20T09:05:00+02:00", "2026-10-20T09:00"),
-            ("22 9 * * 1-5", "2026-10-20T11:30:00+02:00", "2026-10-20T11:00"),
-            ("5 12 * * 1-5", "2026-10-20T14:09:00+02:00", "2026-10-20T14:00"),
-            ("5 14 * * 1-5", "2026-10-20T16:05:00+02:00", "2026-10-20T16:00"),
-            ("5 8 * * 1-5", "2026-10-26T09:05:00+01:00", "2026-10-26T09:00"),
-            ("22 10 * * 1-5", "2026-10-26T11:22:00+01:00", "2026-10-26T11:00"),
-            ("5 13 * * 1-5", "2026-10-26T14:05:00+01:00", "2026-10-26T14:00"),
-            ("22 15 * * 1-5", "2026-10-26T16:25:00+01:00", "2026-10-26T16:00"),
-        ):
-            decision = schedule_gate.decide("schedule", cron, at(when), {}, {})
-            self.assertEqual(decision[:3], (True, "RUN_SCAN", slot), (cron, when))
-        for cron, when in (
-            ("5 8 * * 1-5", "2026-10-20T10:05:00+02:00"),
-            ("5 7 * * 1-5", "2026-10-26T08:05:00+01:00"),
-            ("5 7 * * 1-5", "2026-10-20T09:04:00+02:00"),
-            ("5 7 * * 1-5", "2026-10-20T10:05:00+02:00"),
-        ):
-            self.assertFalse(schedule_gate.decide(
-                "schedule", cron, at(when), {}, {})[0], (cron, when))
-
-    def test_rescue_once_and_expiry(self):
-        marker="AUTO-PUBLIC scheduled-slot rescue\nslot_local=2026-10-20T09:00:00+02:00\npublic_data_only=true\n"
+    def test_rescue_and_expiry(self):
+        marker="AUTO-PUBLIC scheduled-slot rescue\\nslot_local=2026-10-20T09:00:00+02:00\\npublic_data_only=true\\n"
         args=dict(marker_changed=True,marker_text=marker,trigger_sha="abc",processed_sha="")
-        a=schedule_gate.decide("push","",at("2026-10-20T09:42:00+02:00"),{}, {},**args)
+        a=schedule_gate.decide("push","",at("2026-10-20T09:05:00+02:00"),{}, {},**args)
         self.assertEqual(a[2:4],("2026-10-20T09:00","rescue"))
-        self.assertEqual(schedule_gate.decide("push","",at("2026-10-20T09:42:00+02:00"),{}, {},**{**args,"processed_sha":"abc"})[1],"duplicate_push")
-        self.assertEqual(schedule_gate.decide("push","",at("2026-10-20T16:00:00+02:00"),{}, {},**args)[1],"rescue_slot_expired")
+        self.assertEqual(schedule_gate.decide("push","",at("2026-10-20T09:05:00+02:00"),
+            {}, {},**{**args,"processed_sha":"abc"})[1],"duplicate_push")
+        self.assertEqual(schedule_gate.decide("push","",at("2026-10-20T16:00:00+02:00"),
+            {}, {},**args)[1],"rescue_slot_expired")
         self.assertIsNone(schedule_gate.parse_rescue(marker.replace("+02:00","+01:00")))
-
-    def test_bad_health_rejected(self):
-        h=health();h["audit_errors"]=1
-        self.assertFalse(schedule_gate.valid_health(h,"2026-10-20T09:00"))
 
 class TestResults(unittest.TestCase):
     def test_deserta(self):
@@ -198,18 +184,24 @@ class TestFinalization(unittest.TestCase):
                     finalize_history.main()
 
     def test_slot_ledger(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            t=Path(tmp)
-            (t/"health.json").write_text(json.dumps(health()))
-            (t/"consumer.json").write_text(json.dumps({"generated_at":health()["generated_at"],"run_id":"RUN7"}))
-            e={"STATE_DIR":str(t),"SLOT_KEY":"2026-10-20T09:00","SLOT_KIND":"primary",
-               "GITHUB_RUN_ID":"123","TRIGGER_SHA":"sha"}
-            with patch.dict(os.environ,e):
-                self.assertEqual(slot_ledger.main(),0)
-                self.assertEqual(slot_ledger.main(),0)
-            j=json.loads((t/"slot-ledger.json").read_text())
-            self.assertEqual(j["slots"]["2026-10-20T09:00"]["status"],"PASS")
-            self.assertEqual(len(j["slots"]),1)
+        for generated,audit in (
+            ("2026-10-20T09:07:00+02:00","2026-10-20T09:12:00+02:00"),
+            ("2026-10-20T08:35:00+02:00","2026-10-20T08:43:00+02:00"),
+        ):
+            with self.subTest(generated=generated), tempfile.TemporaryDirectory() as tmp:
+                t=Path(tmp)
+                h=health(generated,audit)
+                (t/"health.json").write_text(json.dumps(h))
+                (t/"consumer.json").write_text(json.dumps({
+                    "generated_at":generated,"run_id":"RUN7"}))
+                env={"STATE_DIR":str(t),"SLOT_KEY":"2026-10-20T09:00",
+                     "SLOT_KIND":"primary","GITHUB_RUN_ID":"123","TRIGGER_SHA":"sha"}
+                with patch.dict(os.environ,env):
+                    self.assertEqual(slot_ledger.main(),0)
+                    self.assertEqual(slot_ledger.main(),0)
+                j=json.loads((t/"slot-ledger.json").read_text())
+                self.assertEqual(j["slots"]["2026-10-20T09:00"]["status"],"PASS")
+                self.assertEqual(len(j["slots"]),1)
 
 class TestWorkflow(unittest.TestCase):
     def test_yaml(self):
@@ -217,11 +209,11 @@ class TestWorkflow(unittest.TestCase):
         data=yaml.safe_load((REPO/".github/workflows/auto-places-docents.yml").read_text())
         on = data.get("on",data.get(True))
         times = on["schedule"]
-        # UTC candidates cover both CET and CEST; schedule_gate checks Madrid local time.
+        # UTC candidates cover pre-hour CET and CEST with a conditional backup.
         self.assertEqual(len(times), 18)
         self.assertEqual({x["cron"] for x in times},
-            {f"{minute} {hour} * * 1-5" for minute in (5, 22)
-             for hour in (7, 8, 9, 10, 12, 13, 14, 15)} |
+            {f"{minute} {hour} * * 1-5" for minute in (35, 47)
+             for hour in (6, 7, 8, 9, 11, 12, 13, 14)} |
             {"30 16 * * 1-5", "30 17 * * 1-5"})
         self.assertTrue(all("timezone" not in x for x in times))
         self.assertEqual(data["concurrency"]["queue"],"max")

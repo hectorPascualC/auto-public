@@ -94,7 +94,7 @@ class TestSchedule(unittest.TestCase):
         self.assertFalse(schedule_gate.valid_health(bad,"2026-10-20T09:00"))
 
     def test_rescue_and_expiry(self):
-        marker="AUTO-PUBLIC scheduled-slot rescue\\nslot_local=2026-10-20T09:00:00+02:00\\npublic_data_only=true\\n"
+        marker="AUTO-PUBLIC scheduled-slot rescue\nslot_local=2026-10-20T09:00:00+02:00\npublic_data_only=true\n"
         args=dict(marker_changed=True,marker_text=marker,trigger_sha="abc",processed_sha="")
         a=schedule_gate.decide("push","",at("2026-10-20T09:05:00+02:00"),{}, {},**args)
         self.assertEqual(a[2:4],("2026-10-20T09:00","rescue"))

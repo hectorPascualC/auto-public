@@ -28,7 +28,9 @@ def classify(text: str) -> str:
     """COVERED, UNFILLED or UNKNOWN. Ambiguous text never closes a place."""
     t = norm(text)
     found_uncovered = bool(UNCOVERED.search(t))
-    found_covered = bool(COVERED.search(t))
+    # A negated result, e.g. "sense cap persona seleccionada", contains a
+    # positive-looking substring. Remove negative phrases before positive match.
+    found_covered = bool(COVERED.search(UNCOVERED.sub(" ", t)))
     if found_uncovered and not found_covered:
         return "UNFILLED"
     if found_covered and not found_uncovered:

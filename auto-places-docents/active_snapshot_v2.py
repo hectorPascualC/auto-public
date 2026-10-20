@@ -21,6 +21,7 @@ from datetime import datetime
 from urllib.parse import urlparse
 
 import active_snapshot as core
+from coverage import classify as classify_coverage
 
 
 EXPECTED_SSTT = (
@@ -237,7 +238,40 @@ def derive_non_edubcn_v2(rec: dict) -> dict:
             copy["target_hits"] = filtered_target_hits_v2(source)
             items.append(copy)
         clone[key] = items
-    return _original_derive_non_edubcn(clone)
+    snapshot = _original_derive_non_edubcn(clone)
+    # Only exact-ID, same-placement evidence from an official result can close.
+    covered = {}
+    uncertain = set()
+    for doc in clone.get("documents") or []:
+        if doc.get("error") or current_document_kind(doc) != "result":
+            continue
+        for hit in filtered_target_hits_v2(doc):
+            snippet = hit.get("snippet") or ""
+            pid, _ = identifier_from_snippet_v2(snippet)
+            if not pid:
+                continue
+            status = classify_coverage(snippet)
+            if status == "COVERED":
+                covered[pid] = doc.get("url")
+            else:
+                uncertain.add(pid)
+    # Conflicting/undecidable result sections cannot close a position.
+    for pid in uncertain:
+        covered.pop(pid, None)
+    current = []
+    excluded = []
+    for place in snapshot.get("current_target_placements") or []:
+        pid = place.get("placement_id")
+        if pid in covered:
+            excluded.append({"placement_id": pid, "coverage_confirmed": True,
+                             "result_url": covered[pid]})
+        else:
+            current.append(place)
+    snapshot["current_target_placements"] = current
+    snapshot["current_target_counts"] = core.target_counts(current)
+    snapshot["covered_by_results"] = excluded
+    snapshot["unresolved_result_ids"] = sorted(uncertain)
+    return snapshot
 
 
 def _assert_nonpositional_regression() -> None:
@@ -380,7 +414,7 @@ def audit_current_state() -> int:
             errors.append(f"{name}: active snapshot still contains {len(active_unidentified)} unidentified hit(s)")
         if freshness == "FRESC" and sources and not authoritative:
             errors.append(f"{name}: FRESH current source is not authoritative")
-        if raw_hits and not positions:
+        if raw_hits and not positions and not act.get("covered_by_results"):
             errors.append(f"{name}: {len(raw_hits)} target hit(s) but zero active target placements")
         for p in positions:
             if not p.get("placement_id") or not p.get("target_codes"):
@@ -396,6 +430,8 @@ def audit_current_state() -> int:
             "parsed_target_hits": len(parsed),
             "unidentified_target_hits": len(unidentified),
             "active_positions": len(positions),
+            "covered_by_results": act.get("covered_by_results") or [],
+            "unresolved_result_ids": act.get("unresolved_result_ids") or [],
             "id_kinds": sorted({p.get("id_kind") for p in positions if p.get("id_kind")}),
             "parsed_ids": parsed,
         }

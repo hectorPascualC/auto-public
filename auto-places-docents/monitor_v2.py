@@ -57,7 +57,7 @@ def http_date(value: str | None):
         return None
 
 
-def newer_current_offer_evidence(current: dict, previous: dict | None) -> tuple[bool, str | None]:
+def newer_current_offer_evidence(current: dict, previous: dict | None, kinds: set[str]) -> tuple[bool, str | None]:
     """Return proof that a regressed anchor comes from a genuinely newer offer PDF/list.
 
     We only accept regression when the same official offer/PFI document exists in both
@@ -91,6 +91,15 @@ def newer_current_offer_evidence(current: dict, previous: dict | None) -> tuple[
         cur_sha = cur_fetch.get("sha256")
         prev_sha = prev_fetch.get("sha256")
 
+        # The SAME document must explain every regressed anchor.
+        # A changed unrelated PDF is not proof a regressed offer is fresh.
+        now_anchors = doc.get("anchors") or {}
+        old_anchors = prev.get("anchors") or {}
+        if not all(kind in now_anchors and kind in old_anchors and
+                   tuple(now_anchors[kind].get("rank", [])) <
+                   tuple(old_anchors[kind].get("rank", []))
+                   for kind in kinds):
+            continue
         if (
             cur_lm is not None
             and prev_lm is not None
@@ -136,7 +145,10 @@ def compare_freshness_v2(current: dict, previous: dict | None) -> tuple[str, lis
             regressions.append(f"{kind} regressa: {c.get('raw')} < {p.get('raw')}")
 
     if regressions:
-        proven_newer, note = newer_current_offer_evidence(current, previous)
+        kinds = {k for k, p in prev_anchors.items()
+                 if k in cur_anchors and
+                 tuple(cur_anchors[k].get("rank", [])) < tuple(p.get("rank", []))}
+        proven_newer, note = newer_current_offer_evidence(current, previous, kinds)
         if not proven_newer:
             return "CACHE OBSOLETA", reasons + regressions
         reasons.extend(regressions)

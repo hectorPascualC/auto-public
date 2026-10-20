@@ -2,25 +2,23 @@ name: AUTO places docents 507-627
 
 on:
   schedule:
-    # UTC: winter Madrid UTC+1, summer Madrid UTC+2. Gate by scheduled slot, not start time.
-    - cron: '0 7 * * 1-5'
-    - cron: '0 8 * * 1-5'
-    - cron: '0 9 * * 1-5'
-    - cron: '0 10 * * 1-5'
-    - cron: '0 12 * * 1-5'
-    - cron: '0 13 * * 1-5'
-    - cron: '0 14 * * 1-5'
-    - cron: '0 15 * * 1-5'
-    # Independent delayed backup within each UTC slot; only runs if primary
-    # has not persisted a healthy snapshot for this slot.
-    - cron: '17 7 * * 1-5'
-    - cron: '17 8 * * 1-5'
-    - cron: '17 9 * * 1-5'
-    - cron: '17 10 * * 1-5'
-    - cron: '17 12 * * 1-5'
-    - cron: '17 13 * * 1-5'
-    - cron: '17 14 * * 1-5'
-    - cron: '17 15 * * 1-5'
+    # Four Europe/Madrid slots, with 17-minute delayed backup. DST handled natively.
+    - cron: '5 9 * * 1-5'
+      timezone: 'Europe/Madrid'
+    - cron: '5 11 * * 1-5'
+      timezone: 'Europe/Madrid'
+    - cron: '5 14 * * 1-5'
+      timezone: 'Europe/Madrid'
+    - cron: '5 16 * * 1-5'
+      timezone: 'Europe/Madrid'
+    - cron: '22 9 * * 1-5'
+      timezone: 'Europe/Madrid'
+    - cron: '22 11 * * 1-5'
+      timezone: 'Europe/Madrid'
+    - cron: '22 14 * * 1-5'
+      timezone: 'Europe/Madrid'
+    - cron: '22 16 * * 1-5'
+      timezone: 'Europe/Madrid'
   workflow_dispatch:
     inputs:
       run_monitor:
@@ -53,116 +51,36 @@ permissions:
 # Successful duplicates are skipped by the processed-trigger SHA gate below.
 concurrency:
   group: auto-places-docents
+  queue: max
   cancel-in-progress: false
 
 jobs:
   monitor:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     steps:
       - name: Checkout immutable triggering revision
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 2
 
       - name: Decide whether this run is needed
         id: gate
         shell: bash
         env:
           EVENT_NAME: ${{ github.event_name }}
+          SCHEDULE_CRON: ${{ github.event.schedule }}
           REQUEST_RUN: ${{ github.event_name != 'workflow_dispatch' || inputs.run_monitor }}
           FORCE_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.force_run }}
           TRIGGER_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          RUN_MONITOR="$REQUEST_RUN"
-          if [[ "$EVENT_NAME" == "schedule" ]]; then
-            # github.event.schedule identifies the original UTC slot even if
-            # GitHub starts this job late. Evaluate DST for that slot.
-            SCHEDULE_CRON="${{ github.event.schedule }}"
-            SLOT_UTC_MINUTE="$(printf '%s' "$SCHEDULE_CRON" | awk '{print $1}')"
-            SLOT_UTC_HOUR="$(printf '%s' "$SCHEDULE_CRON" | awk '{print $2}')"
-            if [[ ! "$SLOT_UTC_HOUR" =~ ^([0-9]|1[0-9]|2[0-3])$ ]]; then
-              echo "Unexpected scheduled cron: $SCHEDULE_CRON" >&2
-              exit 1
-            fi
-            SLOT_DATE_UTC="$(date -u +%Y-%m-%d)"
-            SLOT_LOCAL_HOUR="$(TZ=Europe/Madrid date -d "${SLOT_DATE_UTC} ${SLOT_UTC_HOUR}:00 UTC" +%H)"
-            echo "Scheduled UTC hour=$SLOT_UTC_HOUR, Madrid hour=$SLOT_LOCAL_HOUR"
-            echo "Scheduled expression: $SCHEDULE_CRON"
-            if [[ ! " 09 11 14 16 " == *" $SLOT_LOCAL_HOUR "* ]]; then
-              RUN_MONITOR=false
-              GATE_REASON=outside_madrid_hours
-            fi
-          fi
-          if [[ "$RUN_MONITOR" == "true" ]]; then
-            GATE_REASON=run
-          else
-            GATE_REASON=${GATE_REASON:-disabled_by_input}
-          fi
-
-          # Delayed scheduled backup: avoid duplicate scans only when a healthy
-          # snapshot from this same local slot has already been persisted.
-          # The primary minute-0 schedule always executes a fresh scan.
-          if [[ "$EVENT_NAME" == "schedule" && "${SLOT_UTC_MINUTE:-0}" == "17" && "$RUN_MONITOR" == "true" ]]; then
-            git fetch origin main
-            export EXPECTED_SLOT_HOUR="$SLOT_LOCAL_HOUR"
-            BACKUP_FRESH="$(git show origin/main:auto-places-docents/state/health.json 2>/dev/null | python -c '
-          import json,sys
-          from datetime import datetime,timezone
-          try:
-              h=json.load(sys.stdin)
-              t=datetime.fromisoformat(h["generated_at"]).astimezone(timezone.utc)
-              now=datetime.now(timezone.utc)
-              from zoneinfo import ZoneInfo
-              madrid=ZoneInfo("Europe/Madrid")
-              slot_date=now.astimezone(madrid).date()
-              expected_hour=int(__import__("os").environ["EXPECTED_SLOT_HOUR"])
-              local=t.astimezone(madrid)
-              same_slot=(local.date()==slot_date and local.hour==expected_hour)
-              age=(now-t).total_seconds()/60
-              print("yes" if h.get("audit_status")=="PASS" and h.get("fresh")==12 and h.get("presence_authoritative")==12 and h.get("audit_errors")==0 and same_slot and 0<=age<=180 else "no")
-          except Exception: print("no")
-          ')"
-            if [[ "$BACKUP_FRESH" == "yes" ]]; then
-              RUN_MONITOR=false
-              GATE_REASON=healthy_primary_snapshot
-              echo "Backup suppressed: fresh PASS snapshot already persisted."
-            fi
-          fi
-
-          # Keep the worktree pinned to the immutable triggering revision, but inspect
-          # current origin/main separately for dedup/freshness decisions.
-          git fetch origin main
-
-          # Any already-successfully-persisted push SHA is a duplicate. The marker is
-          # written only at the end of a successful persistence step, so a queued copy
-          # remains available as fallback if the first run fails before persistence.
-          if [[ "$RUN_MONITOR" == "true" && "$FORCE_RUN" != "true" && "$EVENT_NAME" == "push" ]]; then
-            PROCESSED_SHA="$(git show origin/main:auto-places-docents/state/processed-trigger-sha.txt 2>/dev/null | tr -d '\r\n' || true)"
-            echo "Trigger SHA: $TRIGGER_SHA"
-            echo "Processed SHA on origin/main: ${PROCESSED_SHA:-none}"
-            if [[ -n "$PROCESSED_SHA" && "$PROCESSED_SHA" == "$TRIGGER_SHA" ]]; then
-              echo "Duplicate push already persisted; skipping expensive scan."
-              RUN_MONITOR=false
-              GATE_REASON=duplicate_push
-            fi
-          fi
-
-          # A scheduled slot must actually run its scan. Never report a green
-          # scheduled job that merely reused a prior snapshot.
-          if [[ "$RUN_MONITOR" == "true" && "$EVENT_NAME" == "schedule" ]]; then
-            echo "Scheduled slot accepted: execute full scan and persist a new snapshot."
-          fi
-
-          echo "run_monitor=$RUN_MONITOR" >> "$GITHUB_OUTPUT"
-          echo "gate_reason=$GATE_REASON" >> "$GITHUB_OUTPUT"
-          echo "AUTO_GATE_RESULT run_monitor=$RUN_MONITOR reason=$GATE_REASON event=$EVENT_NAME"
-          echo "### AUTO gate: $GATE_REASON (run_monitor=$RUN_MONITOR)" >> "$GITHUB_STEP_SUMMARY"
+          git fetch --no-tags origin main
+          python auto-places-docents/schedule_gate.py
 
       - name: Run skipped by dedup/freshness gate
         if: steps.gate.outputs.run_monitor == 'false'
-        run: echo "AUTO scan skipped — reason=${{ steps.gate.outputs.gate_reason }}"
+        run: echo "AUTO scan SKIPPED (not a scan) — reason=${{ steps.gate.outputs.gate_reason }} slot=${{ steps.gate.outputs.slot_key }}"
 
       - name: Python
         if: steps.gate.outputs.run_monitor == 'true'
@@ -178,6 +96,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r auto-places-docents/requirements.txt
           python -m playwright install --with-deps chromium
+
+      - name: Test regressions before scanning
+        if: steps.gate.outputs.run_monitor == 'true'
+        run: |
+          python -m compileall -q auto-places-docents
+          python -m unittest discover -s auto-places-docents/tests -p 'test_*.py' -v
 
       - name: Fetch official sources
         if: steps.gate.outputs.run_monitor == 'true'
@@ -233,11 +157,17 @@ jobs:
           print(f"consumer.json OK: {p.stat().st_size} bytes, {len(data['territories'])} scopes")
           PY
 
+      - name: Validate final state and finalize history
+        if: steps.gate.outputs.run_monitor == 'true'
+        run: python auto-places-docents/finalize_history.py
+
       - name: Persist compact state safely
         if: steps.gate.outputs.run_monitor == 'true'
         shell: bash
         env:
           TRIGGER_SHA: ${{ github.sha }}
+          SLOT_KEY: ${{ steps.gate.outputs.slot_key }}
+          SLOT_KIND: ${{ steps.gate.outputs.slot_kind }}
         run: |
           set -euo pipefail
 
@@ -336,9 +266,12 @@ jobs:
 
             if [[ "$REPLACE_CANONICAL" == "1" ]]; then
               echo "Candidate quality is acceptable; replacing canonical compact state."
-              # Preserve remote history merged above, replace compact files from candidate.
-              find "$TMP_STATE" -maxdepth 1 -type f -print0 | while IFS= read -r -d '' f; do
-                cp -a "$f" "$STATE_DIR/"
+              # Replace canonical finalized files only: never roll back a later
+              # external-trigger.txt or processed-trigger-sha.txt from checkout.
+              for filename in audit.json consumer.json health.json latest.json latest.md penedes_diagnostic.json; do
+                if [[ -f "$TMP_STATE/$filename" ]]; then
+                  cp -a "$TMP_STATE/$filename" "$STATE_DIR/$filename"
+                fi
               done
             else
               echo "Candidate is lower quality or older at equal quality; preserving canonical compact state."
@@ -348,6 +281,9 @@ jobs:
             # deliberately NOT in workflow push paths, so persisting it cannot recurse.
             printf '%s\n' "$TRIGGER_SHA" > "$STATE_DIR/processed-trigger-sha.txt"
 
+            # Merge exact-slot PASS ledger into live origin/main, after final quality checks.
+            export STATE_DIR SLOT_KEY SLOT_KIND
+            python auto-places-docents/slot_ledger.py
             git add "$STATE_DIR/"
             if git diff --cached --quiet; then
               echo "No state changes to persist"

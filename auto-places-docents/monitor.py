@@ -489,7 +489,7 @@ def scrape_territory(fetcher: DirectFetcher, name: str, slug: str, previous: dic
         html = decode_html(content, meta.content_type)
         text = html_to_text(html)
         links = extract_links(meta.final_url or logical, html)
-        selected = likely_relevant_links(links, max_links=8 if kind == "secondary" else 6)
+        selected = likely_relevant_links(links, max_links=16 if kind == "secondary" else 12)
         landing.update({
             "update_date": extract_update_date(text), "anchors": extract_anchors(text),
             "target_hits": context_hits(text), "text_sha256": hashlib.sha256(text.encode()).hexdigest(),
@@ -518,9 +518,11 @@ def scrape_territory(fetcher: DirectFetcher, name: str, slug: str, previous: dic
     unique.sort(key=doc_score, reverse=True)
     # Keep mandatory official rolling sources even if they rank below the cap.
     mandatory = [d for d in unique if slug == "penedes" and "PEN-SEC-dificil-cobertura-oferta-vacants.pdf" in d["url"]]
-    selected_docs = unique[:12]
+    selected_docs = unique[:24]
     selected_urls = {d["url"] for d in selected_docs}
     selected_docs.extend(d for d in mandatory if d["url"] not in selected_urls)
+    omitted = [d for d in unique if d["url"] not in {v["url"] for v in selected_docs}]
+               and d.get("role") in {"offer", "pfi"}]
     document_records = []
     for d in selected_docs:
         log(f"{name}: {d.get('role')} {d['url']}")
@@ -539,6 +541,13 @@ def scrape_territory(fetcher: DirectFetcher, name: str, slug: str, previous: dic
         "name": name, "slug": slug, "provider": "direct-http",
         "checked_at": datetime.now(TZ).isoformat(timespec="seconds"),
         "landings": landings, "documents": document_records, "target_hits": total_hits,
+        "selection_diagnostics": {
+            "candidate_documents": len(unique),
+            "selected_documents": len(selected_docs),
+            "omitted_current_offer_candidates": [d["url"] for d in omitted],
+            "complete_candidate_selection": not omitted,
+            "exhaustive_portal_verified": False,
+        },
         "offer_docs_ok": offers_ok, "landing_text_excerpt": combined_landing[:5000],
         "fingerprint": {
             "anchors": anchors,
@@ -548,7 +557,11 @@ def scrape_territory(fetcher: DirectFetcher, name: str, slug: str, previous: dic
         },
     }
     if not any(not l.get("error") for l in landings): cur["error"] = "No s'ha pogut recuperar cap pàgina oficial candidata"
-    status, reasons = compare_freshness(cur, previous); cur["freshness"] = status; cur["freshness_notes"] = reasons
+    status, reasons = compare_freshness(cur, previous)
+    if omitted:
+        status = "PARCIAL"
+        reasons.append("Some current offer/PFI documents were omitted by cap")
+    cur["freshness"] = status; cur["freshness_notes"] = reasons
     return cur
 
 
@@ -642,12 +655,18 @@ def report_markdown(state: dict) -> str:
 def main() -> int:
     STATE_DIR.mkdir(parents=True,exist_ok=True); HISTORY_DIR.mkdir(parents=True,exist_ok=True); RUN_DIR.mkdir(parents=True,exist_ok=True)
     previous=load_previous(); previous_territories=previous.get("territories",{}); fetcher=DirectFetcher()
+    # Cache canonical final state before this run overwrites latest.json.
+    cache = STATE_DIR / "_previous_final.json"
+    if previous.get("active_snapshot") and previous.get("edubcn_finalize_at"):
+        cache.write_text(json.dumps(previous, ensure_ascii=False) + "\n", encoding="utf-8")
+    else:
+        cache.unlink(missing_ok=True)
     state={"schema_version":1,"generated_at":NOW.isoformat(timespec="seconds"),"run_id":RUN_ID,"source_strategy":"direct-http+cachebuster+validators+sha256; playwright-direct-edubcn","paid_crawlers_used":False,"territories":{}}
     for name,slug in ST:
         try: state["territories"][name]=scrape_territory(fetcher,name,slug,previous_territories.get(name))
         except Exception as e: state["territories"][name]={"name":name,"provider":"direct-http","checked_at":datetime.now(TZ).isoformat(timespec="seconds"),"freshness":"PARCIAL","error":f"{type(e).__name__}: {e}"}
     log("EDUBCN: llistat dinàmic"); state["territories"]["EDUBCN"]=playwright_edubcn(previous_territories.get("EDUBCN"),fetcher)
-    state_json=json.dumps(state,ensure_ascii=False,indent=2,sort_keys=False)+"\n"; STATE_FILE.write_text(state_json,encoding="utf-8"); (HISTORY_DIR/f"{RUN_ID}.json").write_text(state_json,encoding="utf-8"); REPORT_FILE.write_text(report_markdown(state),encoding="utf-8")
+    state_json=json.dumps(state,ensure_ascii=False,indent=2,sort_keys=False)+"\n"; STATE_FILE.write_text(state_json,encoding="utf-8"); REPORT_FILE.write_text(report_markdown(state),encoding="utf-8")
     fresh=sum(1 for r in state["territories"].values() if r.get("freshness")=="FRESC"); stale=sum(1 for r in state["territories"].values() if r.get("freshness")=="CACHE OBSOLETA"); partial=len(state["territories"])-fresh-stale
     (STATE_DIR/"health.json").write_text(json.dumps({"generated_at":state["generated_at"],"fresh":fresh,"partial":partial,"cache_obsoleta":stale,"total":len(state["territories"])},ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     log(f"Fi: FRESC={fresh} PARCIAL={partial} CACHE_OBSOLETA={stale}"); return 0

@@ -20,6 +20,7 @@ from zoneinfo import ZoneInfo
 import requests
 from pypdf import PdfReader
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
+from coverage import classify as classify_coverage
 
 TZ = ZoneInfo("Europe/Madrid")
 ROOT = Path(__file__).resolve().parent
@@ -94,7 +95,8 @@ def parse_place(text: str, url: str, role: str) -> dict:
         kind = "VACANT"
     if re.search(r"[☒Xx]\s*SUBSTITUCI[ÓO]|\bSUBSTITUCI[ÓO]\b", txt, re.I):
         kind = "SUBSTITUCIÓ" if not kind else kind + "+SUBSTITUCIÓ"
-    result_present = role == "result" or bool(re.search(r"\bRESULTAT\b|Docent\s+(?:assignat|seleccionat)|Persona\s+assignada", txt, re.I))
+    result_document_present = role == "result"
+    result_classification = classify_coverage(txt) if result_document_present else "UNKNOWN"
     target_codes = exact_targets(txt)
     return {
         "gensec": code,
@@ -106,7 +108,10 @@ def parse_place(text: str, url: str, role: str) -> dict:
         "start": start,
         "end": end,
         "jornada": jornada,
-        "result_present": result_present,
+        "result_present": result_document_present,
+        "result_document_present": result_document_present,
+        "result_classification": result_classification,
+        "coverage_confirmed": result_classification == "COVERED",
     }
 
 
@@ -364,9 +369,16 @@ def main() -> int:
         else:
             record["freshness"] = "PARCIAL"
             notes.append("no s'ha pogut demostrar cap àncora GENSEC")
-        if not record["documents"]:
+        verified_docs = [d for d in record["documents"] if not d.get("error") and d.get("sha256")]
+        record["discovery_diagnostics"] = {
+            "dom_gensec_observed": record.get("global", {}).get("gensec_count", 0),
+            "documents_fetched": len(record["documents"]),
+            "documents_verified": len(verified_docs),
+            "complete_catalog_verified": False,
+        }
+        if not verified_docs or record.get("global", {}).get("gensec_count", 0) == 0:
             record["freshness"] = "PARCIAL"
-            notes.append("cap document GENSEC enllaçat recuperat")
+            notes.append("EDUBCN: cannot prove current DOM and official documents")
         record["freshness_notes"] = notes
 
     except Exception as e:

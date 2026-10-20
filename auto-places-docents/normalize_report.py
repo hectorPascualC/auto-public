@@ -54,6 +54,10 @@ def build_consumer_state(state: dict, health: dict) -> dict:
             "current_target_counts": a.get("current_target_counts") or {},
             "current_target_placements": a.get("current_target_placements") or [],
             "removed_since_previous": a.get("removed_since_previous") or [],
+            "covered_by_results": a.get("covered_by_results") or [],
+            "unresolved_result_ids": a.get("unresolved_result_ids") or [],
+            "source_selection_diagnostics": rec.get("selection_diagnostics") or {},
+            "discovery_diagnostics": rec.get("discovery_diagnostics") or {},
             "status_note": a.get("status_note"),
         }
     return out

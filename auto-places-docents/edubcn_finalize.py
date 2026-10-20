@@ -15,6 +15,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
+from coverage import classify as classify_coverage
 
 TZ = ZoneInfo("Europe/Madrid")
 ROOT = Path(__file__).resolve().parent
@@ -101,10 +102,21 @@ def main() -> int:
             "documents": [],
             "target_codes": set(),
             "result_present": False,
+            "result_document_present": False,
+            "coverage_confirmed": False,
+            "result_classification": "UNKNOWN",
         })
         g["documents"].append(doc)
         g["target_codes"].update(targets_in_doc(doc))
-        g["result_present"] = g["result_present"] or doc.get("role") == "result" or bool((doc.get("place") or {}).get("result_present"))
+        # A RESULTAT document may say DESERTA. Only explicit positive
+        # coverage evidence can close an offer, never mere document presence.
+        if doc.get("role") == "result":
+            g["result_document_present"] = True
+            status = classify_coverage(doc.get("text_excerpt") or "")
+            if status == "COVERED":
+                g["coverage_confirmed"] = True
+            elif status == "UNFILLED":
+                g["result_classification"] = "UNFILLED"
 
     placements = []
     for code, g in groups.items():
@@ -117,6 +129,13 @@ def main() -> int:
             for k, v in d.items():
                 if v and not details.get(k):
                     details[k] = v
+        if g["coverage_confirmed"] and g["result_classification"] == "UNFILLED":
+            # Conflicting outcomes: fail open, require manual verification.
+            g["coverage_confirmed"] = False
+            g["result_classification"] = "UNKNOWN"
+        elif g["coverage_confirmed"]:
+            g["result_classification"] = "COVERED"
+        g["result_present"] = g["result_document_present"]
         placement = {
             **g,
             **details,

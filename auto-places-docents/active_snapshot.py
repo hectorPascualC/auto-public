@@ -14,6 +14,7 @@ Raw specialty hit counts remain diagnostics only. They are not position counts.
 from __future__ import annotations
 
 import hashlib
+import gzip
 import json
 import re
 from datetime import datetime
@@ -207,7 +208,7 @@ def derive_edubcn(rec: dict) -> dict:
     if isinstance(verified, list):
         for p in verified:
             # Explicit RESULTAT closes the place even if the historical document remains retrievable.
-            if p.get("result_present"):
+            if p.get("coverage_confirmed"):
                 continue
             codes = [c for c in (p.get("target_codes") or []) if c in TARGETS]
             if not codes:
@@ -226,7 +227,10 @@ def derive_edubcn(rec: dict) -> dict:
                 "start": p.get("start"),
                 "end": p.get("end"),
                 "jornada": p.get("jornada"),
-                "result_present": False,
+                "result_present": bool(p.get("result_document_present")),
+                "result_document_present": bool(p.get("result_document_present")),
+                "result_classification": p.get("result_classification", "UNKNOWN"),
+                "coverage_confirmed": False,
                 "source_urls": p.get("offer_urls") or [],
                 "source_kinds": ["document-verified"],
             })
@@ -252,15 +256,27 @@ def derive_territory(name: str, rec: dict) -> dict:
 
 
 def previous_state(current_run_id: str | None) -> dict | None:
+    """Only compare against the canonical final previous state, never provisional JSON."""
+    backup = ROOT / "state" / "_previous_final.json"
+    if backup.exists():
+        try:
+            d = json.loads(backup.read_text(encoding="utf-8"))
+            if d.get("run_id") != current_run_id and d.get("active_snapshot") and d.get("edubcn_finalize_at"):
+                return d
+        except (OSError, ValueError):
+            pass
     if not HISTORY_DIR.exists():
         return None
-    files = sorted(HISTORY_DIR.glob("*.json"), reverse=True)
+    files = sorted([*HISTORY_DIR.glob("*.json"), *HISTORY_DIR.glob("*.json.gz")], reverse=True)
     for path in files:
         try:
-            data = json.loads(path.read_text(encoding="utf-8"))
-        except Exception:
+            if path.suffix == ".gz":
+                with gzip.open(path, "rt", encoding="utf-8") as fp: data = json.load(fp)
+            else:
+                with path.open("r", encoding="utf-8") as fp: data = json.load(fp)
+        except (OSError, ValueError):
             continue
-        if data.get("run_id") != current_run_id:
+        if data.get("run_id") != current_run_id and data.get("active_snapshot") and data.get("edubcn_finalize_at"):
             return data
     return None
 

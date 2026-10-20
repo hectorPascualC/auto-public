@@ -3,8 +3,8 @@ name: AUTO places docents 507-627
 on:
   schedule:
     # UTC: winter Madrid UTC+1, summer Madrid UTC+2. Gate by scheduled slot, not start time.
-    - cron: '0 6 * * 1-5'
     - cron: '0 7 * * 1-5'
+    - cron: '0 8 * * 1-5'
     - cron: '0 9 * * 1-5'
     - cron: '0 10 * * 1-5'
     - cron: '0 12 * * 1-5'
@@ -13,8 +13,8 @@ on:
     - cron: '0 15 * * 1-5'
     # Independent delayed backup within each UTC slot; only runs if primary
     # has not persisted a healthy snapshot for this slot.
-    - cron: '17 6 * * 1-5'
     - cron: '17 7 * * 1-5'
+    - cron: '17 8 * * 1-5'
     - cron: '17 9 * * 1-5'
     - cron: '17 10 * * 1-5'
     - cron: '17 12 * * 1-5'
@@ -88,8 +88,9 @@ jobs:
             fi
             SLOT_DATE_UTC="$(date -u +%Y-%m-%d)"
             SLOT_LOCAL_HOUR="$(TZ=Europe/Madrid date -d "${SLOT_DATE_UTC} ${SLOT_UTC_HOUR}:00 UTC" +%H)"
-            echo "Scheduled UTC hour=$SLOT_UTC_HOUR, Madrid hour=$SLOT_LOCAL_HOUR"\n            echo "Scheduled expression: $SCHEDULE_CRON"
-            if [[ ! " 08 11 14 16 " == *" $SLOT_LOCAL_HOUR "* ]]; then
+            echo "Scheduled UTC hour=$SLOT_UTC_HOUR, Madrid hour=$SLOT_LOCAL_HOUR"
+            echo "Scheduled expression: $SCHEDULE_CRON"
+            if [[ ! " 09 11 14 16 " == *" $SLOT_LOCAL_HOUR "* ]]; then
               RUN_MONITOR=false
               GATE_REASON=outside_madrid_hours
             fi
@@ -105,7 +106,8 @@ jobs:
           # The primary minute-0 schedule always executes a fresh scan.
           if [[ "$EVENT_NAME" == "schedule" && "${SLOT_UTC_MINUTE:-0}" == "17" && "$RUN_MONITOR" == "true" ]]; then
             git fetch origin main
-            export EXPECTED_SLOT_HOUR="$SLOT_LOCAL_HOUR"\n            BACKUP_FRESH="$(git show origin/main:auto-places-docents/state/health.json 2>/dev/null | python -c '
+            export EXPECTED_SLOT_HOUR="$SLOT_LOCAL_HOUR"
+            BACKUP_FRESH="$(git show origin/main:auto-places-docents/state/health.json 2>/dev/null | python -c '
           import json,sys
           from datetime import datetime,timezone
           try:
@@ -154,7 +156,9 @@ jobs:
           fi
 
           echo "run_monitor=$RUN_MONITOR" >> "$GITHUB_OUTPUT"
-          echo "gate_reason=$GATE_REASON" >> "$GITHUB_OUTPUT"\n          echo "AUTO_GATE_RESULT run_monitor=$RUN_MONITOR reason=$GATE_REASON event=$EVENT_NAME"\n          echo "### AUTO gate: $GATE_REASON (run_monitor=$RUN_MONITOR)" >> "$GITHUB_STEP_SUMMARY"
+          echo "gate_reason=$GATE_REASON" >> "$GITHUB_OUTPUT"
+          echo "AUTO_GATE_RESULT run_monitor=$RUN_MONITOR reason=$GATE_REASON event=$EVENT_NAME"
+          echo "### AUTO gate: $GATE_REASON (run_monitor=$RUN_MONITOR)" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Run skipped by dedup/freshness gate
         if: steps.gate.outputs.run_monitor == 'false'

@@ -83,8 +83,13 @@ def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
         return False, "unsupported_event", "", "unknown"
     if key and not force:
         slots = ledger.get("slots", {})
-        if isinstance(slots, dict) and slots.get(key, {}).get("status") == "PASS":
-            return False, "SKIPPED_ALREADY_VALID_LEDGER", key, kind
+        if isinstance(slots, dict):
+            entry = slots.get(key, {})
+            if (isinstance(entry, dict) and entry.get("status") == "PASS" and
+                    entry.get("generated_at") == h.get("generated_at") and
+                    entry.get("audit_at") == h.get("audit_at") and
+                    entry.get("snapshot_run_id") and valid_health(h, key)):
+                return False, "SKIPPED_ALREADY_VALID_LEDGER", key, kind
         if valid_health(h, key):
             return False, "SKIPPED_ALREADY_VALID_SNAPSHOT", key, kind
     return True, "RUN_SCAN", key, kind

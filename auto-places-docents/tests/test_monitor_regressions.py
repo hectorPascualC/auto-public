@@ -37,7 +37,12 @@ class TestSchedule(unittest.TestCase):
         b=schedule_gate.decide("schedule","22 9 * * 1-5",now,health(),{})
         self.assertEqual(b[1],"SKIPPED_ALREADY_VALID_SNAPSHOT")
         c=schedule_gate.decide("schedule","22 9 * * 1-5",now,{},{"slots":{"2026-10-20T09:00":{"status":"PASS"}}})
-        self.assertEqual(c[1],"SKIPPED_ALREADY_VALID_LEDGER")
+        self.assertEqual(c[:2],(True,"RUN_SCAN"))  # Unverified ledger must never suppress a scan
+        matching = {"slots":{"2026-10-20T09:00":{
+            "status":"PASS","generated_at":health()["generated_at"],
+            "audit_at":health()["audit_at"],"snapshot_run_id":"RUN7"}}}
+        verified=schedule_gate.decide("schedule","22 9 * * 1-5",now,health(),matching)
+        self.assertEqual(verified[1],"SKIPPED_ALREADY_VALID_LEDGER")
         d=schedule_gate.decide("schedule","22 9 * * 1-5",now,{}, {})
         self.assertEqual(d[:2],(True,"RUN_SCAN"))
 

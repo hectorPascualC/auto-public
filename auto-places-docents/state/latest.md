@@ -1,4 +1,4 @@
-# Passada directa 2026-10-20T15:15:08+02:00
+# Passada directa 2026-10-20T18:13:49+02:00
 
 Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
 
@@ -9,13 +9,13 @@ Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Fir
 | Barcelonès | **FRESC** | 3 | 0 | 2 | 0 | 19764412 |
 | Catalunya Central | **FRESC** | 0 | 1 | 0 | 0 | — |
 | Girona | **FRESC** | 3 | 0 | 1 | 0 | — |
-| Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/108 |
+| Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/112 |
 | Maresme-Vallès Oriental | **FRESC** | 0 | 0 | 0 | 0 | — |
 | Penedès | **FRESC** | 1 | 0 | 1 | 1 | 19772254 |
 | Tarragona | **FRESC** | 0 | 3 | 0 | 0 | — |
 | Terres de l'Ebre | **FRESC** | 0 | 0 | 1 | 0 | — |
 | Vallès Occidental | **FRESC** | 8 | 2 | 8 | 1 | — |
-| EDUBCN | **FRESC** | 6 | 1 | 3 | 1 | GENSEC_2627_187 |
+| EDUBCN | **FRESC** | 4 | 1 | 3 | 1 | GENSEC_2627_187 |
 
 ## Notes de frescor
 - Cap incidència final de frescor.
@@ -26,10 +26,10 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - Frescor: **FRESC**
 - Àncora global: `GENSEC_2627_187`
 - GENSEC visibles: 46
-- Documents GENSEC recuperats: 59
+- Documents GENSEC recuperats: 67
 - Places target validades en el mateix document: 8
 - Estratègia: agrupació per GENSEC + validació d'especialitat dins del mateix PDF/fitxa
-- `GENSEC_2627_064`: 627,F87 | Institut Mare de Déu de la Mercè | sencera de docent de PFI. | fi 31/08/2027 | resultat=False
+- `GENSEC_2627_064`: 627,F87 | Institut Mare de Déu de la Mercè | sencera de docent de PFI. | fi 31/08/2027 | resultat=True
 - `GENSEC_2627_162`: 507 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=False
 - `GENSEC_2627_163`: 627 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=False
 - `GENSEC_2627_171`: 507 | Institut Tecnològic de Barcelona | Sencera | fi 31/08/2027 | resultat=True
@@ -42,7 +42,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - Regla: especialitat target només si apareix al mateix document oficial de la plaça.
 - Identitat: es conserva el codi complet, inclosos sufixos (`_SCO`, etc.); el número base només serveix per frescor.
 - Places documentals target verificades: 8
-- `GENSEC_2627_064`: 627,F87 | Institut Mare de Déu de la Mercè | sencera de docent de PFI. | fi 31/08/2027 | resultat=False
+- `GENSEC_2627_064`: 627,F87 | Institut Mare de Déu de la Mercè | sencera de docent de PFI. | fi 31/08/2027 | resultat=True
 - `GENSEC_2627_162`: 507 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=False
 - `GENSEC_2627_163`: 627 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=False
 - `GENSEC_2627_171`: 507 | Institut Tecnològic de Barcelona | Sencera | fi 31/08/2027 | resultat=True
@@ -50,6 +50,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - `GENSEC_2627_180`: 507 | Institut TIC de Barcelona | SENCERA | fi Alta titular o 30/06/2027 | resultat=False
 - `GENSEC_2627_182`: F57 | Institut TIC de Barcelona | SENCERA | fi 28/10/2026 | resultat=True
 - `GENSEC_2627_187`: 507 | Institut Poblenou | Sencera | fi 20/11/26 | resultat=False
+- `GENSEC_2627_093`: **NO VERIFICADA COM A TARGET** | hints DOM=— | No official Convocatòria/Resultat document was linked or retrieved for this code; not counted as a target place.
 
 ## Presència activa v1 — autoritativa
 - Regla: una plaça continua activa mentre apareix al PDF/llistat oficial ACTUAL, encara que el termini de sol·licitud hagi vençut.

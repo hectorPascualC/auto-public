@@ -1,20 +1,20 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-20T15:15:08+02:00",
-  "run_id": "20261020T151508+0200",
+  "generated_at": "2026-10-20T18:13:49+02:00",
+  "run_id": "20261020T181349+0200",
   "source_strategy": "direct-http+cachebuster+validators+sha256; playwright-direct-edubcn",
   "activity_rule": "current-presence: keep while present in current official offer PDF/list even after deadline; remove on disappearance only from authoritative FRESH current source",
   "health": {
-    "generated_at": "2026-10-20T15:15:08+02:00",
-    "edubcn_probe_at": "2026-10-20T15:21:37+02:00",
+    "generated_at": "2026-10-20T18:13:49+02:00",
+    "edubcn_probe_at": "2026-10-20T18:20:50+02:00",
     "fresh": 12,
     "partial": 0,
     "cache_obsoleta": 0,
     "total": 12,
-    "active_snapshot_at": "2026-10-20T15:21:37+02:00",
+    "active_snapshot_at": "2026-10-20T18:20:50+02:00",
     "presence_authoritative": 12,
     "presence_non_authoritative": 0,
-    "audit_at": "2026-10-20T15:21:37+02:00",
+    "audit_at": "2026-10-20T18:20:51+02:00",
     "audit_status": "PASS",
     "audit_sstt_checked": 11,
     "audit_errors": 0
@@ -541,8 +541,8 @@
           "start": "01/09/2026",
           "end": "31/08/2027",
           "jornada": "sencera de docent de PFI.",
-          "result_present": false,
-          "result_document_present": false,
+          "result_present": true,
+          "result_document_present": true,
           "result_classification": "UNKNOWN",
           "coverage_confirmed": false,
           "source_urls": [
@@ -655,8 +655,8 @@
       "source_selection_diagnostics": {},
       "discovery_diagnostics": {
         "dom_gensec_observed": 46,
-        "documents_fetched": 59,
-        "documents_verified": 59,
+        "documents_fetched": 67,
+        "documents_verified": 67,
         "complete_catalog_verified": false
       },
       "status_note": null

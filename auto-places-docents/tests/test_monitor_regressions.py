@@ -176,10 +176,12 @@ class TestWorkflow(unittest.TestCase):
         data=yaml.safe_load((REPO/".github/workflows/auto-places-docents.yml").read_text())
         on = data.get("on",data.get(True))
         times = on["schedule"]
-        self.assertEqual(len(times),8)
+        # UTC candidates cover both CET and CEST; schedule_gate checks Madrid local time.
+        self.assertEqual(len(times), 16)
         self.assertEqual({x["cron"] for x in times},
-            {f"{minute} {hour} * * 1-5" for minute in (5,22) for hour in (9,11,14,16)})
-        self.assertTrue(all(x["timezone"]=="Europe/Madrid" for x in times))
+            {f"{minute} {hour} * * 1-5" for minute in (5, 22)
+             for hour in (7, 8, 9, 10, 12, 13, 14, 15)})
+        self.assertTrue(all("timezone" not in x for x in times))
         self.assertEqual(data["concurrency"]["queue"],"max")
         self.assertFalse(data["concurrency"]["cancel-in-progress"])
 

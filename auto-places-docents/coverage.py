@@ -7,15 +7,7 @@ def norm(text: str) -> str:
     s = unicodedata.normalize("NFKD", text or "").lower()
     return "".join(x for x in s if not unicodedata.combining(x))
 
-UNBORSA_RESULT = re.compile(
-    # Some official results list the selected person plus numeric teaching-pool
-    # position without saying adjudicada/coberta. Require BOTH markers.
-    r"\bresultat\s*:\s*[a-z][a-z' .-]{5,160}?"
-    r"\bnum(?:ero)?\s+(?:de\s+)?borsa\s*:\s*\d[\d. ]{0,18}\b",
-    re.I,
-)
-
-COVERED = re.compile(
+UNCOVERED = re.compile(
     r"\bdesert[aoes]?\b|\bsense\s+(?:cap\s+)?(?:person[ae]s?|candidat[se]s?|"
     r"aspirant[se]s?|seleccionad[aoes]?)\b|\bcap\s+(?:candidat|aspirant|persona)\b|"
     r"\bno\s+(?:s.ha\s+)?(?:adjudicat|cobert|seleccionat)\b|"
@@ -23,6 +15,14 @@ COVERED = re.compile(
     r"\bsense\s+adjudicacio\b|\brenunci[ae]\b|\banul.lad[aoes]?\b",
     re.I,
 )
+BORSA_RESULT = re.compile(
+    # A RESULTAT with a selected person's full name and a numeric teaching-
+    # pool position confirms an assignment without the word "adjudicada".
+    r"\bresultat\s*:\s*[a-z][a-z' .-]{5,160}?"
+    r"\bnum(?:ero)?\s+(?:de\s+)?borsa\s*:\s*\d[\d. ]{0,18}\b",
+    re.I,
+)
+
 COVERED = re.compile(
     r"\b(?:placa|lloc|vacant)\s+(?:(?:ha\s+estat|es\s+troba|esta)\s+)?(?:adjudicad|cobert)[aoes]?\b|"
     r"\bs.adjudica\b|\badjudicatari[ae]\b|"

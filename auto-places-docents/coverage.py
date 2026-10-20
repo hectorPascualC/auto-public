@@ -7,7 +7,15 @@ def norm(text: str) -> str:
     s = unicodedata.normalize("NFKD", text or "").lower()
     return "".join(x for x in s if not unicodedata.combining(x))
 
-UNCOVERED = re.compile(
+UNBORSA_RESULT = re.compile(
+    # Some official results list the selected person plus numeric teaching-pool
+    # position without saying adjudicada/coberta. Require BOTH markers.
+    r"\bresultat\s*:\s*[a-z][a-z' .-]{5,160}?"
+    r"\bnum(?:ero)?\s+(?:de\s+)?borsa\s*:\s*\d[\d. ]{0,18}\b",
+    re.I,
+)
+
+COVERED = re.compile(
     r"\bdesert[aoes]?\b|\bsense\s+(?:cap\s+)?(?:person[ae]s?|candidat[se]s?|"
     r"aspirant[se]s?|seleccionad[aoes]?)\b|\bcap\s+(?:candidat|aspirant|persona)\b|"
     r"\bno\s+(?:s.ha\s+)?(?:adjudicat|cobert|seleccionat)\b|"
@@ -30,7 +38,7 @@ def classify(text: str) -> str:
     found_uncovered = bool(UNCOVERED.search(t))
     # A negated result, e.g. "sense cap persona seleccionada", contains a
     # positive-looking substring. Remove negative phrases before positive match.
-    found_covered = bool(COVERED.search(UNCOVERED.sub(" ", t)))
+    found_covered = bool(COVERED.search(UNCOVERED.sub(" ", t)) or BORSA_RESULT.search(UNCOVERED.sub(" ", t)))
     if found_uncovered and not found_covered:
         return "UNFILLED"
     if found_covered and not found_uncovered:

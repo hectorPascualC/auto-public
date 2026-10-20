@@ -100,6 +100,13 @@ class TestResults(unittest.TestCase):
         self.assertEqual(len(filled["current_target_placements"]),0)
         self.assertEqual(filled["covered_by_results"][0]["placement_id"],"19659466")
 
+    def test_result_borsa_selected(self):
+        self.assertEqual(classify(
+            "RESULTAT:\n Persona Exemple Cognom núm borsa:215.288 Consorci."), "COVERED")
+        self.assertEqual(classify(
+            "RESULTAT:\n Plaça declarada DESERTA. Sense cap persona seleccionada."), "UNFILLED")
+        self.assertEqual(classify("RESULTAT: pendent de resolució"), "UNKNOWN")
+
     def test_edubcn_finalizer(self):
         ed = importlib.import_module("edubcn_finalize")
         with tempfile.TemporaryDirectory() as tmp:

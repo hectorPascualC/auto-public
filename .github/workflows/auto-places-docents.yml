@@ -54,6 +54,7 @@ on:
       - 'auto-places-docents/coverage.py'
       - 'auto-places-docents/schedule_gate.py'
       - 'auto-places-docents/slot_ledger.py'
+      - 'auto-places-docents/sanitize_public_state.py'
       - 'auto-places-docents/finalize_history.py'
       - 'auto-places-docents/tests/test_monitor_regressions.py'
       - 'auto-places-docents/monitor_v2.py'
@@ -180,6 +181,10 @@ jobs:
               raise SystemExit(f"consumer.json too large: {p.stat().st_size} bytes")
           print(f"consumer.json OK: {p.stat().st_size} bytes, {len(data['territories'])} scopes")
           PY
+
+      - name: Minimize public document text before history persistence
+        if: steps.gate.outputs.run_monitor == 'true'
+        run: python auto-places-docents/sanitize_public_state.py
 
       - name: Validate final state and finalize history
         if: steps.gate.outputs.run_monitor == 'true'

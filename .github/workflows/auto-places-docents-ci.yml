@@ -17,6 +17,7 @@ on:
       - '.github/workflows/auto-places-docents.yml'
       - 'auto-places-docents/schedule_gate.py'
       - 'auto-places-docents/slot_ledger.py'
+      - 'auto-places-docents/*.py'
       - 'auto-places-docents/tests/**'
   workflow_dispatch:
 permissions:

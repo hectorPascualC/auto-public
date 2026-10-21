@@ -7,7 +7,7 @@ Responsibilities:
 - UTC Cloudflare cron at :35 and :47. `Intl.DateTimeFormat(timeZone='Europe/Madrid')` chooses actual seasonal nominal slots 09/11/14/16.
 - Durable Object `SlotCoordinator` serializes decisions per nominal slot; duplicate scheduled deliveries are deduplicated.
 - Before any dispatch, read exact-slot GitHub PASS ledger, compact health/consumer and existing GitHub Actions runs.
-- The backup at :47 dispatches only when there is no valid slot receipt and no primary run queued/in progress. A failed or absent primary is retried once. No third retry.
+- The backup at :47 dispatches only when there is no valid slot PASS receipt. If the primary is absent or failed, the backup scans. If the primary is queued/running, one **standby** backup is queued behind it in GitHub; the GitHub gate rechecks state after the primary completes, skipping a redundant scan on PASS and scanning if the primary later fails. No third retry.
 - Controller invokes existing `auto-places-docents.yml` via `workflow_dispatch`, never touches applicant data, and has no public HTTP endpoint.
 - GitHub is the sole extractor and persists the original scan and an exact-slot PASS ledger. The ChatGPT task only reports.
 

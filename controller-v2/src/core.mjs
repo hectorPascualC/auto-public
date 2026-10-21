@@ -65,11 +65,14 @@ function isMatchingRun(run, slot) {
 export function decideAttempt({slot, attempt, ledger, health, consumer, runs}) {
   if (isValidReceipt(slot, ledger, health, consumer)) return "valid_receipt";
   const matching = (Array.isArray(runs) ? runs : []).filter(r => isMatchingRun(r, slot));
-  if (matching.some(r => r.status === "queued" ||
-    r.status === "in_progress" || r.status === "waiting" ||
-    r.status === "pending" || r.status === "requested")) return "scan_in_progress";
-  if (matching.some(r => r.display_title.endsWith(" / backup"))) return "backup_already_dispatched";
-  if (attempt === "primary" && matching.length > 0) return "slot_already_dispatched";
+  if (matching.some(r => r.display_title.endsWith(" / backup")))
+    return "backup_already_dispatched";
+  // Important: if the primary is STILL running at :47, enqueue one standby
+  // backup. GitHub serializes runs, so its gate will skip the backup after
+  // a PASS primary but will scan if the primary later fails. If we merely
+  // skipped here, a primary failing after :47 would never be retried.
+  if (attempt === "primary" && matching.length > 0)
+    return "slot_already_dispatched";
   return "dispatch";
 }
 

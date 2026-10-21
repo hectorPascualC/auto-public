@@ -2,7 +2,7 @@
 
 ## Ownership boundary
 1. **Scheduler:** Cloudflare Worker, UTC cron at (previous hour) :35 / :47. A DST-aware calendar converts the scheduled instant to nominal 09:00, 11:00, 14:00, 16:00 Europe/Madrid.
-2. **Controller:** durable lock/idempotency per slot; GitHub API check of latest 12/12 PASS + persistent slot ledger, and real workflow_dispatch runs. Backup runs only if first did not run or failed. If first is still running, controller must NOT dispatch a duplicate.
+2. **Controller:** durable lock/idempotency per slot; GitHub API check of latest 12/12 PASS + persistent slot ledger, and real workflow_dispatch runs. If first did not start or failed, second scans. If first is queued/running at :47, enqueue exactly one standby backup in GitHub's serial concurrency queue: it will SKIP the extraction if the first eventually persisted PASS, or perform extraction if the first fails. This closes the failure-after-:47 gap.
 3. **Executor:** existing GitHub Actions scan, externally invoked by `workflow_dispatch` with strict `slot_local` and `trigger_attempt` inputs. Full extraction, audit, compact state persist, and a PASS ledger entry are required.
 4. **Reporter:** single ChatGPT AUTO - PUBLIC task at HH:05, consuming public GitHub state, candidatures from private Library. Reporter MUST NOT be required to trigger GitHub, avoiding feedback/trigger mutual dependency.
 

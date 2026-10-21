@@ -112,13 +112,17 @@ test("backup fires when missing or primary failed", async () => {
   }
 });
 
-test("backup never duplicates a primary that is still running", async () => {
+test("running primary queues exactly one conditional standby backup", async () => {
   for (const status of ["queued","waiting","in_progress"]) {
     const m=mockGithub({runs:[run(DAY,{attempt:"primary",status})]});
-    const r=await processScheduled({scheduledTime:BU,nowMs:BU,env:m.env,
-      fetcher:m.fetcher,state:m.state});
-    assert.equal(r.reason,"scan_in_progress");
-    assert.equal(m.calls.some(x=>x.method==="POST"),false);
+    const args={scheduledTime:BU,nowMs:BU,env:m.env,
+      fetcher:m.fetcher,state:m.state};
+    const r=await processScheduled(args);
+    assert.equal(r.status,"DISPATCHED");
+    assert.equal(r.attempt,"backup");
+    assert.equal(m.calls.filter(x=>x.method==="POST").length,1);
+    assert.equal((await processScheduled(args)).reason,"already_sent");
+    assert.equal(m.calls.filter(x=>x.method==="POST").length,1);
   }
 });
 

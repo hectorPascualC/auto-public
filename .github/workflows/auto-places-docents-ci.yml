@@ -8,6 +8,16 @@ on:
       - 'auto-places-docents/*.py'
       - 'auto-places-docents/tests/**'
       - 'auto-places-docents/requirements.txt'
+      - 'controller-v2/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'controller-v2/**'
+      - '.github/workflows/auto-places-docents-ci.yml'
+      - '.github/workflows/auto-places-docents.yml'
+      - 'auto-places-docents/schedule_gate.py'
+      - 'auto-places-docents/slot_ledger.py'
+      - 'auto-places-docents/tests/**'
   workflow_dispatch:
 permissions:
   contents: read
@@ -26,3 +36,10 @@ jobs:
         run: |
           python -m compileall -q auto-places-docents
           python -m unittest discover -s auto-places-docents/tests -p 'test_*.py' -v
+
+      - name: Node.js for V2 controller tests
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Test independent scheduler, backup and failure safety
+        run: node --test controller-v2/tests/*.test.mjs

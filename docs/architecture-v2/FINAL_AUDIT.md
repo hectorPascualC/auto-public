@@ -29,4 +29,4 @@ This is a release gate, NOT a claim that production migrated. Branch architectur
 6. Three consecutive slots meet those conditions before declaring production V2 operational.
 
 ## Current decision
-**DO NOT MERGE OR ENABLE EXTERNAL DISPATCH AS PRODUCTION** without secret deployment, privacy review and live acceptance. Green CI is necessary but insufficient.
+**DO NOT ENABLE EXTERNAL DISPATCH AS PRODUCTION** without Cloudflare credentials, privacy review and live acceptance. A controlled *staging merge* of the reviewed, CI-green V2 code to default branch is necessary before GitHub can accept V2 workflow_dispatch inputs, but is NOT the production cutover: Cloudflare must remain DISPATCH_ENABLED=false, and legacy cron must not be disabled until the live acceptance tests pass. Green CI is necessary but insufficient.

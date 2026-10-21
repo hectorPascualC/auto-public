@@ -73,6 +73,37 @@ class TestSchedule(unittest.TestCase):
         for cron,when in cases:
             self.assertFalse(schedule_gate.decide("schedule",cron,at(when),{}, {})[0],(cron,when))
 
+    def test_v2_dispatch_slot_and_backup(self):
+        slot="2026-10-20T09:00"
+        a=schedule_gate.decide("workflow_dispatch","",
+            at("2026-10-20T08:36:00+02:00"),{}, {},
+            slot_input=slot,attempt_input="primary")
+        self.assertEqual(a,(True,"RUN_SCAN",slot,"v2_primary"))
+        a=schedule_gate.decide("workflow_dispatch","",
+            at("2026-10-20T08:48:00+02:00"),{}, {},
+            slot_input=slot,attempt_input="backup")
+        self.assertEqual(a,(True,"RUN_SCAN",slot,"v2_backup"))
+        h=health("2026-10-20T08:36:00+02:00","2026-10-20T08:43:00+02:00")
+        a=schedule_gate.decide("workflow_dispatch","",
+            at("2026-10-20T08:48:00+02:00"),h, {},
+            slot_input=slot,attempt_input="backup")
+        self.assertEqual(a[1],"SKIPPED_ALREADY_VALID_SNAPSHOT")
+        for s, now, attempt in (
+            ("2026-10-20T09:00","2026-10-20T09:46:00+02:00","backup"),
+            ("2026-10-20T09:00","2026-10-20T08:34:00+02:00","primary"),
+            ("2026-10-24T09:00","2026-10-24T08:35:00+02:00","primary")):
+            x=schedule_gate.decide("workflow_dispatch","",at(now),{}, {},
+                slot_input=s,attempt_input=attempt)
+            self.assertFalse(x[0],(s,now))
+        for invalid,attempt in (
+            ("2026-10-20T09:30","primary"),
+            ("2026-10-20T09:00","other"),
+            ("2026-10-20T09:00+02:00","primary")):
+            x=schedule_gate.decide("workflow_dispatch","",
+                at("2026-10-20T08:36:00+02:00"),{}, {},
+                slot_input=invalid,attempt_input=attempt)
+            self.assertFalse(x[0],invalid)
+
     def test_extra_1830_dst_and_no_dedup(self):
         for cron,when in (
             ("30 16 * * 1-5","2026-10-20T18:30:00+02:00"),
@@ -218,6 +249,10 @@ class TestWorkflow(unittest.TestCase):
         self.assertTrue(all("timezone" not in x for x in times))
         self.assertEqual(data["concurrency"]["queue"],"max")
         self.assertFalse(data["concurrency"]["cancel-in-progress"])
+        inputs = on["workflow_dispatch"]["inputs"]
+        self.assertIn("slot_local", inputs)
+        self.assertIn("trigger_attempt", inputs)
+        self.assertIn("AUTO V2", data["run-name"])
 
 if __name__ == "__main__":
     unittest.main()

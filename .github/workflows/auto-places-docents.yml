@@ -1,4 +1,6 @@
 name: AUTO places docents 507-627
+# Identify external dispatch separately from legacy schedule/push runs.
+run-name: ${{ inputs.slot_local && format('AUTO V2 {0} / {1}', inputs.slot_local, inputs.trigger_attempt) || format('AUTO {0}', github.event_name) }}
 
 on:
   schedule:
@@ -35,6 +37,15 @@ on:
         description: Omet la comprovació de frescor
         type: boolean
         default: false
+      slot_local:
+        description: 'V2 nominal slot Europe/Madrid, YYYY-MM-DDTHH:00'
+        type: string
+        default: ''
+      trigger_attempt:
+        description: 'V2 primary or backup'
+        type: choice
+        options: [primary, backup]
+        default: primary
   push:
     branches: [main]
     paths:
@@ -84,6 +95,8 @@ jobs:
           REQUEST_RUN: ${{ github.event_name != 'workflow_dispatch' || inputs.run_monitor }}
           FORCE_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.force_run }}
           TRIGGER_SHA: ${{ github.sha }}
+          SLOT_INPUT: ${{ inputs.slot_local || '' }}
+          ATTEMPT_INPUT: ${{ inputs.trigger_attempt || '' }}
         run: |
           set -euo pipefail
           git fetch --no-tags origin main

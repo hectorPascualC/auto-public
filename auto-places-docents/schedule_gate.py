@@ -62,7 +62,8 @@ def parse_rescue(text):
         return None
 
 def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
-           trigger_sha="", processed_sha="", request=True, force=False):
+           trigger_sha="", processed_sha="", request=True, force=False,
+           slot_input="", attempt_input=""):
     if not request:
         return False, "disabled_by_input", "", "disabled"
     key, kind = "", "manual"
@@ -110,6 +111,20 @@ def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
                 dt = datetime.fromisoformat(key).replace(tzinfo=TZ)
                 if dt > local or (local - dt).total_seconds() >= 4 * 3600:
                     return False, "rescue_slot_expired", key, kind
+    elif event == "workflow_dispatch" and slot_input:
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}T(09|11|14|16):00", slot_input):
+            return False, "invalid_v2_slot", "", "invalid"
+        if attempt_input not in ("primary", "backup"):
+            return False, "invalid_v2_attempt", "", "invalid"
+        try:
+            nominal = datetime.strptime(slot_input, "%Y-%m-%dT%H:%M").replace(tzinfo=TZ)
+        except ValueError:
+            return False, "invalid_v2_slot", "", "invalid"
+        if nominal.weekday() > 4 or not (
+                nominal - timedelta(minutes=25) <= local <
+                nominal + timedelta(minutes=45)):
+            return False, "stale_v2_slot", slot_input, "stale"
+        key, kind = slot_input, "v2_" + attempt_input
     elif event != "workflow_dispatch":
         return False, "unsupported_event", "", "unknown"
     # Extra 18:30 is a real test scan, even if an earlier 18:00 snapshot exists.
@@ -144,7 +159,8 @@ def main():
         changed, marker, e.get("TRIGGER_SHA", ""),
         show("auto-places-docents/state/processed-trigger-sha.txt").strip(),
         e.get("REQUEST_RUN", "true").lower() == "true",
-        e.get("FORCE_RUN", "false").lower() == "true")
+        e.get("FORCE_RUN", "false").lower() == "true",
+        e.get("SLOT_INPUT", ""), e.get("ATTEMPT_INPUT", ""))
     output = {"run_monitor": str(run).lower(), "gate_reason": reason,
               "slot_key": slot, "slot_kind": kind}
     with open(e["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:

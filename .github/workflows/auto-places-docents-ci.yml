@@ -15,6 +15,7 @@ on:
       - 'controller-v2/**'
       - '.github/workflows/auto-places-docents-ci.yml'
       - '.github/workflows/auto-places-docents.yml'
+      - '.github/workflows/deploy-controller-v2.yml'
       - 'auto-places-docents/schedule_gate.py'
       - 'auto-places-docents/slot_ledger.py'
       - 'auto-places-docents/*.py'

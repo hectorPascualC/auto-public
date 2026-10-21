@@ -297,5 +297,20 @@ class TestWorkflow(unittest.TestCase):
         self.assertIn("AUTO V2", data["run-name"])
         self.assertEqual(data["jobs"]["monitor"]["runs-on"], "ubuntu-24.04")
 
+    def test_deploy_is_manual_and_fails_closed(self):
+        import yaml
+        d=yaml.safe_load((REPO/".github/workflows/deploy-controller-v2.yml").read_text())
+        on=d.get("on",d.get(True))
+        self.assertEqual(set(on), {"workflow_dispatch"})
+        self.assertEqual(d["permissions"]["contents"], "read")
+        inputs=on["workflow_dispatch"]["inputs"]
+        self.assertEqual(inputs["mode"]["default"], "dry-run")
+        self.assertEqual(inputs["mode"]["options"],
+                         ["dry-run", "deploy-disabled", "deploy-enabled"])
+        self.assertIn("confirm_activation", inputs)
+        job=d["jobs"]["deploy-controller"]
+        self.assertEqual(job["runs-on"],"ubuntu-24.04")
+        self.assertTrue(all("schedule" not in k for k in on))
+
 if __name__ == "__main__":
     unittest.main()

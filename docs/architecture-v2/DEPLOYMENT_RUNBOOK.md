@@ -35,3 +35,17 @@ The assistant cannot use or create private Cloudflare access credentials from Gi
 ## Monitoring and acceptance
 Pass only when Cloudflare scheduled event -> GitHub workflow_dispatch -> actual 12/12 scan -> audit PASS -> GitHub exact-slot ledger -> ChatGPT scheduled feedback, all independently timestamped.
 A local unit test, green PR CI, Cloudflare `--dry-run` or successful git `push` is NOT production end-to-end proof.
+
+## Alternative for a mobile-only setup (GitHub Actions)
+
+This PR also includes `.github/workflows/deploy-controller-v2.yml`, **manual-only**, with modes:
+- `dry-run`: bundle without credentials and without deployment.
+- `deploy-disabled`: deploy Worker with DISPATCH_ENABLED=false and inject its GitHub token.
+- `deploy-enabled`: same, then explicitly activate controller. It requires typing `ENABLE_V2_NOW` into the workflow input.
+
+After merging this reviewed workflow to `main`, set exactly these protected GitHub Actions secrets (never publish their values):
+- `CLOUDFLARE_API_TOKEN`: account token permitting Workers script/deployment administration.
+- `CLOUDFLARE_ACCOUNT_ID`: Cloudflare account identifier.
+- `V2_GITHUB_DISPATCH_TOKEN`: fine-grained token for only this GitHub repository, Actions:write and Contents:read.
+
+Then use Actions -> **AUTO PUBLIC V2 - deploy independent controller** -> Run workflow. Begin with `dry-run`, then `deploy-disabled`. Check both before `deploy-enabled`. GitHub's GITHUB_TOKEN cannot serve as the Worker's permanent dispatch credential: it expires.

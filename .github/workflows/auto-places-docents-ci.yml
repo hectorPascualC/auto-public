@@ -47,3 +47,69 @@ jobs:
 
       - name: Cloudflare Worker bundling validation without credentials or deployment
         run: npx --yes wrangler@4.139.0 deploy --config controller-v2/wrangler.toml --dry-run --outdir /tmp/auto-public-v2-worker-bundle
+
+  v2-integration:
+    # PR-only, branch-isolated real extraction, NEVER commit or upload raw documents.
+    if: github.event_name == 'pull_request' && github.head_ref == 'architecture-v2'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    steps:
+      - name: Check out untrusted PR code in read-only context
+        uses: actions/checkout@v4
+      - name: Install Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install official-source dependencies
+        run: |
+          python -m pip install -r auto-places-docents/requirements.txt
+          python -m playwright install --with-deps chromium
+      - name: Scan 12 official sources without persistence
+        shell: bash
+        run: |
+          set -euo pipefail
+          scan_step() {
+            echo "V2 offline integration stage: $1"
+            if ! python "auto-places-docents/$1" > /tmp/v2-stage.log 2>&1; then
+              echo "::error::Official-source stage failed; raw document log withheld from public CI"
+              exit 1
+            fi
+          }
+          scan_step monitor_v2.py
+          scan_step edubcn_probe.py
+          scan_step edubcn_finalize.py
+          scan_step active_snapshot_v2.py
+          scan_step normalize_report.py
+          scan_step sanitize_public_state.py
+          scan_step finalize_history.py
+      - name: Verify authoritative scan and public minimization
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path('auto-places-docents/state')
+          h = json.loads((root/'health.json').read_text())
+          a = json.loads((root/'audit.json').read_text())
+          state = json.loads((root/'latest.json').read_text())
+          consumer = json.loads((root/'consumer.json').read_text())
+          assert h['audit_status'] == a['status'] == 'PASS'
+          assert h['fresh'] == h['total'] == h['presence_authoritative'] == 12
+          assert h['audit_errors'] == h['partial'] == h['cache_obsoleta'] == 0
+          assert len(state['territories']) == 12
+          assert consumer['generated_at'] == state['generated_at']
+          assert state['run_id'] == consumer['run_id']
+          def visit(x):
+              if isinstance(x, dict):
+                  for k,v in x.items():
+                      assert not (k == 'snippet' or k.endswith('_excerpt') or k.endswith('_snippet'))
+                      visit(v)
+              if isinstance(x, list):
+                  for v in x: visit(v)
+          visit(state)
+          history = list((root/'history').glob(state['run_id'] + '.json.gz'))
+          assert len(history) == 1
+          print('V2 REAL-SOURCE INTEGRATION PASS: 12/12 + audit + sanitized history; no commit')
+          PY

@@ -1,4 +1,5 @@
 import test from "node:test";
+import {readFileSync} from "node:fs";
 import assert from "node:assert/strict";
 import {scheduledSlot, isValidReceipt, decideAttempt, processScheduled} from "../src/core.mjs";
 
@@ -163,4 +164,15 @@ test("scheduled event too late, disabled and invalid configuration fail closed",
   delete m.env.GITHUB_TOKEN;
   await assert.rejects(processScheduled({scheduledTime:SU,nowMs:SU,
     env:m.env,fetcher:m.fetcher,state:m.state}),/controller_configuration_invalid/);
+});
+
+test("Cloudflare config and GitHub contract are statically aligned", () => {
+  const toml=readFileSync(new URL("../wrangler.toml",import.meta.url),"utf8");
+  assert.match(toml,/crons = \["35,47 6,7,8,9,11,12,13,14 \* \* 1-5"\]/);
+  assert.match(toml,/DISPATCH_ENABLED = "false"/);
+  assert.match(toml,/class_name = "SlotCoordinator"/);
+  assert.match(toml,/new_sqlite_classes = \["SlotCoordinator"\]/);
+  const worker=readFileSync(new URL("../src/index.mjs",import.meta.url),"utf8");
+  assert.match(worker,/blockConcurrencyWhile/);
+  assert.match(worker,/scheduled\(controller, env\)/);
 });

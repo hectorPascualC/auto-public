@@ -44,3 +44,6 @@ jobs:
           node-version: '20'
       - name: Test independent scheduler, backup and failure safety
         run: node --test controller-v2/tests/*.test.mjs
+
+      - name: Cloudflare Worker bundling validation without credentials or deployment
+        run: npx --yes wrangler@4.139.0 deploy --config controller-v2/wrangler.toml --dry-run --outdir /tmp/auto-public-v2-worker-bundle

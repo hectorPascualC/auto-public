@@ -27,7 +27,8 @@ def unsafe_key(key: str) -> bool:
             lowered.endswith("_excerpt") or
             lowered.endswith("_snippet") or
             lowered == "snippet" or
-            lowered.startswith("raw_") and lowered not in {"raw_target_hits"})
+            lowered.startswith("raw_") and lowered not in {
+                "raw_target_hits", "raw_target_hits_in_current_offer_sources"})
 
 
 def sanitize(value):

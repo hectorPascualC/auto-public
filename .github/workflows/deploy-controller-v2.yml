@@ -1,0 +1,75 @@
+name: AUTO PUBLIC V2 - deploy independent controller
+# Run manually AFTER PR is merged and private Cloudflare/GitHub credentials exist.
+# Never runs on pull_request or schedule. No automatic deployment from unreviewed code.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Worker mode"
+        type: choice
+        options: [dry-run, deploy-disabled, deploy-enabled]
+        default: dry-run
+      confirm_activation:
+        description: "To deploy-enabled, type ENABLE_V2_NOW"
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-controller:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out approved main only
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Install Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate controller tests
+        run: node --test controller-v2/tests/*.test.mjs
+      - name: Validate preconditions before any Cloudflare write
+        shell: bash
+        env:
+          MODE: ${{ inputs.mode }}
+          CONFIRM: ${{ inputs.confirm_activation }}
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WORKER_GH_TOKEN: ${{ secrets.V2_GITHUB_DISPATCH_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ "$MODE" == "deploy-enabled" && "$CONFIRM" != "ENABLE_V2_NOW" ]]; then
+            echo "::error::Explicit activation confirmation missing"
+            exit 1
+          fi
+          if [[ "$MODE" != "dry-run" && ( -z "$CF_API_TOKEN" || -z "$CF_ACCOUNT" || -z "$WORKER_GH_TOKEN" ) ]]; then
+            echo "::error::Three dedicated secrets are required; no deployment performed"
+            exit 1
+          fi
+      - name: Bundle only (no credentials required)
+        if: inputs.mode == 'dry-run'
+        run: npx --yes wrangler@4.139.0 deploy --dry-run --config controller-v2/wrangler.toml
+      - name: Deploy disabled Worker, inject secret, optionally activate
+        if: inputs.mode == 'deploy-disabled' || inputs.mode == 'deploy-enabled'
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WORKER_GH_TOKEN: ${{ secrets.V2_GITHUB_DISPATCH_TOKEN }}
+          MODE: ${{ inputs.mode }}
+        run: |
+          set -euo pipefail
+          # Work from an ephemeral runtime copy; NEVER edit the repository config.
+          cp controller-v2/wrangler.toml controller-v2/wrangler.runtime.toml
+          npx --yes wrangler@4.139.0 deploy --config controller-v2/wrangler.runtime.toml
+          printf '%s' "$WORKER_GH_TOKEN" | npx --yes wrangler@4.139.0 secret put GITHUB_TOKEN --config controller-v2/wrangler.runtime.toml
+          if [[ "$MODE" == "deploy-enabled" ]]; then
+            sed -i 's/DISPATCH_ENABLED = "false"/DISPATCH_ENABLED = "true"/' controller-v2/wrangler.runtime.toml
+            grep -q 'DISPATCH_ENABLED = "true"' controller-v2/wrangler.runtime.toml
+            npx --yes wrangler@4.139.0 deploy --config controller-v2/wrangler.runtime.toml
+          fi
+          echo "Cloudflare deploy command completed for requested mode; check dashboard and actual scheduled runs."

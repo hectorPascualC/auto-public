@@ -6,3 +6,8 @@ __pycache__/
 *.pem
 *.key
 auto-places-docents/runs/
+
+# V2 local controller runtime; never commit generated deployment configuration.
+controller-v2/wrangler.runtime.toml
+controller-v2/node_modules/
+controller-v2/.wrangler/

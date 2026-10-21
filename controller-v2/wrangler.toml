@@ -1,0 +1,20 @@
+name = "auto-public-controller-v2"
+main = "src/index.mjs"
+compatibility_date = "2026-10-01"
+workers_dev = false
+
+[vars]
+GITHUB_REPO = "hectorPascualC/auto-public"
+DISPATCH_ENABLED = "false"
+
+[triggers]
+# UTC; the Worker filters the actual Madrid slot and CET/CEST at runtime.
+crons = ["35,47 6,7,8,9,11,12,13,14 * * 1-5"]
+
+[[durable_objects.bindings]]
+name = "SLOT_COORDINATOR"
+class_name = "SlotCoordinator"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["SlotCoordinator"]

@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 REPO = ROOT.parent
 sys.path.insert(0, str(ROOT))
 import schedule_gate
+import sanitize_public_state
 import slot_ledger
 import finalize_history
 from coverage import classify
@@ -73,6 +74,37 @@ class TestSchedule(unittest.TestCase):
         for cron,when in cases:
             self.assertFalse(schedule_gate.decide("schedule",cron,at(when),{}, {})[0],(cron,when))
 
+    def test_v2_dispatch_slot_and_backup(self):
+        slot="2026-10-20T09:00"
+        a=schedule_gate.decide("workflow_dispatch","",
+            at("2026-10-20T08:36:00+02:00"),{}, {},
+            slot_input=slot,attempt_input="primary")
+        self.assertEqual(a,(True,"RUN_SCAN",slot,"v2_primary"))
+        a=schedule_gate.decide("workflow_dispatch","",
+            at("2026-10-20T08:48:00+02:00"),{}, {},
+            slot_input=slot,attempt_input="backup")
+        self.assertEqual(a,(True,"RUN_SCAN",slot,"v2_backup"))
+        h=health("2026-10-20T08:36:00+02:00","2026-10-20T08:43:00+02:00")
+        a=schedule_gate.decide("workflow_dispatch","",
+            at("2026-10-20T08:48:00+02:00"),h, {},
+            slot_input=slot,attempt_input="backup")
+        self.assertEqual(a[1],"SKIPPED_ALREADY_VALID_SNAPSHOT")
+        for s, now, attempt in (
+            ("2026-10-20T09:00","2026-10-20T09:46:00+02:00","backup"),
+            ("2026-10-20T09:00","2026-10-20T08:34:00+02:00","primary"),
+            ("2026-10-24T09:00","2026-10-24T08:35:00+02:00","primary")):
+            x=schedule_gate.decide("workflow_dispatch","",at(now),{}, {},
+                slot_input=s,attempt_input=attempt)
+            self.assertFalse(x[0],(s,now))
+        for invalid,attempt in (
+            ("2026-10-20T09:30","primary"),
+            ("2026-10-20T09:00","other"),
+            ("2026-10-20T09:00+02:00","primary")):
+            x=schedule_gate.decide("workflow_dispatch","",
+                at("2026-10-20T08:36:00+02:00"),{}, {},
+                slot_input=invalid,attempt_input=attempt)
+            self.assertFalse(x[0],invalid)
+
     def test_extra_1830_dst_and_no_dedup(self):
         for cron,when in (
             ("30 16 * * 1-5","2026-10-20T18:30:00+02:00"),
@@ -103,6 +135,47 @@ class TestSchedule(unittest.TestCase):
         self.assertEqual(schedule_gate.decide("push","",at("2026-10-20T16:00:00+02:00"),
             {}, {},**args)[1],"rescue_slot_expired")
         self.assertIsNone(schedule_gate.parse_rescue(marker.replace("+02:00","+01:00")))
+
+class TestPublicSanitizer(unittest.TestCase):
+    def test_identifying_source_text_is_never_in_public_new_state(self):
+        raw = {
+            "generated_at":"2026-10-20T08:35:00+02:00",
+            "run_id":"fixture",
+            "territories":{"EDUBCN":{
+                "documents":[{"url":"https://example.test/offer.pdf",
+                   "text_excerpt":"Private applicant DNI: synthetic-example",
+                   "sha256":"sha-test","target_hits":[{"code":"507",
+                     "snippet":"synthetic applicant text"}]}],
+                "global":{"row_samples":["synthetic applicant"],
+                          "body_sha256":"stable-hash"},
+                "freshness":"FRESC",
+            }},
+            "active_snapshot":{"territories":{"EDUBCN":{
+                "current_target_placements":[{"placement_id":"GENSEC_2627_999",
+                   "target_codes":["507"],"snippet":"synthetic applicant"}]}}}
+        }
+        cleaned=sanitize_public_state.sanitize(raw)
+        sanitize_public_state.audit_absence(cleaned)
+        payload=json.dumps(cleaned)
+        self.assertNotIn("synthetic applicant",payload)
+        self.assertEqual(cleaned["territories"]["EDUBCN"]["documents"][0]["sha256"],"sha-test")
+        self.assertEqual(cleaned["active_snapshot"]["territories"]["EDUBCN"]
+                         ["current_target_placements"][0]["placement_id"],
+                         "GENSEC_2627_999")
+
+    def test_file_sanitizer_preserves_snapshot_identity(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            statefile=Path(tmp)/"latest.json"
+            fixture={"generated_at":"2026-10-20T08:35:00+02:00",
+                 "run_id":"one","territories":{"EDUBCN":{"text_excerpt":"person"}} ,
+                 "active_snapshot":{"territories":{"EDUBCN":{"snippet":"person"}}}}
+            statefile.write_text(json.dumps(fixture))
+            with patch.object(sanitize_public_state,"SOURCE",statefile):
+                self.assertEqual(sanitize_public_state.main(),0)
+            new=json.loads(statefile.read_text())
+            self.assertEqual(new["run_id"],"one")
+            self.assertEqual(new["territories"]["EDUBCN"],{})
+            self.assertEqual(new["active_snapshot"]["territories"]["EDUBCN"],{})
 
 class TestResults(unittest.TestCase):
     def test_deserta(self):
@@ -218,6 +291,26 @@ class TestWorkflow(unittest.TestCase):
         self.assertTrue(all("timezone" not in x for x in times))
         self.assertEqual(data["concurrency"]["queue"],"max")
         self.assertFalse(data["concurrency"]["cancel-in-progress"])
+        inputs = on["workflow_dispatch"]["inputs"]
+        self.assertIn("slot_local", inputs)
+        self.assertIn("trigger_attempt", inputs)
+        self.assertIn("AUTO V2", data["run-name"])
+        self.assertEqual(data["jobs"]["monitor"]["runs-on"], "ubuntu-24.04")
+
+    def test_deploy_is_manual_and_fails_closed(self):
+        import yaml
+        d=yaml.safe_load((REPO/".github/workflows/deploy-controller-v2.yml").read_text())
+        on=d.get("on",d.get(True))
+        self.assertEqual(set(on), {"workflow_dispatch"})
+        self.assertEqual(d["permissions"]["contents"], "read")
+        inputs=on["workflow_dispatch"]["inputs"]
+        self.assertEqual(inputs["mode"]["default"], "dry-run")
+        self.assertEqual(inputs["mode"]["options"],
+                         ["dry-run", "deploy-disabled", "deploy-enabled"])
+        self.assertIn("confirm_activation", inputs)
+        job=d["jobs"]["deploy-controller"]
+        self.assertEqual(job["runs-on"],"ubuntu-24.04")
+        self.assertTrue(all("schedule" not in k for k in on))
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,4 +1,6 @@
 name: AUTO places docents 507-627
+# Identify external dispatch separately from legacy schedule/push runs.
+run-name: ${{ inputs.slot_local && format('AUTO V2 {0} / {1}', inputs.slot_local, inputs.trigger_attempt) || format('AUTO {0}', github.event_name) }}
 
 on:
   schedule:
@@ -35,6 +37,15 @@ on:
         description: Omet la comprovació de frescor
         type: boolean
         default: false
+      slot_local:
+        description: 'V2 nominal slot Europe/Madrid, YYYY-MM-DDTHH:00'
+        type: string
+        default: ''
+      trigger_attempt:
+        description: 'V2 primary or backup'
+        type: choice
+        options: [primary, backup]
+        default: primary
   push:
     branches: [main]
     paths:
@@ -43,6 +54,7 @@ on:
       - 'auto-places-docents/coverage.py'
       - 'auto-places-docents/schedule_gate.py'
       - 'auto-places-docents/slot_ledger.py'
+      - 'auto-places-docents/sanitize_public_state.py'
       - 'auto-places-docents/finalize_history.py'
       - 'auto-places-docents/tests/test_monitor_regressions.py'
       - 'auto-places-docents/monitor_v2.py'
@@ -67,7 +79,7 @@ concurrency:
 
 jobs:
   monitor:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
       - name: Checkout immutable triggering revision
@@ -84,6 +96,8 @@ jobs:
           REQUEST_RUN: ${{ github.event_name != 'workflow_dispatch' || inputs.run_monitor }}
           FORCE_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.force_run }}
           TRIGGER_SHA: ${{ github.sha }}
+          SLOT_INPUT: ${{ inputs.slot_local || '' }}
+          ATTEMPT_INPUT: ${{ inputs.trigger_attempt || '' }}
         run: |
           set -euo pipefail
           git fetch --no-tags origin main
@@ -167,6 +181,10 @@ jobs:
               raise SystemExit(f"consumer.json too large: {p.stat().st_size} bytes")
           print(f"consumer.json OK: {p.stat().st_size} bytes, {len(data['territories'])} scopes")
           PY
+
+      - name: Minimize public document text before history persistence
+        if: steps.gate.outputs.run_monitor == 'true'
+        run: python auto-places-docents/sanitize_public_state.py
 
       - name: Validate final state and finalize history
         if: steps.gate.outputs.run_monitor == 'true'

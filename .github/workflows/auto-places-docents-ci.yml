@@ -51,7 +51,7 @@ jobs:
   v2-integration:
     # PR-only, branch-isolated real extraction, NEVER commit or upload raw documents.
     if: github.event_name == 'pull_request' && github.head_ref == 'architecture-v2'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     permissions:
       contents: read

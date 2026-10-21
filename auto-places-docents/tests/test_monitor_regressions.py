@@ -295,6 +295,7 @@ class TestWorkflow(unittest.TestCase):
         self.assertIn("slot_local", inputs)
         self.assertIn("trigger_attempt", inputs)
         self.assertIn("AUTO V2", data["run-name"])
+        self.assertEqual(data["jobs"]["monitor"]["runs-on"], "ubuntu-24.04")
 
 if __name__ == "__main__":
     unittest.main()

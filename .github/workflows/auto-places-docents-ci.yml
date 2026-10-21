@@ -41,7 +41,7 @@ jobs:
       - name: Node.js for V2 controller tests
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
       - name: Test independent scheduler, backup and failure safety
         run: node --test controller-v2/tests/*.test.mjs
 

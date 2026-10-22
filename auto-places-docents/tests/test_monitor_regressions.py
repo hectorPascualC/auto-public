@@ -88,7 +88,15 @@ class TestSchedule(unittest.TestCase):
         a=schedule_gate.decide("workflow_dispatch","",
             at("2026-10-20T08:48:00+02:00"),h, {},
             slot_input=slot,attempt_input="backup")
-        self.assertEqual(a[1],"SKIPPED_ALREADY_VALID_SNAPSHOT")
+        # V2 may not silently adopt a fresh snapshot from an unslotted push.
+        self.assertEqual(a,(True,"RUN_SCAN",slot,"v2_backup"))
+        ledger = {"slots": {slot: {
+            "status": "PASS", "generated_at": h["generated_at"],
+            "audit_at": h["audit_at"], "snapshot_run_id": "safe-run"}}}
+        a=schedule_gate.decide("workflow_dispatch","",
+            at("2026-10-20T08:48:00+02:00"),h,ledger,
+            slot_input=slot,attempt_input="backup")
+        self.assertEqual(a[1],"SKIPPED_ALREADY_VALID_LEDGER")
         for s, now, attempt in (
             ("2026-10-20T09:00","2026-10-20T09:46:00+02:00","backup"),
             ("2026-10-20T09:00","2026-10-20T08:34:00+02:00","primary"),

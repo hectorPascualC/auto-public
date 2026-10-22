@@ -69,38 +69,24 @@ def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
     key, kind = "", "manual"
     local = now.astimezone(TZ)
     if event == "schedule":
-        extra = re.fullmatch(r"30 (16|17) \* \* 1-5", cron.strip())
-        if extra:
-            # Github cron is UTC. Only one of these two UTC hours is 18:30
-            # in Madrid for the current DST regime. Reject the other.
-            utc_trigger = datetime.combine(
-                local.date(), time(int(extra.group(1)), 30), tzinfo=timezone.utc)
-            local_trigger = utc_trigger.astimezone(TZ)
-            delay = (now - utc_trigger).total_seconds()
-            if (local.weekday() > 4 or local_trigger.hour != 18 or
-                    local_trigger.minute != 30 or not 0 <= delay <= 5400):
-                return False, "stale_or_offseason_extra", "", "stale"
-            key = local_trigger.strftime("%Y-%m-%dT18:00")
-            kind = "extra_1830"
-        else:
-            # Two UTC cron candidates per local slot, one for each DST regime.
-            # GitHub schedules 12 minutes apart. Backup skips a prior PASS.
-            m = re.fullmatch(r"(35|47) (6|7|8|9|11|12|13|14) \* \* 1-5", cron.strip())
-            if not m:
-                return False, "unknown_schedule", "", "unknown"
-            minute, hour_utc = map(int, m.groups())
-            intended_utc = datetime.combine(
-                now.astimezone(timezone.utc).date(),
-                time(hour_utc, minute), tzinfo=timezone.utc)
-            intended_local = intended_utc.astimezone(TZ)
-            nominal = intended_local + timedelta(hours=1)
-            delay = (now - intended_utc).total_seconds()
-            if (intended_local.weekday() > 4 or
-                    intended_local.hour not in (8, 10, 13, 15) or
-                    nominal.hour not in HOURS or not 0 <= delay <= 3600):
-                return False, "stale_or_offseason_schedule", "", "stale"
-            key = nominal.strftime("%Y-%m-%dT%H:00")
-            kind = "backup" if minute == 47 else "primary"
+        # Two UTC cron candidates per local slot, one for each DST regime.
+        # GitHub schedules 12 minutes apart. Backup skips a prior PASS.
+        m = re.fullmatch(r"(35|47) (6|7|8|9|11|12|13|14) \* \* 1-5", cron.strip())
+        if not m:
+            return False, "unknown_schedule", "", "unknown"
+        minute, hour_utc = map(int, m.groups())
+        intended_utc = datetime.combine(
+            now.astimezone(timezone.utc).date(),
+            time(hour_utc, minute), tzinfo=timezone.utc)
+        intended_local = intended_utc.astimezone(TZ)
+        nominal = intended_local + timedelta(hours=1)
+        delay = (now - intended_utc).total_seconds()
+        if (intended_local.weekday() > 4 or
+                intended_local.hour not in (8, 10, 13, 15) or
+                nominal.hour not in HOURS or not 0 <= delay <= 3600):
+            return False, "stale_or_offseason_schedule", "", "stale"
+        key = nominal.strftime("%Y-%m-%dT%H:00")
+        kind = "backup" if minute == 47 else "primary"
     elif event == "push":
         if not force and trigger_sha and trigger_sha == processed_sha:
             return False, "duplicate_push", "", "push"
@@ -127,8 +113,7 @@ def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
         key, kind = slot_input, "v2_" + attempt_input
     elif event != "workflow_dispatch":
         return False, "unsupported_event", "", "unknown"
-    # Extra 18:30 is a real test scan, even if an earlier 18:00 snapshot exists.
-    if key and not force and kind != "extra_1830":
+    if key and not force:
         slots = ledger.get("slots", {})
         if isinstance(slots, dict):
             entry = slots.get(key, {})

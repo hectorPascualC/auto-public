@@ -105,16 +105,13 @@ class TestSchedule(unittest.TestCase):
                 slot_input=invalid,attempt_input=attempt)
             self.assertFalse(x[0],invalid)
 
-    def test_extra_1830_dst_and_no_dedup(self):
-        for cron,when in (
-            ("30 16 * * 1-5","2026-10-20T18:30:00+02:00"),
-            ("30 17 * * 1-5","2026-10-26T18:30:00+01:00")):
-            ok=schedule_gate.decide("schedule",cron,at(when),
-                health("2026-10-20T18:13:00+02:00","2026-10-20T18:20:00+02:00"),{})
-            self.assertEqual(ok[0],True)
-            self.assertEqual(ok[3],"extra_1830")
-        self.assertFalse(schedule_gate.decide("schedule","30 17 * * 1-5",
-            at("2026-10-20T19:30:00+02:00"),{}, {})[0])
+    def test_retired_extra_1830_candidates_are_rejected(self):
+        for cron, when in (
+            ("30 16 * * 1-5", "2026-10-20T18:30:00+02:00"),
+            ("30 17 * * 1-5", "2026-10-26T18:30:00+01:00")):
+            result = schedule_gate.decide("schedule", cron, at(when), {}, {})
+            self.assertFalse(result[0])
+            self.assertEqual(result[1], "unknown_schedule")
 
     def test_health_nominal_pre_hour_and_no_old_data(self):
         good=health("2026-10-20T08:35:10+02:00","2026-10-20T08:43:10+02:00")
@@ -283,11 +280,10 @@ class TestWorkflow(unittest.TestCase):
         on = data.get("on",data.get(True))
         times = on["schedule"]
         # UTC candidates cover pre-hour CET and CEST with a conditional backup.
-        self.assertEqual(len(times), 18)
+        self.assertEqual(len(times), 16)
         self.assertEqual({x["cron"] for x in times},
             {f"{minute} {hour} * * 1-5" for minute in (35, 47)
-             for hour in (6, 7, 8, 9, 11, 12, 13, 14)} |
-            {"30 16 * * 1-5", "30 17 * * 1-5"})
+             for hour in (6, 7, 8, 9, 11, 12, 13, 14)})
         self.assertTrue(all("timezone" not in x for x in times))
         self.assertEqual(data["concurrency"]["queue"],"max")
         self.assertFalse(data["concurrency"]["cancel-in-progress"])

@@ -1,0 +1,79 @@
+name: V2 Cloudflare safe tail - one time
+# Temporary, on push to main after review. Observe scheduled cron without exposing secrets.
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/v2-cloudflare-safe-tail.yml']
+permissions:
+  contents: read
+jobs:
+  tail:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 68
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Cloudflare credentials are present
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${CLOUDFLARE_API_TOKEN:-}" || -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]]; then
+            echo "::error::Cloudflare tail credentials missing"
+            exit 1
+          fi
+      - name: Read Cloudflare events with strict log redaction
+        shell: bash
+        run: |
+          set -uo pipefail
+          cat > /tmp/v2-filter.py <<'PY'
+          import sys, json
+          from datetime import datetime, timezone
+          PUBLIC_FIELDS = {"status", "slot", "attempt", "phase", "error", "reason"}
+          for line in sys.stdin:
+              try:
+                  item = json.loads(line)
+                  if not isinstance(item, dict): continue
+                  # No request URL, headers, account, token, stack, or arbitrary log text.
+                  result = {"observed_utc": datetime.now(timezone.utc).isoformat(),
+                            "eventTimestamp": item.get("eventTimestamp"),
+                            "outcome": item.get("outcome")}
+                  if result["outcome"] not in ("ok", "exception", "canceled", "unknown"):
+                      continue
+                  for part in item.get("logs", []):
+                      for msg in part.get("message", []):
+                          if not isinstance(msg, str): continue
+                          try: record = json.loads(msg)
+                          except (ValueError, TypeError): continue
+                          if not isinstance(record, dict) or record.get("controller") != "v2":
+                              continue
+                          result["controller"] = "v2"
+                          for key in PUBLIC_FIELDS:
+                              value = record.get(key)
+                              if value is not None and isinstance(value, (str, int, float, bool)):
+                                  result[key] = str(value)[:80]
+                  exc = item.get("exceptions") or []
+                  if isinstance(exc, list):
+                      result["exception_count"] = len(exc)
+                  print(json.dumps(result, sort_keys=True), flush=True)
+              except (TypeError, ValueError):
+                  continue
+          PY
+          set +e
+          timeout -s INT 3600 npx --yes wrangler@4.139.0 tail auto-public-controller-v2 --format=json --config controller-v2/wrangler.toml 2>/tmp/v2-tail-stderr.txt | python3 -u /tmp/v2-filter.py | tee v2-safe-traces.jsonl
+          codes=( "${PIPESTATUS[@]}" )
+          set -e
+          if [[ "${codes[0]}" != "0" && "${codes[0]}" != "124" ]]; then
+            echo "::error::Cloudflare tail connection failed; inspect permissions via Dashboard (raw error withheld)"
+            exit 1
+          fi
+          echo "Tail session finished. Only allowlisted fields were printed."
+      - name: Upload sanitized event evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudflare-v2-safe-tail-${{ github.run_id }}
+          path: v2-safe-traces.jsonl
+          if-no-files-found: warn
+          retention-days: 2

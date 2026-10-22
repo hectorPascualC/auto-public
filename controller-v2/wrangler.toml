@@ -5,7 +5,7 @@ workers_dev = false
 
 [vars]
 GITHUB_REPO = "hectorPascualC/auto-public"
-DISPATCH_ENABLED = "true"
+DISPATCH_ENABLED = "false"
 
 # Preserve production logs/traces across GitHub-driven Wrangler redeployments.
 # Few cron invocations per day: 100% sampling is inexpensive and diagnostic.

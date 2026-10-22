@@ -176,6 +176,8 @@ test("Cloudflare config and GitHub contract are statically aligned", () => {
   assert.match(toml,/DISPATCH_ENABLED = "false"/);
   assert.match(toml,/class_name = "SlotCoordinator"/);
   assert.match(toml,/new_sqlite_classes = \["SlotCoordinator"\]/);
+  assert.match(toml,/\[observability\]\s+enabled = true\s+head_sampling_rate = 1/);
+  assert.match(toml,/\[observability\.traces\]\s+enabled = true\s+head_sampling_rate = 1/);
   const worker=readFileSync(new URL("../src/index.mjs",import.meta.url),"utf8");
   assert.match(worker,/blockConcurrencyWhile/);
   assert.match(worker,/scheduled\(controller, env\)/);

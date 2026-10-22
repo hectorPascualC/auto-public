@@ -153,3 +153,54 @@ export async function processScheduled({scheduledTime, nowMs = Date.now(), env, 
   await state.put(slot.attempt, "sent");
   return {status: "DISPATCHED", slot: slot.key, attempt: slot.attempt};
 }
+
+const KNOWN_SCHEDULED_ERRORS = new Set([
+  "controller_configuration_invalid",
+  "slot_coordinator_binding_invalid",
+  "slot_coordinator_stub_invalid",
+  "github_contents_unexpected_schema",
+  "github_runs_unexpected_schema"
+]);
+
+function scheduledErrorCode(error) {
+  // Never log exception text from dependencies: it could contain account data.
+  const message = typeof error?.message === "string" ? error.message : "";
+  if (KNOWN_SCHEDULED_ERRORS.has(message) || /^github_http_[0-9]{3}$/.test(message))
+    return message;
+  return "unexpected_exception";
+}
+
+// Keep the entire valid-slot path inside one catch boundary. In particular,
+// DO binding lookup used to happen BEFORE the catch in src/index.mjs, hiding
+// the actionable failure behind a generic Cloudflare Cron "exception" event.
+export async function runScheduledController({scheduledTime, env, logger = console}) {
+  let slot = null;
+  let phase = "classify_slot";
+  try {
+    slot = scheduledSlot(scheduledTime);
+    if (!slot) {
+      const result = {status: "IGNORED", reason: "not_a_nominal_slot"};
+      logger.log(JSON.stringify({controller: "v2", ...result}));
+      return result;
+    }
+    phase = "resolve_coordinator";
+    const coordinator = env?.SLOT_COORDINATOR;
+    if (!coordinator || typeof coordinator.idFromName !== "function" ||
+        typeof coordinator.get !== "function")
+      throw new Error("slot_coordinator_binding_invalid");
+    const stub = coordinator.get(coordinator.idFromName(slot.key));
+    if (!stub || typeof stub.runSlot !== "function")
+      throw new Error("slot_coordinator_stub_invalid");
+    phase = "run_coordinator";
+    const result = await stub.runSlot({scheduledTime});
+    logger.log(JSON.stringify({controller: "v2", ...result}));
+    return result;
+  } catch (error) {
+    logger.error(JSON.stringify({
+      controller: "v2", status: "ERROR",
+      slot: slot?.key || null, attempt: slot?.attempt || null,
+      phase, error: scheduledErrorCode(error)
+    }));
+    throw error; // preserve Cloudflare invocation error status
+  }
+}

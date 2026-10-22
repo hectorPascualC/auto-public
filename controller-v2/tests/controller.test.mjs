@@ -183,6 +183,7 @@ test("Cloudflare config and GitHub contract are statically aligned", () => {
   assert.match(toml,/crons = \["35,47 6,7,8,9,11,12,13,14 \* \* 1-5", "50 16 \* \* 1-5", "10 17 \* \* 1-5"\]/);
   assert.match(toml,/50 16 \* \* 1-5/);
   assert.match(toml,/DISPATCH_ENABLED = "false"/);
+  assert.match(toml,/^crons = \[/m); // A commented-out cron must never satisfy static coverage.
   assert.match(toml,/class_name = "SlotCoordinator"/);
   assert.match(toml,/new_sqlite_classes = \["SlotCoordinator"\]/);
   assert.match(toml,/\[observability\]\s+enabled = true\s+head_sampling_rate = 1/);

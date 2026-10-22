@@ -71,6 +71,10 @@ test("CET/CEST, nominal hours and exact backup identities", () => {
     ["2026-10-26T12:35:00Z","2026-10-26T14:00"],
     ["2026-10-26T14:35:00Z","2026-10-26T16:00"]
   ]) assert.equal(scheduledSlot(Date.parse(instant)).key, slot, instant);
+  assert.deepEqual(scheduledSlot(Date.parse("2026-10-22T16:50:00Z")), {
+    key:"2026-10-22T19:00", attempt:"primary", scheduledTime:Date.parse("2026-10-22T16:50:00Z")
+  });
+  assert.equal(scheduledSlot(Date.parse("2026-10-23T16:50:00Z")), null);
   assert.equal(scheduledSlot(Date.parse("2026-10-20T07:35:00Z")), null);
   assert.equal(scheduledSlot(Date.parse("2026-10-24T06:35:00Z")), null);
   assert.equal(scheduledSlot(Number.NaN), null);
@@ -173,6 +177,7 @@ test("scheduled event too late, disabled and invalid configuration fail closed",
 test("Cloudflare config and GitHub contract are statically aligned", () => {
   const toml=readFileSync(new URL("../wrangler.toml",import.meta.url),"utf8");
   assert.match(toml,/crons = \["35,47 6,7,8,9,11,12,13,14 \* \* 1-5"\]/);
+  assert.match(toml,/50 16 \* \* 1-5/);
   assert.match(toml,/DISPATCH_ENABLED = "false"/);
   assert.match(toml,/class_name = "SlotCoordinator"/);
   assert.match(toml,/new_sqlite_classes = \["SlotCoordinator"\]/);

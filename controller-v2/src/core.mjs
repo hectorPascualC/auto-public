@@ -17,15 +17,6 @@ export function scheduledSlot(scheduledTime) {
   if (!Number.isFinite(scheduledTime)) return null;
   const p = madridParts(scheduledTime);
   const localHour = Number(p.hour), minute = Number(p.minute);
-  // One-off production validation, 22 October only. 18:50 CEST = 16:50 UTC.
-  // The nominal 19:00 key makes the downstream GitHub slot gate/ledger consistent.
-  if (p.year === "2026" && p.month === "10" && p.day === "22" &&
-      p.weekday === "Thu" && localHour === 18 && minute === 50)
-    return {key: "2026-10-22T19:00", attempt: "primary", scheduledTime};
-  if (p.year === "2026" && p.month === "10" && p.day === "22" &&
-      p.weekday === "Thu" && localHour === 19 && minute === 10)
-    return {key: "2026-10-22T19:00", attempt: "backup", scheduledTime};
-
   if (!["Mon", "Tue", "Wed", "Thu", "Fri"].includes(p.weekday) ||
       !HOURS.has(localHour) || ![35, 47].includes(minute) ||
       !SLOT_HOURS.has(localHour + 1)) return null;

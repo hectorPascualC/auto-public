@@ -7,6 +7,16 @@ workers_dev = false
 GITHUB_REPO = "hectorPascualC/auto-public"
 DISPATCH_ENABLED = "false"
 
+# Preserve production logs/traces across GitHub-driven Wrangler redeployments.
+# Few cron invocations per day: 100% sampling is inexpensive and diagnostic.
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[observability.traces]
+enabled = true
+head_sampling_rate = 1
+
 [triggers]
 # UTC; the Worker filters the actual Madrid slot and CET/CEST at runtime.
 crons = ["35,47 6,7,8,9,11,12,13,14 * * 1-5"]

@@ -1,7 +1,7 @@
 import test from "node:test";
 import {readFileSync} from "node:fs";
 import assert from "node:assert/strict";
-import {scheduledSlot, isValidReceipt, decideAttempt, processScheduled} from "../src/core.mjs";
+import {scheduledSlot, isValidReceipt, decideAttempt, processScheduled, runScheduledController} from "../src/core.mjs";
 
 const SU = Date.parse("2026-10-20T06:35:00Z");
 const BU = Date.parse("2026-10-20T06:47:00Z");
@@ -179,4 +179,75 @@ test("Cloudflare config and GitHub contract are statically aligned", () => {
   const worker=readFileSync(new URL("../src/index.mjs",import.meta.url),"utf8");
   assert.match(worker,/blockConcurrencyWhile/);
   assert.match(worker,/scheduled\(controller, env\)/);
+});
+
+test("14:47 Madrid is correctly ignored; 13:35 is the 14:00 primary", async () => {
+  const ignored = Date.parse("2026-10-22T12:47:02.977Z");
+  const primary = Date.parse("2026-10-22T11:35:02.977Z");
+  assert.equal(scheduledSlot(ignored), null);
+  assert.deepEqual(scheduledSlot(primary), {
+    key: "2026-10-22T14:00", attempt: "primary", scheduledTime: primary
+  });
+  const logs = [];
+  const result = await runScheduledController({
+    scheduledTime: ignored, env: {},
+    logger: {log: x => logs.push(JSON.parse(x)), error: () => assert.fail("unexpected error")}
+  });
+  assert.equal(result.status, "IGNORED");
+  assert.equal(logs[0].reason, "not_a_nominal_slot");
+});
+
+test("a valid cron with missing DO binding reports a safe error before rethrow", async () => {
+  const logs = [];
+  const scheduledTime = Date.parse("2026-10-22T11:35:02Z");
+  await assert.rejects(runScheduledController({
+    scheduledTime, env: {GITHUB_TOKEN: "TOP_SECRET"},
+    logger: {log: () => assert.fail("unexpected success"), error: x => logs.push(x)}
+  }), /slot_coordinator_binding_invalid/);
+  assert.deepEqual(JSON.parse(logs[0]), {
+    controller: "v2", status: "ERROR", slot: "2026-10-22T14:00",
+    attempt: "primary", phase: "resolve_coordinator",
+    error: "slot_coordinator_binding_invalid"
+  });
+  assert.equal(logs[0].includes("TOP_SECRET"), false);
+});
+
+test("a valid cron calls the DO RPC and emits a structured result", async () => {
+  const scheduledTime = Date.parse("2026-10-22T11:47:00Z");
+  const seen = [], logs = [];
+  const env = {SLOT_COORDINATOR: {
+    idFromName: key => {seen.push(key); return {key};},
+    get: id => ({runSlot: async event => {
+      seen.push(id.key, event.scheduledTime);
+      return {status:"DISPATCHED", slot:id.key, attempt:"backup"};
+    }})
+  }};
+  const result = await runScheduledController({
+    scheduledTime, env,
+    logger: {log: x => logs.push(JSON.parse(x)), error: () => assert.fail("unexpected error")}
+  });
+  assert.deepEqual(seen, ["2026-10-22T14:00", "2026-10-22T14:00", scheduledTime]);
+  assert.equal(result.status, "DISPATCHED");
+  assert.equal(logs[0].status, "DISPATCHED");
+});
+
+test("RPC exceptions preserve known API codes and redact arbitrary errors", async () => {
+  const scheduledTime = Date.parse("2026-10-22T11:35:00Z");
+  for (const [reason, expected] of [
+    ["github_http_403", "github_http_403"],
+    ["unexpected sensitive token leaked", "unexpected_exception"]
+  ]) {
+    const logs = [];
+    const env = {SLOT_COORDINATOR: {
+      idFromName: key => key,
+      get: () => ({runSlot: async () => {throw new Error(reason);}})
+    }};
+    await assert.rejects(runScheduledController({
+      scheduledTime, env,
+      logger: {log: () => assert.fail("unexpected success"), error: x => logs.push(JSON.parse(x))}
+    }));
+    assert.equal(logs[0].phase, "run_coordinator");
+    assert.equal(logs[0].error, expected);
+    assert.equal(JSON.stringify(logs).includes("sensitive token"), false);
+  }
 });

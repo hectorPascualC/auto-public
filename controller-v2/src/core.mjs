@@ -22,6 +22,9 @@ export function scheduledSlot(scheduledTime) {
   if (p.year === "2026" && p.month === "10" && p.day === "22" &&
       p.weekday === "Thu" && localHour === 18 && minute === 50)
     return {key: "2026-10-22T19:00", attempt: "primary", scheduledTime};
+  if (p.year === "2026" && p.month === "10" && p.day === "22" &&
+      p.weekday === "Thu" && localHour === 19 && minute === 10)
+    return {key: "2026-10-22T19:00", attempt: "backup", scheduledTime};
 
   if (!["Mon", "Tue", "Wed", "Thu", "Fri"].includes(p.weekday) ||
       !HOURS.has(localHour) || ![35, 47].includes(minute) ||

@@ -19,7 +19,7 @@ head_sampling_rate = 1
 
 [triggers]
 # UTC; the Worker filters the actual Madrid slot and CET/CEST at runtime.
-# Temporary 18:50 CEST candidate; code only accepts 2026-10-22.\ncrons = ["35,47 6,7,8,9,11,12,13,14 * * 1-5", "50 16 * * 1-5"]
+# Temporary 18:50 CEST candidate; code only accepts 2026-10-22.\ncrons = ["35,47 6,7,8,9,11,12,13,14 * * 1-5", "50 16 * * 1-5", "10 17 * * 1-5"]
 
 [[durable_objects.bindings]]
 name = "SLOT_COORDINATOR"

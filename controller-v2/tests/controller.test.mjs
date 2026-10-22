@@ -75,6 +75,17 @@ test("CET/CEST, nominal hours and exact backup identities", () => {
   assert.equal(scheduledSlot(Date.parse("2026-10-22T17:10:00Z")), null);
   assert.equal(scheduledSlot(Date.parse("2026-10-23T17:10:00Z")), null);
   assert.equal(scheduledSlot(Date.parse("2026-10-23T16:50:00Z")), null);
+  for (const [utc, attempt] of [
+    ["2026-10-22T18:15:00Z", "primary"],
+    ["2026-10-22T18:27:00Z", "backup"]
+  ]) {
+    const scheduledTime = Date.parse(utc);
+    assert.deepEqual(scheduledSlot(scheduledTime), {
+      key: "2026-10-22T20:00", attempt, scheduledTime
+    });
+  }
+  assert.equal(scheduledSlot(Date.parse("2026-10-23T18:15:00Z")), null);
+  assert.equal(scheduledSlot(Date.parse("2026-10-23T18:27:00Z")), null);
   assert.equal(scheduledSlot(Date.parse("2026-10-20T07:35:00Z")), null);
   assert.equal(scheduledSlot(Date.parse("2026-10-24T06:35:00Z")), null);
   assert.equal(scheduledSlot(Number.NaN), null);
@@ -176,7 +187,7 @@ test("scheduled event too late, disabled and invalid configuration fail closed",
 
 test("Cloudflare config and GitHub contract are statically aligned", () => {
   const toml=readFileSync(new URL("../wrangler.toml",import.meta.url),"utf8");
-  assert.match(toml,/crons = \["35,47 6,7,8,9,11,12,13,14 \* \* 1-5"\]/);
+  assert.match(toml,/^crons = \["35,47 6,7,8,9,11,12,13,14 \* \* 1-5", "15,27 18 \* \* 1-5"\]$/m);
   assert.match(toml,/DISPATCH_ENABLED = "false"/);
   assert.match(toml,/^crons = \[/m); // A commented-out cron must never satisfy static coverage.
   assert.match(toml,/class_name = "SlotCoordinator"/);

@@ -17,6 +17,14 @@ export function scheduledSlot(scheduledTime) {
   if (!Number.isFinite(scheduledTime)) return null;
   const p = madridParts(scheduledTime);
   const localHour = Number(p.hour), minute = Number(p.minute);
+  // One-day probe only. The recurring UTC cron entry is inert on all other dates.
+  // 20:15/20:27 CEST map to the same 20:00 Madrid-local receipt window.
+  if (p.year === "2026" && p.month === "10" && p.day === "22" &&
+      p.weekday === "Thu" && localHour === 20 && [15, 27].includes(minute)) {
+    return {key: "2026-10-22T20:00",
+      attempt: minute === 15 ? "primary" : "backup", scheduledTime};
+  }
+
   if (!["Mon", "Tue", "Wed", "Thu", "Fri"].includes(p.weekday) ||
       !HOURS.has(localHour) || ![35, 47].includes(minute) ||
       !SLOT_HOURS.has(localHour + 1)) return null;

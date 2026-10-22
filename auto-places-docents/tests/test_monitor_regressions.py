@@ -105,6 +105,25 @@ class TestSchedule(unittest.TestCase):
                 slot_input=invalid,attempt_input=attempt)
             self.assertFalse(x[0],invalid)
 
+    def test_single_day_2015_controller_probe(self):
+        slot = "2026-10-22T20:00"
+        for when, attempt in (
+            ("2026-10-22T20:15:00+02:00", "primary"),
+            ("2026-10-22T20:27:00+02:00", "backup")):
+            result = schedule_gate.decide("workflow_dispatch", "", at(when),
+                {}, {}, slot_input=slot, attempt_input=attempt)
+            self.assertEqual(result, (True, "RUN_SCAN", slot, "v2_" + attempt))
+        for when, expected in (
+            ("2026-10-22T20:46:00+02:00", "stale_v2_slot"),
+            ("2026-10-23T20:15:00+02:00", "stale_v2_slot")):
+            result = schedule_gate.decide("workflow_dispatch", "", at(when),
+                {}, {}, slot_input=slot, attempt_input="primary")
+            self.assertFalse(result[0])
+            self.assertEqual(result[1], expected)
+        self.assertFalse(schedule_gate.decide("workflow_dispatch", "",
+            at("2026-10-23T20:15:00+02:00"), {}, {},
+            slot_input="2026-10-23T20:00", attempt_input="primary")[0])
+
     def test_retired_extra_1830_candidates_are_rejected(self):
         for cron, when in (
             ("30 16 * * 1-5", "2026-10-20T18:30:00+02:00"),

@@ -123,7 +123,9 @@ def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
                     entry.get("audit_at") == h.get("audit_at") and
                     entry.get("snapshot_run_id") and valid_health(h, key)):
                 return False, "SKIPPED_ALREADY_VALID_LEDGER", key, kind
-        if valid_health(h, key):
+        # A fresh unslotted push/legacy snapshot is NOT an exact V2 receipt.
+        # Without matching ledger, V2 must scan and produce its own provenance.
+        if not kind.startswith("v2_") and valid_health(h, key):
             return False, "SKIPPED_ALREADY_VALID_SNAPSHOT", key, kind
     return True, "RUN_SCAN", key, kind
 

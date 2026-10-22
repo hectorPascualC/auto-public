@@ -176,7 +176,7 @@ test("scheduled event too late, disabled and invalid configuration fail closed",
 
 test("Cloudflare config and GitHub contract are statically aligned", () => {
   const toml=readFileSync(new URL("../wrangler.toml",import.meta.url),"utf8");
-  assert.match(toml,/crons = \["35,47 6,7,8,9,11,12,13,14 \* \* 1-5"\]/);
+  assert.match(toml,/crons = \["35,47 6,7,8,9,11,12,13,14 \* \* 1-5", "50 16 \* \* 1-5"\]/);
   assert.match(toml,/50 16 \* \* 1-5/);
   assert.match(toml,/DISPATCH_ENABLED = "false"/);
   assert.match(toml,/class_name = "SlotCoordinator"/);

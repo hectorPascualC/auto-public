@@ -15,10 +15,9 @@ export class SlotCoordinator extends DurableObject {
   }
 }
 
-export d  async scheduled(controller, env) {
+export default {
+  async scheduled(controller, env) {
     return runScheduledController({scheduledTime: controller.scheduledTime, env});
-  },
-  }
   },
   async fetch() {
     return new Response("Not found", {status: 404});

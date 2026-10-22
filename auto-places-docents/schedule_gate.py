@@ -112,8 +112,7 @@ def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
                 if dt > local or (local - dt).total_seconds() >= 4 * 3600:
                     return False, "rescue_slot_expired", key, kind
     elif event == "workflow_dispatch" and slot_input:
-        one_off = slot_input == "2026-10-22T19:00"
-        if not (one_off or re.fullmatch(r"\d{4}-\d{2}-\d{2}T(09|11|14|16):00", slot_input)):
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}T(09|11|14|16):00", slot_input):
             return False, "invalid_v2_slot", "", "invalid"
         if attempt_input not in ("primary", "backup"):
             return False, "invalid_v2_attempt", "", "invalid"

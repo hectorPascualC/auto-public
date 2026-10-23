@@ -1,0 +1,77 @@
+name: AUTO PUBLIC V2 - reassert production cron registration
+# One-time surgical mitigation: re-register SAME cron; never deploy script or alter time slots.
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/repair-controller-v2-cron.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  restore:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Guarded same-value cron re-registration and independent readback audit
+        shell: python
+        run: |
+          import datetime as dt, json, os, sys, urllib.request, urllib.error
+          CRON='35,47 6,7,8,9,11,12,13,14 * * 1-5'
+          ACCOUNT=os.getenv('CF_ACCOUNT','')
+          TOKEN=os.getenv('CF_TOKEN','')
+          BASE='https://api.cloudflare.com/client/v4/accounts/'+ACCOUNT+'/workers/scripts/auto-public-controller-v2'
+          def call(path,method='GET',data=None):
+              req=urllib.request.Request(BASE+path,method=method,
+                data=json.dumps(data).encode() if data is not None else None,
+                headers={'Authorization':'Bearer '+TOKEN,'Accept':'application/json',
+                  'Content-Type':'application/json','User-Agent':'auto-public-v2-recovery'})
+              try:
+                  with urllib.request.urlopen(req,timeout=25) as f: result=json.load(f)
+                  return result if result.get('success') is True else None
+              except urllib.error.HTTPError as e:
+                  print('CLOUDFLARE_API_'+method+'=BLOCKED_HTTP_'+str(e.code))
+                  return None
+              except (urllib.error.URLError,ValueError,TimeoutError):
+                  print('CLOUDFLARE_API_'+method+'=BLOCKED_NETWORK_OR_SCHEMA')
+                  return None
+          def get_crons(result):
+              data=result.get('result',{}) if result else {}
+              return [x.get('cron') for x in data.get('schedules',[])] if isinstance(data,dict) else []
+          if not ACCOUNT or not TOKEN:
+              print('PHASE3=BLOCKED_missing_credentials')
+              sys.exit(2)
+          existing=call('/schedules')
+          settings=call('/settings')
+          if existing is None or settings is None:
+              print('PHASE3=BLOCKED_failed_to_read_live_preconditions')
+              sys.exit(2)
+          bindings=settings.get('result',{}).get('bindings',[])
+          enabled=next((x.get('text') for x in bindings if x.get('name')=='DISPATCH_ENABLED'),None)
+          durable=any(x.get('name')=='SLOT_COORDINATOR' for x in bindings)
+          secret=any(x.get('name')=='GITHUB_TOKEN' and x.get('type')=='secret_text' for x in bindings)
+          before=get_crons(existing)
+          print('PRECONDITION_crons='+json.dumps(before))
+          print('PRECONDITION_dispatch_enabled='+str(enabled=='true'))
+          print('PRECONDITION_durable_object='+str(durable))
+          print('PRECONDITION_github_secret_present='+str(secret))
+          if before!=[CRON] or enabled!='true' or not durable or not secret:
+              print('PHASE3=BLOCKED_live_config_mismatch; no writes performed')
+              sys.exit(2)
+          updated=call('/schedules','PUT',[{'cron':CRON}])
+          if not updated or get_crons(updated)!=[CRON]:
+              print('PHASE3=FAIL_write_or_response_mismatch')
+              sys.exit(1)
+          after=call('/schedules')
+          if get_crons(after)!=[CRON]:
+              print('PHASE3=FAIL_readback_mismatch')
+              sys.exit(1)
+          print('PHASE3_CONFIG=PASS_same_schedule_reasserted_and_readback_verified')
+          print('PHASE3_RUNTIME=BLOCKED_until_next_real_scheduled_invocation')
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+              f.write('## Phase 3 cron recovery\n\n- Existing cron matches expected: PASS\n')
+              f.write('- Preflight controller active and bindings intact: PASS\n')
+              f.write('- Same-value cron PUT and GET readback: PASS\n')
+              f.write('- Actual next scheduled invocation: PENDING (not asserted)\n')

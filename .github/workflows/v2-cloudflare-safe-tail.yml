@@ -65,6 +65,13 @@ jobs:
             echo "::error::Cloudflare tail connection failed; inspect permissions via Dashboard (raw error withheld)"
             exit 1
           fi
+          # pipefail is deliberately suspended above to capture all PIPESTATUS
+          # entries. Never claim PASS if the sanitizer or tee failed even when
+          # Wrangler exited 0: the evidence would be missing or incomplete.
+          if [[ "${codes[1]}" != "0" || "${codes[2]}" != "0" ]]; then
+            echo "::error::Cloudflare tail redaction or evidence capture failed; no raw output will be published"
+            exit 1
+          fi
           echo "Tail session finished. Redacted observations and explicit capture summary written."
       - name: Upload sanitized event evidence
         if: always() && steps.window.outputs.enabled == 'true'

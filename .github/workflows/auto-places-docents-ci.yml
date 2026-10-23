@@ -39,6 +39,8 @@ jobs:
           python -m compileall -q auto-places-docents
           python -m unittest discover -s auto-places-docents/tests -p 'test_*.py' -v
           python -m unittest discover -s controller-v2/tests -p 'test_*.py' -v
+          # Cloudflare uses Sunday=1 and Monday-Friday=2-6, unlike GitHub cron.
+          # Included in test_*.py: weekend production fix and auto-rollback tests.
 
       - name: Node.js for V2 controller tests
         uses: actions/setup-node@v4

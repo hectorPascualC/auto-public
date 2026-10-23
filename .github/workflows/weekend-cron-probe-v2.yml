@@ -1,0 +1,40 @@
+name: AUTO PUBLIC V2 - temporary weekend cron probe
+# Finite calendar-scoped Cloudflare change. Never modifies Worker source,
+# secrets, GitHub monitor, Durable Objects, or production weekday schedule.
+# A weekend invocation is IGNORED by the existing Worker -- no scanning.
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/weekend-cron-probe-v2.yml'
+  schedule:
+    # Saturday/Sunday read-only rechecks while cron probe runs.
+    - cron: '5 8,12,16,20 * * 6,0'
+    # Monday rollback well BEFORE the first CET production 07:35 UTC event.
+    # Multiple guarded attempts accommodate GitHub scheduled-run delays.
+    - cron: '5 0,2,4,6 * * 1'
+permissions:
+  contents: read
+concurrency:
+  group: auto-public-v2-weekend-cron-recovery
+  cancel-in-progress: false
+jobs:
+  temporary-cron:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Gate Python syntax and weekend recovery tests
+        run: |
+          python3 -m py_compile controller-v2/weekend_cron_guard.py
+          python3 -m unittest discover -s controller-v2/tests -p 'test_weekend_cron_guard.py' -v
+      - name: Gate deployed controller contract against existing tests
+        run: node --test controller-v2/tests/*.test.mjs
+      - name: Apply only guarded temporary schedule or Monday restoration
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: python3 controller-v2/weekend_cron_guard.py

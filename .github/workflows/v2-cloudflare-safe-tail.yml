@@ -1,10 +1,12 @@
 name: V2 Cloudflare safe tail - one time
-# Bounded one-date read-only capture. Never dispatches or changes Cloudflare settings.
-# Run on Monday 2026-10-26 CET to observe 07:35/07:47 UTC primary/backup.
-# Date gate prevents subsequent Mondays from running any capture.
+# Bounded 2026-10-24/25 weekend and Monday 2026-10-26 read-only capture.
+# All times UTC; Cron weekday semantics here are GITHUB (0=Sun, 1=Mon).
+# In contrast, Cloudflare weekdays are 1=Sun, 2=Mon, ... 7=Sat.
+# Date guard prevents later weeks from running.
 on:
   schedule:
     - cron: '0 6 * * 1'
+    - cron: '0 6 * * 6,0'
   workflow_dispatch:
 permissions:
   contents: read
@@ -25,9 +27,10 @@ jobs:
           python3 - <<'PY'
           import datetime as dt, os
           now=dt.datetime.now(dt.timezone.utc)
-          today=dt.date(2026,10,26)
-          cutoff=dt.datetime(2026,10,26,7,25,tzinfo=dt.timezone.utc)
-          enabled=os.getenv("GITHUB_EVENT_NAME") == "workflow_dispatch" or (now.date()==today and now < cutoff)
+          dates={dt.date(2026,10,24),dt.date(2026,10,25),dt.date(2026,10,26)}
+          cutoff=dt.datetime.combine(now.date(),dt.time(7,25),tzinfo=dt.timezone.utc)
+          enabled=(now.date() in dates and now < cutoff and
+                   os.getenv("GITHUB_EVENT_NAME") in ("workflow_dispatch","schedule"))
           with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf-8") as out:
               out.write("enabled="+str(enabled).lower()+"\n")
           print("TAIL_WINDOW="+("ACTIVE" if enabled else "SKIPPED_late_or_other_day"))

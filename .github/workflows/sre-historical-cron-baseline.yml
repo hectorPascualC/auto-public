@@ -1,0 +1,68 @@
+name: AUTO PUBLIC V2 - historical invocation comparison
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/sre-historical-cron-baseline.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Compare 22 and 23 October Cloudflare invocation metrics, without writes
+        shell: python
+        run: |
+          import datetime as dt, json, os, sys, urllib.request, urllib.error
+          from zoneinfo import ZoneInfo
+          token=os.getenv('CF_TOKEN','')
+          account=os.getenv('CF_ACCOUNT','')
+          if not token or not account:
+              print('BLOCKED no_cloudflare_credentials')
+              sys.exit(2)
+          query='''query($a: string, $s: string, $start: Time!, $end: Time!){
+            viewer { accounts(filter:{accountTag:$a}) {
+              workersInvocationsAdaptive(limit:1000,
+                filter:{scriptName:$s,datetime_geq:$start,datetime_leq:$end}) {
+                dimensions { datetime status }
+                sum { requests errors subrequests }
+              }
+            } }
+          }'''
+          def inspect(label,start,end):
+              payload=json.dumps({'query':query,'variables':{
+                'a':account,'s':'auto-public-controller-v2','start':start,'end':end}}).encode()
+              req=urllib.request.Request('https://api.cloudflare.com/client/v4/graphql',
+                data=payload,method='POST',headers={
+                  'Authorization':'Bearer '+token,'Content-Type':'application/json',
+                  'Accept':'application/json'})
+              try:
+                  with urllib.request.urlopen(req,timeout=25) as response:
+                      reply=json.load(response)
+              except urllib.error.HTTPError as e:
+                  return {'status':'BLOCKED','reason':'http_'+str(e.code)}
+              except (urllib.error.URLError,ValueError,TimeoutError):
+                  return {'status':'BLOCKED','reason':'network_or_schema'}
+              if reply.get('errors'):
+                  return {'status':'BLOCKED','reason':'graphql_errors','count':len(reply['errors'])}
+              accounts=reply.get('data',{}).get('viewer',{}).get('accounts',[])
+              events=[item for a in accounts for item in a.get('workersInvocationsAdaptive',[])]
+              return {'status':'PASS' if accounts else 'BLOCKED','accounts':len(accounts),
+                'rows':len(events),'requests':sum(x.get('sum',{}).get('requests',0) for x in events),
+                'errors':sum(x.get('sum',{}).get('errors',0) for x in events),
+                'observed':[{'time':x.get('dimensions',{}).get('datetime'),
+                  'status':x.get('dimensions',{}).get('status'),
+                  'requests':x.get('sum',{}).get('requests')} for x in events[:50]]}
+          now=dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+          report={'yesterday':inspect('yesterday','2026-10-22T10:00:00Z','2026-10-22T21:00:00Z'),
+                  'today':inspect('today','2026-10-23T06:20:00Z',now)}
+          print(json.dumps(report,indent=2))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+              f.write('## Historical control for Worker invocation telemetry\n\n')
+              f.write(json.dumps(report,indent=2))
+          if any(x['status']!='PASS' for x in report.values()):
+              sys.exit(2)

@@ -122,7 +122,7 @@ class TailEvidenceTests(unittest.TestCase):
             ((124, 0, 1), False),
         ):
             with self.subTest(statuses=statuses):
-                shell = "codes=(" + " ".join(map(str, statuses)) + ")\\n" + gate + "\\necho GATE_PASS\\n"
+                shell = "codes=(" + " ".join(map(str, statuses)) + ")\n" + gate + "\necho GATE_PASS\n"
                 result = subprocess.run(["bash", "-c", shell],
                                         capture_output=True, text=True, check=False)
                 self.assertEqual(result.returncode == 0, accepted)

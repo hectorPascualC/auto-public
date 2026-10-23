@@ -15,8 +15,9 @@ import urllib.error
 import urllib.request
 
 WORKER = "auto-public-controller-v2"
-PRIMARY = "35,47 6,7,8,9,11,12,13,14 * * 1-5"
-WEEKEND = "35,47 6-20 * * 6,0"
+LEGACY = "35,47 6,7,8,9,11,12,13,14 * * 1-5"  # WRONG: Sunday-Thursday on Cloudflare
+PRIMARY = "35,47 6,7,8,9,11,12,13,14 * * 2-6"  # MON-FRI on Cloudflare
+WEEKEND = "35,47 6-20 * * 1,7"  # SUN,SAT on Cloudflare
 START = dt.date(2026, 10, 23)
 DAYS = {dt.date(2026, 10, 24), dt.date(2026, 10, 25)}
 RESTORE = dt.date(2026, 10, 26)
@@ -44,7 +45,7 @@ def extract_schedules(obj):
 
 def safe_expected(crons):
     return len(crons) == len(set(crons)) and set(crons) in (
-        {PRIMARY}, {PRIMARY, WEEKEND}
+        {LEGACY}, {PRIMARY}, {LEGACY, WEEKEND}, {PRIMARY, WEEKEND}
     )
 
 class Cloudflare:

@@ -140,7 +140,7 @@ def main():
             f.write("## Weekend V2 Cloudflare cron diagnostics\n\n")
             f.write(f"- Phase: {mode}\n- Configuration: PASS (readback)\n")
             f.write("- Runtime Cron -> Worker -> DO -> GitHub: NOT VERIFIED by this job\n")
-            f.write("- Worker source and main production cron unchanged\n")
+            f.write("- Worker source unchanged; production weekday cron corrected to Cloudflare 2-6 (MON-FRI)\n")
     return 0
 
 if __name__ == "__main__":

@@ -71,8 +71,8 @@ class TailEvidenceTests(unittest.TestCase):
                 })]}],
                 "exceptions": []
             }
-            return json.dumps(frame, indent=2) + "\\n"
-        input_text = "Connected to Worker, waiting for logs...\\n" + pretty("IGNORED", 35) + pretty("IGNORED", 47)
+            return json.dumps(frame, indent=2) + "\n"
+        input_text = "Connected to Worker, waiting for logs...\n" + pretty("IGNORED", 35) + pretty("IGNORED", 47)
         out = io.StringIO()
         FILTER.process(io.StringIO(input_text), out)
         records = [json.loads(x) for x in out.getvalue().splitlines()]
@@ -86,14 +86,14 @@ class TailEvidenceTests(unittest.TestCase):
         self.assertNotIn("Authorization", out.getvalue())
 
     def test_incomplete_pretty_frame_is_explicitly_inconclusive(self):
-        result = self.run_filter('{"outcome": "ok",\\n')
+        result = self.run_filter('{"outcome": "ok",\n')
         self.assertEqual(result[-1]["unparsed_fragments"], 1)
         self.assertEqual(result[-1]["tail_frames"], 0)
         self.assertEqual(result[-1]["verdict"], "NO_TAIL_FRAMES_OBSERVED")
 
     def test_jsonl_and_pretty_mixed_with_banner(self):
         frame = {"outcome": "ok", "event": {"cron": "test"}, "logs": []}
-        mixed = "Wrangler started\\n" + json.dumps(frame) + "\\n" + json.dumps(frame, indent=2) + "\\n"
+        mixed = "Wrangler started\n" + json.dumps(frame) + "\n" + json.dumps(frame, indent=2) + "\n"
         result = self.run_filter(mixed)
         self.assertEqual(result[-1]["tail_frames"], 2)
         self.assertEqual(result[-1]["multiline_frames"], 1)

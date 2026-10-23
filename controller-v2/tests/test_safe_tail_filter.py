@@ -57,6 +57,48 @@ class TailEvidenceTests(unittest.TestCase):
         self.assertEqual(records[1]["controller_log_frames"], 1)
         self.assertEqual(records[1]["verdict"], "CONTROLLER_LOGS_OBSERVED")
 
+    def test_pretty_printed_scheduled_invocations_are_not_lost(self):
+        secret = "Bearer-super-secret-never-printed"
+        def pretty(status, minute):
+            frame = {
+                "outcome": "ok",
+                "eventTimestamp": 1792794900000 + minute * 60000,
+                "event": {"cron": "35,47 20,21 * * 6"},
+                "headers": {"Authorization": secret},
+                "logs": [{"message": [json.dumps({
+                    "controller": "v2", "status": status,
+                    "reason": "not_a_nominal_slot"
+                })]}],
+                "exceptions": []
+            }
+            return json.dumps(frame, indent=2) + "\n"
+        input_text = "Connected to Worker, waiting for logs...\n" + pretty("IGNORED", 35) + pretty("IGNORED", 47)
+        out = io.StringIO()
+        FILTER.process(io.StringIO(input_text), out)
+        records = [json.loads(x) for x in out.getvalue().splitlines()]
+        self.assertEqual([r.get("status") for r in records[:2]], ["IGNORED", "IGNORED"])
+        self.assertEqual([r.get("event_type") for r in records[:2]], ["scheduled", "scheduled"])
+        self.assertEqual(records[-1]["tail_frames"], 2)
+        self.assertEqual(records[-1]["multiline_frames"], 2)
+        self.assertEqual(records[-1]["controller_log_frames"], 2)
+        self.assertEqual(records[-1]["verdict"], "CONTROLLER_LOGS_OBSERVED")
+        self.assertNotIn(secret, out.getvalue())
+        self.assertNotIn("Authorization", out.getvalue())
+
+    def test_incomplete_pretty_frame_is_explicitly_inconclusive(self):
+        result = self.run_filter('{"outcome": "ok",\n')
+        self.assertEqual(result[-1]["unparsed_fragments"], 1)
+        self.assertEqual(result[-1]["tail_frames"], 0)
+        self.assertEqual(result[-1]["verdict"], "NO_TAIL_FRAMES_OBSERVED")
+
+    def test_jsonl_and_pretty_mixed_with_banner(self):
+        frame = {"outcome": "ok", "event": {"cron": "test"}, "logs": []}
+        mixed = "Wrangler started\n" + json.dumps(frame) + "\n" + json.dumps(frame, indent=2) + "\n"
+        result = self.run_filter(mixed)
+        self.assertEqual(result[-1]["tail_frames"], 2)
+        self.assertEqual(result[-1]["multiline_frames"], 1)
+        self.assertEqual(result[-1]["non_json_lines"], 1)
+
     def test_token_shaped_metadata_never_leaks(self):
         self.assertEqual(FILTER.safe_value("reason", "github_pat_abcd"), "REDACTED")
         self.assertEqual(FILTER.safe_value("error", "ghp_abcd"), "REDACTED")

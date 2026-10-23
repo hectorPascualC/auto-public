@@ -7,8 +7,8 @@ on:
       - 'auto-places-docents/sre_audit_v2.py'
   schedule:
     # Independent read-only audit after each nominal Madrid slot.
-    # Both CET/CEST candidate hours; no monitor or controller dispatch.
-    - cron: '10 8,9,10,11,12,13,14,15,16 * * 1-5'
+    # Both CET/CEST candidate hours (including 07:10 UTC for 09:00 CEST); no monitor or controller dispatch.
+    - cron: '10 7,8,9,10,11,12,13,14,15,16 * * 1-5'
 permissions:
   contents: read
   actions: read

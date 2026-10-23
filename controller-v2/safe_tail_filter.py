@@ -2,6 +2,7 @@
 """Redact Wrangler tail JSON, retaining counters even when no log matches.
 
 Never prints raw messages, URLs, headers, exception text or token-like values.
+Accepts JSONL AND Wrangler's pretty-printed multiline JSON envelopes.
 Each accepted tail frame produces a safe observation, and EOF always produces
 a summary. NO_TAIL_FRAMES is not evidence that Cloudflare cron did not run:
 the tail connection or capture window may also be responsible.
@@ -50,23 +51,59 @@ def event_type(info):
     return "unknown"
 
 
+# Wrangler --format=json emits pretty-printed MULTILINE JSON envelopes, not
+# necessarily JSONL. The original per-line json.loads() silently discarded every
+# line of a valid invocation, producing a false NO_TAIL_FRAMES_OBSERVED verdict.
+# Never echo source bytes: tail envelopes can include headers and secrets.
+MAX_FRAME_BYTES = 256 * 1024
+MAX_FRAME_LINES = 1500
+
+
+def parse_frames(source, counts):
+    """Yield sanitized candidate envelopes from JSONL or bounded pretty JSON."""
+    pending = []
+    pending_bytes = 0
+
+    for line in source:
+        if not line.strip():
+            if pending:
+                pending.append(line)
+                pending_bytes += len(line)
+            continue
+        counts["input_lines"] += 1
+        if not pending and not line.lstrip().startswith("{"):
+            counts["non_json_lines"] += 1
+            continue
+        pending.append(line)
+        pending_bytes += len(line)
+        if pending_bytes > MAX_FRAME_BYTES or len(pending) > MAX_FRAME_LINES:
+            counts["unparsed_fragments"] += 1
+            pending = []
+            pending_bytes = 0
+            continue
+        try:
+            obj = json.loads("".join(pending))
+        except (TypeError, ValueError):
+            continue
+        if len(pending) > 1:
+            counts["multiline_frames"] += 1
+        pending = []
+        pending_bytes = 0
+        if not isinstance(obj, dict) or not isinstance(obj.get("logs", []), list):
+            counts["non_json_lines"] += 1
+            continue
+        yield obj
+    if pending:
+        counts["unparsed_fragments"] += 1
+
+
 def process(source, target):
     started_at = datetime.now(timezone.utc).isoformat()
     counts = {"input_lines": 0, "tail_frames": 0, "non_json_lines": 0,
               "controller_log_frames": 0, "scheduled_frames": 0,
-              "other_outcomes": 0}
-    for line in source:
-        if not line.strip():
-            continue
-        counts["input_lines"] += 1
-        try:
-            info = json.loads(line)
-        except (TypeError, ValueError):
-            counts["non_json_lines"] += 1
-            continue
-        if not isinstance(info, dict) or not isinstance(info.get("logs", []), list):
-            counts["non_json_lines"] += 1
-            continue
+              "other_outcomes": 0, "multiline_frames": 0,
+              "unparsed_fragments": 0}
+    for info in parse_frames(source, counts):
         # This is a structured tail frame. Never include arbitrary original fields.
         counts["tail_frames"] += 1
         outcome = info.get("outcome")

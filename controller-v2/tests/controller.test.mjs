@@ -91,6 +91,25 @@ test("CET/CEST, nominal hours and exact backup identities", () => {
   assert.equal(scheduledSlot(Number.NaN), null);
 });
 
+test("Friday-night and weekend cron probes cannot dispatch GitHub", async () => {
+  const times = [
+    "2026-10-23T20:35:00Z", "2026-10-23T20:47:00Z",
+    "2026-10-23T21:35:00Z", "2026-10-23T21:47:00Z",
+    "2026-10-24T06:35:00Z", "2026-10-25T20:47:00Z"
+  ];
+  for (const utc of times) {
+    const instant = Date.parse(utc);
+    assert.equal(scheduledSlot(instant), null, utc);
+    const mock = mockGithub();
+    const result = await processScheduled({
+      scheduledTime: instant, nowMs: instant,
+      env: mock.env, fetcher: mock.fetcher, state: mock.state
+    });
+    assert.equal(result.status, "IGNORED", utc);
+    assert.equal(mock.calls.length, 0, utc);
+  }
+});
+
 test("evidence is strict and must match same slot", () => {
   const e = evidence();
   assert.equal(isValidReceipt(DAY,e.ledger,e.health,e.consumer),true);

@@ -19,7 +19,7 @@ jobs:
         shell: python
         run: |
           import datetime as dt, json, os, sys, urllib.request, urllib.error
-          CRON='35,47 6,7,8,9,11,12,13,14 * * 1-5'
+          CRON='35,47 6,7,8,9,11,12,13,14 * * 2-6'
           ACCOUNT=os.getenv('CF_ACCOUNT','')
           TOKEN=os.getenv('CF_TOKEN','')
           BASE='https://api.cloudflare.com/client/v4/accounts/'+ACCOUNT+'/workers/scripts/auto-public-controller-v2'

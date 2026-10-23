@@ -13,12 +13,29 @@ import re
 import sys
 
 FIELDS = ("status", "slot", "attempt", "phase", "error", "reason")
+VALUES = {
+    "status": {"IGNORED", "STALE", "DISABLED", "SKIPPED", "DISPATCHED", "ERROR"},
+    "attempt": {"primary", "backup"},
+    "phase": {"classify_slot", "resolve_coordinator", "run_coordinator"},
+    "reason": {"not_a_nominal_slot", "already_sent", "valid_receipt",
+               "backup_already_dispatched", "slot_already_dispatched"},
+    "error": {"controller_configuration_invalid", "slot_coordinator_binding_invalid",
+              "slot_coordinator_stub_invalid", "github_contents_unexpected_schema",
+              "github_runs_unexpected_schema", "unexpected_exception"}
+}
 OUTCOMES = {"ok", "exception", "canceled", "unknown", "exceededCpu", "exceededMemory"}
-VALUE = re.compile(r"^[A-Za-z0-9_:.\/-]{1,80}$")
+SLOT = re.compile(r"^20[0-9]{2}-[01][0-9]-[0-3][0-9]T(09|11|14|16):00$")
+GH_ERROR = re.compile(r"^github_http_[0-9]{3}$")
 
 
-def safe_value(value):
-    return value if isinstance(value, str) and VALUE.fullmatch(value) else "REDACTED"
+def safe_value(field, value):
+    if not isinstance(value, str):
+        return "REDACTED"
+    if field == "slot":
+        return value if SLOT.fullmatch(value) else "REDACTED"
+    if field == "error" and GH_ERROR.fullmatch(value):
+        return value
+    return value if value in VALUES.get(field, set()) else "REDACTED"
 
 
 def event_type(info):
@@ -86,7 +103,7 @@ def process(source, target):
                 record["controller"] = "v2"
                 for field in FIELDS:
                     if field in data:
-                        record[field] = safe_value(data[field])
+                        record[field] = safe_value(field, data[field])
         if controller_seen:
             counts["controller_log_frames"] += 1
         target.write(json.dumps(record, sort_keys=True) + "\n")

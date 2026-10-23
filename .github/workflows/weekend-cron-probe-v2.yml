@@ -4,6 +4,8 @@ name: AUTO PUBLIC V2 - temporary weekend cron probe
 # Friday late-night and weekend invocations are IGNORED by the Worker.
 # Friday extra trigger is removed on the first Saturday verification; the
 # weekend trigger is removed on Monday with guarded redundant attempts.
+# If GitHub scheduled runs are delayed, an SRE-reviewed push changing ONLY this
+# workflow path can trigger the same date-gated Saturday/Monday cleanup.
 on:
   push:
     branches: [main]

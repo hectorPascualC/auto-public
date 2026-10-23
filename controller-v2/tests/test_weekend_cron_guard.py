@@ -43,6 +43,21 @@ class WeekendCronTests(unittest.TestCase):
         self.assertEqual(guard.mode_for(stamp("2026-10-27"), "schedule"), "no_action")
         self.assertEqual(guard.mode_for(stamp("2026-10-24"), "push"), "no_action")
 
+    def test_cloudflare_weekday_encoding_not_github_encoding(self):
+        self.assertEqual(guard.LEGACY.split()[-1], "1-5")
+        self.assertEqual(guard.PRIMARY.split()[-1], "2-6")
+        self.assertEqual(guard.WEEKEND.split()[-1], "1,7")
+        self.assertNotEqual(guard.LEGACY, guard.PRIMARY)
+
+    def test_migrate_bad_weekday_cron_before_weekend_probes(self):
+        cf = FakeCF([guard.LEGACY])
+        result = guard.run("install", cf)
+        self.assertTrue(result["updated"])
+        self.assertEqual(set(cf.schedules), {guard.PRIMARY, guard.WEEKEND})
+        self.assertNotIn(guard.LEGACY, cf.schedules)
+        guard.run("restore", cf)
+        self.assertEqual(cf.schedules, [guard.PRIMARY])
+
     def test_install_preserves_original_cron(self):
         cf = FakeCF([guard.PRIMARY])
         result = guard.run("install", cf)

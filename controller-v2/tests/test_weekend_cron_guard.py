@@ -47,14 +47,17 @@ class WeekendCronTests(unittest.TestCase):
         self.assertEqual(guard.LEGACY.split()[-1], "1-5")
         self.assertEqual(guard.PRIMARY.split()[-1], "2-6")
         self.assertEqual(guard.WEEKEND.split()[-1], "1,7")
+        self.assertEqual(guard.FRIDAY_NIGHT.split()[-1], "6")
         self.assertNotEqual(guard.LEGACY, guard.PRIMARY)
 
     def test_migrate_bad_weekday_cron_before_weekend_probes(self):
         cf = FakeCF([guard.LEGACY])
         result = guard.run("install", cf)
         self.assertTrue(result["updated"])
-        self.assertEqual(set(cf.schedules), {guard.PRIMARY, guard.WEEKEND})
+        self.assertEqual(set(cf.schedules), {guard.PRIMARY, guard.WEEKEND, guard.FRIDAY_NIGHT})
         self.assertNotIn(guard.LEGACY, cf.schedules)
+        guard.run("verify", cf)
+        self.assertEqual(set(cf.schedules), {guard.PRIMARY, guard.WEEKEND})
         guard.run("restore", cf)
         self.assertEqual(cf.schedules, [guard.PRIMARY])
 
@@ -79,6 +82,22 @@ class WeekendCronTests(unittest.TestCase):
         self.assertEqual(len(cf.puts), 1)
         guard.run("restore", cf)
         self.assertEqual(len(cf.puts), 1)
+
+    def test_saturday_auto_removes_friday_night_without_dropping_prod(self):
+        cf = FakeCF([guard.PRIMARY, guard.WEEKEND, guard.FRIDAY_NIGHT])
+        result = guard.run("verify", cf)
+        self.assertTrue(result["updated"])
+        self.assertEqual(set(cf.schedules), {guard.PRIMARY, guard.WEEKEND})
+        self.assertEqual(len(cf.puts), 1)
+        result = guard.run("verify", cf)
+        self.assertFalse(result["updated"])
+        self.assertEqual(len(cf.puts), 1)
+
+    def test_monday_can_restore_even_if_saturday_missed_cleanup(self):
+        cf = FakeCF([guard.PRIMARY, guard.WEEKEND, guard.FRIDAY_NIGHT])
+        result = guard.run("restore", cf)
+        self.assertTrue(result["updated"])
+        self.assertEqual(cf.schedules, [guard.PRIMARY])
 
     def test_unknown_schedule_fails_closed(self):
         cf = FakeCF([guard.PRIMARY, "0 0 * * *"])

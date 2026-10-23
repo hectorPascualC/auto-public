@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """One-weekend, fail-closed Cloudflare cron probe (no Worker source changes).
 
-The EXTRA trigger only runs Saturday/Sunday. The deployed controller intentionally
-returns IGNORED for weekend events; hence no GitHub dispatch or source scan.
+The temporary weekend trigger runs Saturday/Sunday, plus one bounded Friday-night
+probe that the deployed controller ignores outside nominal morning/afternoon slots.
+These probes can prove Cron -> Worker only; no GitHub dispatch or source scan.
 It tests the Cron -> Worker path. Exact slot -> DO -> GitHub remains BLOCKED until
 independent end-to-end evidence exists. Restore job removes only this known trigger.
 """
@@ -18,6 +19,7 @@ WORKER = "auto-public-controller-v2"
 LEGACY = "35,47 6,7,8,9,11,12,13,14 * * 1-5"  # WRONG: Sunday-Thursday on Cloudflare
 PRIMARY = "35,47 6,7,8,9,11,12,13,14 * * 2-6"  # MON-FRI on Cloudflare
 WEEKEND = "35,47 6-20 * * 1,7"  # SUN,SAT on Cloudflare
+FRIDAY_NIGHT = "35,47 20,21 * * 6"  # Fri 20:35/47,21:35/47 UTC; local nighttime => IGNORED
 START = dt.date(2026, 10, 23)
 DAYS = {dt.date(2026, 10, 24), dt.date(2026, 10, 25)}
 RESTORE = dt.date(2026, 10, 26)
@@ -45,7 +47,8 @@ def extract_schedules(obj):
 
 def safe_expected(crons):
     return len(crons) == len(set(crons)) and set(crons) in (
-        {LEGACY}, {PRIMARY}, {LEGACY, WEEKEND}, {PRIMARY, WEEKEND}
+        {LEGACY}, {PRIMARY}, {LEGACY, WEEKEND}, {PRIMARY, WEEKEND},
+        {PRIMARY, WEEKEND, FRIDAY_NIGHT}
     )
 
 class Cloudflare:
@@ -95,11 +98,20 @@ def verify_config(settings):
 def transition(current, mode):
     if not safe_expected(current):
         raise RuntimeError("unexpected_schedule_configuration; no mutation")
-    expected = [PRIMARY] if mode == "restore" else [PRIMARY, WEEKEND]
-    if mode == "verify":
-        if set(current) != {PRIMARY, WEEKEND}:
+    if mode == "restore":
+        expected = [PRIMARY]
+    elif mode == "install":
+        # Friday-only probes have no valid nominal local slot, so the Worker
+        # returns IGNORED; still check the clock/date at the caller.
+        expected = [PRIMARY, WEEKEND, FRIDAY_NIGHT]
+    elif mode == "verify":
+        # Retire the short-lived Friday probe on Saturday while retaining the
+        # two known crons, and preserve the no-write path if already removed.
+        if set(current) not in ({PRIMARY, WEEKEND}, {PRIMARY, WEEKEND, FRIDAY_NIGHT}):
             raise RuntimeError("weekend_schedule_missing")
-        return None
+        expected = [PRIMARY, WEEKEND]
+    else:
+        raise RuntimeError("unknown_operation")
     if set(current) == set(expected):
         return None
     return [{"cron": x} for x in expected]
@@ -114,7 +126,9 @@ def run(mode, client):
         if set(updated) != {x["cron"] for x in payload} or len(updated) != len(payload):
             raise RuntimeError("schedule_put_response_mismatch")
     after = extract_schedules(client.call("/schedules"))
-    wanted = {PRIMARY} if mode == "restore" else {PRIMARY, WEEKEND}
+    wanted = ({PRIMARY} if mode == "restore" else
+              {PRIMARY, WEEKEND, FRIDAY_NIGHT} if mode == "install" else
+              {PRIMARY, WEEKEND})
     if set(after) != wanted or len(after) != len(wanted):
         raise RuntimeError("schedule_readback_mismatch")
     return {"phase": mode, "status": "PASS_CONFIG_ONLY",

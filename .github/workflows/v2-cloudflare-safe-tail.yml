@@ -1,9 +1,12 @@
 name: V2 Cloudflare safe tail - one time
-# Bounded 2026-10-24/25 weekend and Monday 2026-10-26 read-only capture.
+# Bounded Friday 2026-10-23 evening, weekend and Monday read-only capture.
 # All times UTC; Cron weekday semantics here are GITHUB (0=Sun, 1=Mon).
 # In contrast, Cloudflare weekdays are 1=Sun, 2=Mon, ... 7=Sat.
-# Date guard prevents later weeks from running.
+# Date guard prevents later weeks from running. Friday push opens a two-hour live tail.
 on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/v2-cloudflare-safe-tail.yml']
   schedule:
     - cron: '0 6 * * 1'
     - cron: '0 6 * * 6,0'
@@ -29,8 +32,12 @@ jobs:
           now=dt.datetime.now(dt.timezone.utc)
           dates={dt.date(2026,10,24),dt.date(2026,10,25),dt.date(2026,10,26)}
           cutoff=dt.datetime.combine(now.date(),dt.time(7,25),tzinfo=dt.timezone.utc)
-          enabled=(now.date() in dates and now < cutoff and
-                   os.getenv("GITHUB_EVENT_NAME") in ("workflow_dispatch","schedule"))
+          today_is_safe_friday=(now.date()==dt.date(2026,10,23) and
+             dt.time(19,0) <= now.time() < dt.time(21,30) and
+             os.getenv("GITHUB_EVENT_NAME")=="push")
+          enabled=(today_is_safe_friday or
+             (now.date() in dates and now < cutoff and
+              os.getenv("GITHUB_EVENT_NAME") in ("workflow_dispatch","schedule")))
           with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf-8") as out:
               out.write("enabled="+str(enabled).lower()+"\n")
           print("TAIL_WINDOW="+("ACTIVE" if enabled else "SKIPPED_late_or_other_day"))

@@ -1,15 +1,18 @@
 name: AUTO PUBLIC V2 - temporary weekend cron probe
 # Finite calendar-scoped Cloudflare change. Never modifies Worker source,
 # secrets, GitHub monitor, Durable Objects, or production weekday schedule.
-# A weekend invocation is IGNORED by the existing Worker -- no scanning.
+# Friday late-night and weekend invocations are IGNORED by the Worker.
+# Friday extra trigger is removed on the first Saturday verification; the
+# weekend trigger is removed on Monday with guarded redundant attempts.
 on:
   push:
     branches: [main]
     paths:
       - '.github/workflows/weekend-cron-probe-v2.yml'
   schedule:
-    # Saturday/Sunday read-only rechecks while cron probe runs.
-    - cron: '5 8,12,16,20 * * 6,0'
+    # Saturday/Sunday: remove the late-Friday probe on first pass, then recheck.
+    # UTC GitHub weekday encoding: Sat=6, Sun=0 (unlike Cloudflare).
+    - cron: '5 0,2,4,8,12,16,20 * * 6,0'
     # Monday rollback well BEFORE the first CET production 07:35 UTC event.
     # Multiple guarded attempts accommodate GitHub scheduled-run delays.
     - cron: '5 0,2,4,6 * * 1'

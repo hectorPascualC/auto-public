@@ -57,6 +57,11 @@ class TailEvidenceTests(unittest.TestCase):
         self.assertEqual(records[1]["controller_log_frames"], 1)
         self.assertEqual(records[1]["verdict"], "CONTROLLER_LOGS_OBSERVED")
 
+    def test_token_shaped_metadata_never_leaks(self):
+        self.assertEqual(FILTER.safe_value("reason", "github_pat_abcd"), "REDACTED")
+        self.assertEqual(FILTER.safe_value("error", "ghp_abcd"), "REDACTED")
+        self.assertEqual(FILTER.safe_value("status", "DISPATCHED"), "DISPATCHED")
+
     def test_non_json_is_counted_separately(self):
         result = self.run_filter("wrangler connected\n")
         self.assertEqual(result[0]["non_json_lines"], 1)

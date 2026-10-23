@@ -1,9 +1,10 @@
 # AUTO - PUBLIC V2 controller (Cloudflare Worker)
 
-**Status:** tested offline, bundling tested with Wrangler, **NOT DEPLOYED**.
-Production GitHub `main` is still using the legacy native schedules.
+**Status:** deployed to Cloudflare; full scheduled Cron → GitHub → publication PASS still requires production evidence.
+The original GitHub Actions native schedules remain available as fallbacks; they are not proof of Cloudflare runtime.
 
 Responsibilities:
+- **Critical: Cloudflare weekdays use 1=SUN, 2=MON, ..., 6=FRI, 7=SAT.** For Monday-Friday use `2-6` (NOT GitHub-style `1-5`). The previous Cloudflare cron accidentally excluded Fridays and included Sundays.
 - UTC Cloudflare cron at :35 and :47. `Intl.DateTimeFormat(timeZone='Europe/Madrid')` chooses actual seasonal nominal slots 09/11/14/16.
 - Durable Object `SlotCoordinator` serializes decisions per nominal slot; duplicate scheduled deliveries are deduplicated.
 - Before any dispatch, read exact-slot GitHub PASS ledger, compact health/consumer and existing GitHub Actions runs.

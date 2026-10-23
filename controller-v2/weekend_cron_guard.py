@@ -28,9 +28,11 @@ def mode_for(now: dt.datetime, event: str) -> str:
     now = now.astimezone(dt.timezone.utc)
     if event == "push" and now.date() == START:
         return "install"
-    if event == "schedule" and now.date() in DAYS:
+    # A reviewed, path-scoped workflow push can rescue GitHub schedule delays.
+    # It uses the same exact allowlist, preconditions and readback as schedule.
+    if event in ("schedule", "push") and now.date() in DAYS:
         return "verify"
-    if event == "schedule" and now.date() == RESTORE:
+    if event in ("schedule", "push") and now.date() == RESTORE:
         return "restore"
     return "no_action"
 

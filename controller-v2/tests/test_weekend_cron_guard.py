@@ -41,7 +41,10 @@ class WeekendCronTests(unittest.TestCase):
         self.assertEqual(guard.mode_for(stamp("2026-10-25"), "schedule"), "verify")
         self.assertEqual(guard.mode_for(stamp("2026-10-26"), "schedule"), "restore")
         self.assertEqual(guard.mode_for(stamp("2026-10-27"), "schedule"), "no_action")
-        self.assertEqual(guard.mode_for(stamp("2026-10-24"), "push"), "no_action")
+        self.assertEqual(guard.mode_for(stamp("2026-10-24"), "push"), "verify")
+        self.assertEqual(guard.mode_for(stamp("2026-10-25"), "push"), "verify")
+        self.assertEqual(guard.mode_for(stamp("2026-10-26"), "push"), "restore")
+        self.assertEqual(guard.mode_for(stamp("2026-10-27"), "push"), "no_action")
 
     def test_cloudflare_weekday_encoding_not_github_encoding(self):
         self.assertEqual(guard.LEGACY.split()[-1], "1-5")

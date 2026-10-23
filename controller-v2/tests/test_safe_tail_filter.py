@@ -2,6 +2,7 @@
 import importlib.util
 import io
 import json
+import subprocess
 from pathlib import Path
 import unittest
 
@@ -98,6 +99,34 @@ class TailEvidenceTests(unittest.TestCase):
         self.assertEqual(result[-1]["tail_frames"], 2)
         self.assertEqual(result[-1]["multiline_frames"], 1)
         self.assertEqual(result[-1]["non_json_lines"], 1)
+
+    def test_tail_workflow_fails_closed_on_each_pipeline_failure(self):
+        # Exercise the ACTUAL shell exit-code gate from the workflow, not a
+        # reimplementation. Old code checked only Wrangler (codes[0]), and
+        # silently marked success when the sanitizer or tee failed.
+        import yaml
+        workflow = Path(__file__).resolve().parents[2] / ".github/workflows/v2-cloudflare-safe-tail.yml"
+        steps = yaml.safe_load(workflow.read_text(encoding="utf-8"))["jobs"]["tail"]["steps"]
+        capture = next(step["run"] for step in steps
+                       if step.get("name") == "Read Cloudflare events with strict log redaction")
+        begin = capture.index('if [[ "${codes[0]}"')
+        end = capture.index('echo "Tail session finished.', begin)
+        gate = capture[begin:end]
+        for statuses, accepted in (
+            ((0, 0, 0), True),
+            ((124, 0, 0), True),  # bounded tail naturally times out
+            ((1, 0, 0), False),
+            ((0, 1, 0), False),  # sanitizer failure
+            ((0, 0, 1), False),  # tee / evidence failure
+            ((124, 1, 0), False),
+            ((124, 0, 1), False),
+        ):
+            with self.subTest(statuses=statuses):
+                shell = "codes=(" + " ".join(map(str, statuses)) + ")\\n" + gate + "\\necho GATE_PASS\\n"
+                result = subprocess.run(["bash", "-c", shell],
+                                        capture_output=True, text=True, check=False)
+                self.assertEqual(result.returncode == 0, accepted)
+                self.assertEqual("GATE_PASS" in result.stdout, accepted)
 
     def test_token_shaped_metadata_never_leaks(self):
         self.assertEqual(FILTER.safe_value("reason", "github_pat_abcd"), "REDACTED")

@@ -1,6 +1,10 @@
 name: AUTO PUBLIC V2 - continuous SRE audit
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/sre-audit-v2.yml'
+      - 'auto-places-docents/sre_audit_v2.py'
   schedule:
     # Independent read-only audit after each nominal Madrid slot.
     # Both CET/CEST candidate hours; no monitor or controller dispatch.
@@ -15,6 +19,7 @@ jobs:
   audit:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
+    if: github.event_name != 'pull_request'
     steps:
       - uses: actions/checkout@v4
       - name: Audit existing snapshots and deployment evidence without writes
@@ -29,3 +34,22 @@ jobs:
           path: sre-audit-report.json
           if-no-files-found: warn
           retention-days: 14
+  validate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax check
+        run: python3 -m py_compile auto-places-docents/sre_audit_v2.py
+      - name: Read-only audit smoke test on PR
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 auto-places-docents/sre_audit_v2.py || test "$?" -eq 1
+          python3 - <<'PY'
+          import json
+          data=json.load(open("sre-audit-report.json"))
+          assert data["overall"] in ("PASS","FAIL","BLOCKED")
+          assert len(data["checks"]) >= 6
+          assert any(x["name"]=="Cloudflare cron -> Worker -> DO" and x["status"]=="BLOCKED" for x in data["checks"])
+          PY

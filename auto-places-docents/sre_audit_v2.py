@@ -103,3 +103,5 @@ with open(os.environ.get("GITHUB_STEP_SUMMARY", os.devnull), "a", encoding="utf-
     for c in checks:
         out.write(f"- **{c['status']}** {c['name']}: {c['detail']}\n")
 print(f"SRE audit {overall}: " + ", ".join(f"{c['name']}={c['status']}" for c in checks))
+if overall == "FAIL":
+    raise SystemExit(1)

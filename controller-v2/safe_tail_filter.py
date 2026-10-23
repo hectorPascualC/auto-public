@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import re
 import sys
+from datetime import datetime, timezone
 
 FIELDS = ("status", "slot", "attempt", "phase", "error", "reason")
 VALUES = {
@@ -50,6 +51,7 @@ def event_type(info):
 
 
 def process(source, target):
+    started_at = datetime.now(timezone.utc).isoformat()
     counts = {"input_lines": 0, "tail_frames": 0, "non_json_lines": 0,
               "controller_log_frames": 0, "scheduled_frames": 0,
               "other_outcomes": 0}
@@ -116,6 +118,8 @@ def process(source, target):
     else:
         verdict = "CONTROLLER_LOGS_OBSERVED"
     target.write(json.dumps({"kind": "tail_summary", "verdict": verdict,
+                             "started_at_utc": started_at,
+                             "ended_at_utc": datetime.now(timezone.utc).isoformat(),
                              **counts}, sort_keys=True) + "\n")
     target.flush()
     return counts

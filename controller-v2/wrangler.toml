@@ -19,8 +19,8 @@ head_sampling_rate = 1
 
 [triggers]
 # UTC; the Worker filters the actual Madrid slot and CET/CEST at runtime.
-# Temporary one-day test candidate; MUST be removed after diagnosis.
-crons = ["35,47 6,7,8,9,11,12,13,14 * * 1-5", "15,27 18 * * 1-5"]
+# Ordinary UTC candidates; Madrid slot gating handles CET/CEST.
+crons = ["35,47 6,7,8,9,11,12,13,14 * * 1-5"]
 
 [[durable_objects.bindings]]
 name = "SLOT_COORDINATOR"

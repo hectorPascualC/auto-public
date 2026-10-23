@@ -64,7 +64,7 @@ class WeekendCronTests(unittest.TestCase):
     def test_install_preserves_original_cron(self):
         cf = FakeCF([guard.PRIMARY])
         result = guard.run("install", cf)
-        self.assertEqual(set(cf.schedules), {guard.PRIMARY, guard.WEEKEND})
+        self.assertEqual(set(cf.schedules), {guard.PRIMARY, guard.WEEKEND, guard.FRIDAY_NIGHT})
         self.assertEqual(len(cf.puts), 1)
         self.assertEqual(result["status"], "PASS_CONFIG_ONLY")
         self.assertFalse(result["runtime_invocations_verified"])

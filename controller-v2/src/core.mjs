@@ -220,7 +220,8 @@ export async function runScheduledController({scheduledTime, env, logger = conso
     if (!coordinator || typeof coordinator.idFromName !== "function" ||
         typeof coordinator.get !== "function")
       throw new Error("slot_coordinator_binding_invalid");
-    const stub = coordinator.get(coordinator.idFromName(slot.key));
+    const coordinatorId = coordinator.idFromName(slot.key);
+    const stub = coordinator.get(coordinatorId);
     if (!stub || typeof stub.runSlot !== "function")
       throw new Error("slot_coordinator_stub_invalid");
     phase = "run_coordinator";
@@ -228,21 +229,23 @@ export async function runScheduledController({scheduledTime, env, logger = conso
     try {
       result = await stub.runSlot({scheduledTime});
     } catch (rpcError) {
-      // A TypeError without a DO phase may happen before runSlot is entered.
-      // Probe ONLY the DO's read-only GET endpoint. Never dispatch a second
-      // attempt from this catch: the first RPC could have reached GitHub.
+      // Cloudflare poisons a DO stub after any exception: further calls
+      // on THAT stub also fail. A probe on the failed stub is inconclusive.
+      // Create a fresh stub for the same slot and do ONLY a read-only GET.
+      // Never repeat runSlot/dispatch: the first RPC might have succeeded.
       if (scheduledErrorKind(rpcError) === "TypeError") {
         let probe = "do_fetch_unavailable";
-        if (typeof stub.fetch === "function") {
-          try {
-            const response = await stub.fetch(
+        try {
+          const probeStub = coordinator.get(coordinatorId);
+          if (probeStub && typeof probeStub.fetch === "function") {
+            const response = await probeStub.fetch(
               new Request("https://slot-coordinator.invalid/__probe", {method: "GET"})
             );
             probe = response?.status === 204 ? "do_fetch_204" :
               response?.status === 404 ? "do_fetch_404" : "do_fetch_other";
-          } catch {
-            probe = "do_fetch_exception";
           }
+        } catch {
+          probe = "do_fetch_exception";
         }
         rpcError.safeRpcProbe = probe;
       }

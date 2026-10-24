@@ -189,7 +189,7 @@ class TailEvidenceTests(unittest.TestCase):
         self.assertIn("diagnostic_bridge=", content)
         self.assertIn("diagnostic_probe=", content)
         self.assertIn('dt.time(12,40) <= now.time() < dt.time(12,55)', content)
-        self.assertIn('"hourly" if (hourly_saturday or diagnostic_probe)', content)
+        self.assertIn('"hourly" if (hourly_saturday or diagnostic_probe or diagnostic_postdeploy)', content)
         self.assertIn('dt.time(11,30) <= now.time() < dt.time(11,45)', content)
         self.assertIn('os.getenv("GITHUB_EVENT_NAME")=="push"', content)
         self.assertIn("manual_short or diagnostic_bridge", content)

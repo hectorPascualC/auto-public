@@ -92,7 +92,7 @@ test("CET/CEST, nominal hours and exact backup identities", () => {
   assert.equal(scheduledSlot(Date.parse("2026-10-24T11:35:00Z")).key, "2026-10-24T14:00");
   assert.equal(scheduledSlot(Date.parse("2026-10-24T13:47:00Z")).key, "2026-10-24T16:00");
   assert.equal(scheduledSlot(Date.parse("2026-10-25T09:35:00Z")).key,
-    "2026-10-25T12:00");
+    "2026-10-25T11:00");
   assert.equal(scheduledSlot(Date.parse("2026-10-31T07:35:00Z")), null);
   assert.equal(scheduledSlot(Number.NaN), null);
 });

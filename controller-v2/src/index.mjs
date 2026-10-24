@@ -5,9 +5,23 @@ export class SlotCoordinator extends DurableObject {
   // Read-only, internal-only probe used to distinguish a failed DO RPC call
   // from a failed DO binding. The public Worker fetch handler stays 404.
   async fetch(request) {
-    if (request.method === "GET" &&
-        new URL(request.url).pathname === "/__probe") {
+    const pathname = new URL(request.url).pathname;
+    if (request.method === "GET" && pathname === "/__probe")
       return new Response(null, {status: 204});
+    // Only the bound Worker can reach this DO fetch handler. The public
+    // Worker fetch endpoint remains 404. Exactly one POST per cron attempt.
+    if (request.method === "POST" && pathname === "/__run-slot") {
+      let event;
+      try {
+        event = await request.json();
+      } catch {
+        return new Response(null, {status: 400});
+      }
+      if (!event || typeof event !== "object" ||
+          !Number.isFinite(event.scheduledTime) ||
+          Object.keys(event).length !== 1)
+        return new Response(null, {status: 400});
+      return Response.json(await this.runSlot({scheduledTime: event.scheduledTime}));
     }
     return new Response("Not found", {status: 404});
   }

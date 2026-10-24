@@ -18,7 +18,9 @@ FIELDS = ("status", "slot", "attempt", "phase", "error", "reason")
 VALUES = {
     "status": {"IGNORED", "STALE", "DISABLED", "SKIPPED", "DISPATCHED", "ERROR"},
     "attempt": {"primary", "backup"},
-    "phase": {"classify_slot", "resolve_coordinator", "run_coordinator"},
+    "phase": {"classify_slot", "resolve_coordinator", "run_coordinator",
+              "block_concurrency", "storage_read", "github_read",
+              "github_dispatch", "storage_write"},
     "reason": {"not_a_nominal_slot", "already_sent", "valid_receipt",
                "backup_already_dispatched", "slot_already_dispatched"},
     "error": {"controller_configuration_invalid", "slot_coordinator_binding_invalid",
@@ -26,7 +28,7 @@ VALUES = {
               "github_runs_unexpected_schema", "unexpected_exception"}
 }
 OUTCOMES = {"ok", "exception", "canceled", "unknown", "exceededCpu", "exceededMemory"}
-SLOT = re.compile(r"^20[0-9]{2}-[01][0-9]-[0-3][0-9]T(09|11|14|16):00$")
+SLOT = re.compile(r"^20[0-9]{2}-[01][0-9]-[0-3][0-9]T((?:09|1[0-9]|2[0-3])|11|14|16):00$")
 GH_ERROR = re.compile(r"^github_http_[0-9]{3}$")
 
 

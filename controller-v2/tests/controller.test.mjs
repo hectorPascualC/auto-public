@@ -372,26 +372,41 @@ test("RPC exceptions preserve known API codes and redact arbitrary errors", asyn
 });
 
 
-test("read-only DO fetch probe classifies RPC TypeError without a second dispatch", async () => {
+test("read-only probe uses a FRESH DO stub after a poisoned RPC stub", async () => {
   const scheduledTime = Date.parse("2026-10-24T11:35:00Z");
   for (const [status, expected] of [[204,"do_fetch_204"],[404,"do_fetch_404"]]) {
     const logs = [], calls = [];
     const env = {SLOT_COORDINATOR: {
       idFromName: key => key,
-      get: () => ({
-        runSlot: async () => { calls.push("rpc"); throw new TypeError("secret-data"); },
-        fetch: async request => {
-          calls.push("probe");
-          assert.equal(request.method,"GET");
-          assert.equal(new URL(request.url).pathname,"/__probe");
-          return new Response(null,{status});
+      get: id => {
+        calls.push("get:" + id);
+        if (calls.filter(x => x.startsWith("get:")).length === 1) {
+          return {
+            runSlot: async () => {
+              calls.push("rpc");
+              throw new TypeError("secret-data");
+            },
+            fetch: async () => {
+              assert.fail("the poisoned RPC stub must never be reused");
+            }
+          };
         }
-      })
+        return {
+          fetch: async request => {
+            calls.push("probe");
+            assert.equal(request.method,"GET");
+            assert.equal(new URL(request.url).pathname,"/__probe");
+            return new Response(null,{status});
+          }
+        };
+      }
     }};
     await assert.rejects(runScheduledController({scheduledTime,env,
       logger:{log:()=>assert.fail("unexpected dispatch"),error:x=>logs.push(JSON.parse(x))}
     }),TypeError);
-    assert.deepEqual(calls,["rpc","probe"]);
+    assert.deepEqual(calls,[
+      "get:2026-10-24T14:00","rpc","get:2026-10-24T14:00","probe"
+    ]);
     assert.equal(logs[0].phase,"run_coordinator");
     assert.equal(logs[0].rpc_probe,expected);
     assert.equal(logs[0].error_kind,"TypeError");
@@ -399,20 +414,29 @@ test("read-only DO fetch probe classifies RPC TypeError without a second dispatc
   }
 });
 
-test("DO probe failure is redacted and never retries dispatch", async () => {
+test("fresh DO stub probe failure is redacted and never retries dispatch", async () => {
   const logs=[], calls=[];
   const env={SLOT_COORDINATOR:{
     idFromName:key=>key,
-    get:()=>({
-      runSlot:async()=>{calls.push("rpc");throw new TypeError("sensitive");},
-      fetch:async()=>{calls.push("probe");throw new Error("secret");}
-    })
+    get:()=> {
+      calls.push("get");
+      if (calls.filter(x=>x==="get").length===1) {
+        return {runSlot:async()=>{
+          calls.push("rpc");
+          throw new TypeError("sensitive");
+        }};
+      }
+      return {fetch:async()=>{
+        calls.push("probe");
+        throw new Error("secret");
+      }};
+    }
   }};
   await assert.rejects(runScheduledController({
     scheduledTime:Date.parse("2026-10-24T11:35:00Z"),env,
     logger:{log:()=>assert.fail("unexpected"),error:x=>logs.push(JSON.parse(x))}
   }),TypeError);
-  assert.deepEqual(calls,["rpc","probe"]);
+  assert.deepEqual(calls,["get","rpc","get","probe"]);
   assert.equal(logs[0].rpc_probe,"do_fetch_exception");
   assert.equal(JSON.stringify(logs).includes("sensitive"),false);
   assert.equal(JSON.stringify(logs).includes("secret"),false);

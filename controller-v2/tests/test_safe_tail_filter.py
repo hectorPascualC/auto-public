@@ -179,23 +179,23 @@ class TailEvidenceTests(unittest.TestCase):
                 self.assertEqual(result.returncode == 0, accepted)
                 self.assertEqual("GATE_PASS" in result.stdout, accepted)
 
-    def test_daily_tail_and_date_guarded_short_saturday_captures(self):
-        # Keep existing weekend/Monday slots, and Saturday-only short
-        # captures; the short-capture regression suite checks date and overlap.
+    def test_daily_tail_and_date_guarded_weekend_captures(self):
+        # Sunday uses its own 54m capture after CET fallback, not the older
+        # 125m long tail; this prevents overlapping 09..23 E2E evidence.
         import yaml
         workflow = Path(__file__).resolve().parents[2] / ".github/workflows/v2-cloudflare-safe-tail.yml"
         content = workflow.read_text(encoding="utf-8")
         parsed = yaml.safe_load(content)
         triggers = parsed[True]["schedule"]  # PyYAML 1.1 treats "on" as True
         self.assertEqual([x["cron"] for x in triggers],
-                         ["13 6 * * 1", "13 6 * * 6,0", "26 10-20 * * 6"])
-        self.assertEqual(len(triggers), 3)
+                         ["13 6 * * 1", "13 6 * * 6", "26 10-20 * * 6", "26 6-21 * * 0"])
+        self.assertEqual(len(triggers), 4)
         self.assertIn("dt.time(8,0)", content)
         self.assertIn("dt.date(2026,10,26)", content)
         self.assertIn("diagnostic_bridge=", content)
         self.assertIn("diagnostic_probe=", content)
         self.assertIn('dt.time(12,40) <= now.time() < dt.time(12,55)', content)
-        self.assertIn('"hourly" if (hourly_saturday or diagnostic_probe or diagnostic_postdeploy)', content)
+        self.assertIn('"hourly" if (hourly_saturday or hourly_sunday or diagnostic_probe or diagnostic_postdeploy)', content)
         self.assertIn('dt.time(11,30) <= now.time() < dt.time(11,45)', content)
         self.assertIn('os.getenv("GITHUB_EVENT_NAME")=="push"', content)
         self.assertIn("manual_short or diagnostic_bridge", content)

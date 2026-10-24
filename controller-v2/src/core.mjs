@@ -25,14 +25,17 @@ export function scheduledSlot(scheduledTime) {
       attempt: minute === 15 ? "primary" : "backup", scheduledTime};
   }
 
-  // Only 2026-10-24: dispatch standard Madrid slots on Saturday too.
-  // All other weekends stay blocked by the regular weekday gate.
-  const saturdayLiveTest = p.year === "2026" && p.month === "10" &&
+  // Saturday 24 Oct only: one real V2 slot EVERY hour from 09:00 through
+  // 23:00 Madrid (primary at :35, conditional backup at :47). The existing
+  // Saturday Cloudflare cron supplies these triggers; no new cron is needed.
+  // Sunday and all subsequent Saturdays continue to be ignored.
+  const saturdayHourlyTest = p.year === "2026" && p.month === "10" &&
     p.day === "24" && p.weekday === "Sat";
-  if ((!["Mon", "Tue", "Wed", "Thu", "Fri"].includes(p.weekday) &&
-       !saturdayLiveTest) ||
-      !HOURS.has(localHour) || ![35, 47].includes(minute) ||
-      !SLOT_HOURS.has(localHour + 1)) return null;
+  const weekday = ["Mon", "Tue", "Wed", "Thu", "Fri"].includes(p.weekday);
+  const correctHour = saturdayHourlyTest
+    ? localHour >= 8 && localHour <= 22
+    : weekday && HOURS.has(localHour) && SLOT_HOURS.has(localHour + 1);
+  if (!correctHour || ![35, 47].includes(minute)) return null;
   const date = p.year + "-" + p.month + "-" + p.day;
   return {
     key: date + "T" + String(localHour + 1).padStart(2, "0") + ":00",

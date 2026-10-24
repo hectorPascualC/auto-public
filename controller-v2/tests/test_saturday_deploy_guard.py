@@ -1,4 +1,4 @@
-"""Offline tests for one-day Saturday Cloudflare deployment guard."""
+"""Offline tests for bounded 24-25 October Cloudflare deployment guard."""
 import datetime as dt
 import importlib.util
 import unittest
@@ -18,7 +18,7 @@ class SaturdayDeployTests(unittest.TestCase):
         tz = ZoneInfo("Europe/Madrid")
         for date, allow in (
             (dt.datetime(2026, 10, 24, 10, 30, tzinfo=tz), True),
-            (dt.datetime(2026, 10, 25, 10, 30, tzinfo=tz), False),
+            (dt.datetime(2026, 10, 25, 10, 30, tzinfo=tz), True),
             (dt.datetime(2026, 10, 31, 10, 30, tzinfo=tz), False),
             (dt.datetime(2026, 10, 23, 10, 30, tzinfo=tz), False)
         ):
@@ -59,6 +59,14 @@ class SaturdayDeployTests(unittest.TestCase):
         ]
         valid = {"schedules": [{"cron": c} for c in guard.EXPECTED]}
         self.assertTrue(guard.validate_live(valid, {"bindings": bindings}))
+        # After the date-guarded Sunday cron migration, redeploying a
+        # minimal SRE hotfix must still pass without altering triggers.
+        valid_extended = {"schedules": [{"cron": c} for c in guard.EXPECTED_EXTENDED]}
+        self.assertTrue(guard.validate_live(valid_extended, {"bindings": bindings}))
+        with self.assertRaises(ValueError):
+            guard.validate_live({"schedules": [
+                {"cron": guard.PRODUCTION}, {"cron": "35,47 6-22 * * 1,7"}
+            ]}, {"bindings": bindings})
         with self.assertRaises(ValueError):
             guard.validate_live({"schedules": [{"cron": guard.PRODUCTION}]},
                                 {"bindings": bindings})

@@ -167,6 +167,10 @@ class TailEvidenceTests(unittest.TestCase):
         self.assertEqual(len(triggers), 3)
         self.assertIn("dt.time(8,0)", content)
         self.assertIn("dt.date(2026,10,26)", content)
+        self.assertIn("diagnostic_bridge=", content)
+        self.assertIn('dt.time(11,30) <= now.time() < dt.time(11,45)', content)
+        self.assertIn('os.getenv("GITHUB_EVENT_NAME")=="push"', content)
+        self.assertIn("manual_short or diagnostic_bridge", content)
 
     def test_token_shaped_metadata_never_leaks(self):
         self.assertEqual(FILTER.safe_value("reason", "github_pat_abcd"), "REDACTED")

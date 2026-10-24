@@ -55,16 +55,23 @@ jobs:
           manual_short=(now.date()==dt.date(2026,10,24) and
              dt.time(10,35) <= now.time() < dt.time(10,45) and
              os.getenv("GITHUB_EVENT_NAME") in ("workflow_dispatch","push"))
+          # One additional date-guarded 18m diagnostic capture after
+          # merging the RPC bridge; needed because GitHub's :26 schedule
+          # did not start at 11:26 UTC. The shared concurrency group still
+          # forbids overlapping tails, and no scan is triggered here.
+          diagnostic_bridge=(now.date()==dt.date(2026,10,24) and
+             dt.time(11,30) <= now.time() < dt.time(11,45) and
+             os.getenv("GITHUB_EVENT_NAME")=="push")
           hourly_saturday=(now.date()==dt.date(2026,10,24) and
              os.getenv("GITHUB_EVENT_NAME")=="schedule" and
              os.getenv("EVENT_CRON")=="26 10-20 * * 6" and
              10 <= now.hour <= 20 and 26 <= now.minute <= 52)
-          enabled=(manual_short or hourly_saturday or today_is_manual_saturday or today_is_safe_friday or
+          enabled=(manual_short or diagnostic_bridge or hourly_saturday or today_is_manual_saturday or today_is_safe_friday or
              (now.date() in dates and now < cutoff and
               os.getenv("GITHUB_EVENT_NAME") in ("workflow_dispatch","schedule")))
           with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf-8") as out:
               out.write("enabled="+str(enabled).lower()+"\n")
-              out.write("capture_mode="+("short" if manual_short else "hourly" if hourly_saturday else "long")+"\n")
+              out.write("capture_mode="+("short" if (manual_short or diagnostic_bridge) else "hourly" if hourly_saturday else "long")+"\n")
           print("TAIL_WINDOW="+("ACTIVE" if enabled else "SKIPPED_late_or_other_day"))
           PY
       - name: Validate Cloudflare credentials are present

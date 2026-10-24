@@ -1,5 +1,5 @@
 import { DurableObject } from "cloudflare:workers";
-import { processScheduled, runScheduledController, scheduledErrorCode } from "./core.mjs";
+import { processScheduled, runScheduledController, scheduledErrorCode, scheduledErrorKind } from "./core.mjs";
 
 export class SlotCoordinator extends DurableObject {
   async runSlot(event) {
@@ -19,11 +19,13 @@ export class SlotCoordinator extends DurableObject {
       // DO RPC can mask an inner error as 'unexpected_exception' in the
       // outer Worker. Emit a safe, phase-specific DO log before rethrowing.
       // Never print exception.message, stack, GitHub response or credentials.
-      console.error(JSON.stringify({
-        controller: "v2", status: "ERROR", component: "slot_coordinator",
-        phase, error: scheduledErrorCode(error)
-      }));
-      throw error;
+      // Return a small allowlisted RPC value: Worker tails often omit
+      // Durable Object console frames, so rethrowing here erased the phase.
+      // The outer Worker rethrows after logging, preserving failed-cron status.
+      return {
+        status: "ERROR", component: "slot_coordinator", phase,
+        error: scheduledErrorCode(error), error_kind: scheduledErrorKind(error)
+      };
     }
   }
 }

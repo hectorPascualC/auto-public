@@ -64,12 +64,15 @@ class TailEvidenceTests(unittest.TestCase):
             self.assertEqual(FILTER.safe_value("slot", slot), slot)
         self.assertEqual(FILTER.safe_value("slot", "2026-10-24T08:00"), "REDACTED")
         self.assertEqual(FILTER.safe_value("phase", "github_read"), "github_read")
+        self.assertEqual(FILTER.safe_value("error_kind", "TypeError"), "TypeError")
+        self.assertEqual(FILTER.safe_value("error_kind", "Bearer-secret"), "REDACTED")
         secret="Bearer-never-leak"
         frame={"outcome":"exception", "event":{"cron":"35,47 6-20 * * 1,7"},
                "logs":[{"message":[json.dumps({
                    "controller":"v2", "status":"ERROR",
                    "slot":"2026-10-24T12:00", "phase":"github_read",
                    "error":"github_http_403",
+                   "error_kind":"TypeError",
                    "message":secret
                })]}], "exceptions":[{"message":secret}]}
         output=io.StringIO()
@@ -79,6 +82,7 @@ class TailEvidenceTests(unittest.TestCase):
         self.assertEqual(record["slot"],"2026-10-24T12:00")
         self.assertEqual(record["phase"],"github_read")
         self.assertEqual(record["error"],"github_http_403")
+        self.assertEqual(record["error_kind"],"TypeError")
 
     def test_pretty_printed_scheduled_invocations_are_not_lost(self):
         secret = "Bearer-super-secret-never-printed"
@@ -163,6 +167,10 @@ class TailEvidenceTests(unittest.TestCase):
         self.assertEqual(len(triggers), 3)
         self.assertIn("dt.time(8,0)", content)
         self.assertIn("dt.date(2026,10,26)", content)
+        self.assertIn("diagnostic_bridge=", content)
+        self.assertIn('dt.time(11,30) <= now.time() < dt.time(11,45)', content)
+        self.assertIn('os.getenv("GITHUB_EVENT_NAME")=="push"', content)
+        self.assertIn("manual_short or diagnostic_bridge", content)
 
     def test_token_shaped_metadata_never_leaks(self):
         self.assertEqual(FILTER.safe_value("reason", "github_pat_abcd"), "REDACTED")

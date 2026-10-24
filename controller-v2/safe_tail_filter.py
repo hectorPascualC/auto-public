@@ -14,10 +14,12 @@ import re
 import sys
 from datetime import datetime, timezone
 
-FIELDS = ("status", "slot", "attempt", "phase", "error", "reason")
+FIELDS = ("status", "slot", "attempt", "phase", "error", "error_kind", "reason")
 VALUES = {
     "status": {"IGNORED", "STALE", "DISABLED", "SKIPPED", "DISPATCHED", "ERROR"},
     "attempt": {"primary", "backup"},
+    "error_kind": {"Error", "TypeError", "RangeError", "ReferenceError",
+                   "SyntaxError", "DurableObjectError", "other"},
     "phase": {"classify_slot", "resolve_coordinator", "run_coordinator",
               "block_concurrency", "storage_read", "github_read",
               "github_dispatch", "storage_write"},

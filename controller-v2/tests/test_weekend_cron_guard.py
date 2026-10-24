@@ -46,6 +46,21 @@ class WeekendCronTests(unittest.TestCase):
         self.assertEqual(guard.mode_for(stamp("2026-10-26"), "push"), "restore")
         self.assertEqual(guard.mode_for(stamp("2026-10-27"), "push"), "no_action")
 
+    def test_saturday_delayed_schedule_recovery_push_is_date_guarded(self):
+        # A path-scoped main push can recover a missed 00:05 UTC schedule.
+        t = dt.datetime(2026, 10, 24, 0, 25, tzinfo=dt.timezone.utc)
+        self.assertEqual(guard.mode_for(t, "push"), "verify")
+        self.assertEqual(guard.mode_for(t, "schedule"), "verify")
+        self.assertEqual(guard.mode_for(t, "pull_request"), "no_action")
+        # The same workflow push must never reinstall Friday crons after Friday.
+        cf = FakeCF([guard.PRIMARY, guard.WEEKEND, guard.FRIDAY_NIGHT])
+        result = guard.run(guard.mode_for(t, "push"), cf)
+        self.assertEqual(result["status"], "PASS_CONFIG_ONLY")
+        self.assertTrue(result["updated"])
+        self.assertEqual(set(cf.schedules), {guard.PRIMARY, guard.WEEKEND})
+        self.assertNotIn(guard.FRIDAY_NIGHT, cf.schedules)
+        self.assertFalse(guard.run("verify", cf)["updated"])
+
     def test_cloudflare_weekday_encoding_not_github_encoding(self):
         self.assertEqual(guard.LEGACY.split()[-1], "1-5")
         self.assertEqual(guard.PRIMARY.split()[-1], "2-6")

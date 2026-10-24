@@ -178,6 +178,7 @@ const KNOWN_SCHEDULED_ERRORS = new Set([
   "controller_configuration_invalid",
   "slot_coordinator_binding_invalid",
   "slot_coordinator_stub_invalid",
+  "slot_coordinator_response_invalid",
   "github_contents_unexpected_schema",
   "github_runs_unexpected_schema"
 ]);
@@ -185,7 +186,8 @@ const KNOWN_SCHEDULED_ERRORS = new Set([
 export function scheduledErrorCode(error) {
   // Never log exception text from dependencies: it could contain account data.
   const message = typeof error?.message === "string" ? error.message : "";
-  if (KNOWN_SCHEDULED_ERRORS.has(message) || /^github_http_[0-9]{3}$/.test(message))
+  if (KNOWN_SCHEDULED_ERRORS.has(message) ||
+      /^(github_http_|slot_coordinator_http_)[0-9]{3}$/.test(message))
     return message;
   return "unexpected_exception";
 }
@@ -222,35 +224,26 @@ export async function runScheduledController({scheduledTime, env, logger = conso
       throw new Error("slot_coordinator_binding_invalid");
     const coordinatorId = coordinator.idFromName(slot.key);
     const stub = coordinator.get(coordinatorId);
-    if (!stub || typeof stub.runSlot !== "function")
+    if (!stub || typeof stub.fetch !== "function")
       throw new Error("slot_coordinator_stub_invalid");
+    // The live Durable Object responds to a read-only fetch probe, but its
+    // RPC runSlot method fails with TypeError before returning a safe phase.
+    // Use exactly ONE private HTTP POST, never RPC followed by an HTTP retry:
+    // the first invocation could have already dispatched a scan.
     phase = "run_coordinator";
-    let result;
-    try {
-      result = await stub.runSlot({scheduledTime});
-    } catch (rpcError) {
-      // Cloudflare poisons a DO stub after any exception: further calls
-      // on THAT stub also fail. A probe on the failed stub is inconclusive.
-      // Create a fresh stub for the same slot and do ONLY a read-only GET.
-      // Never repeat runSlot/dispatch: the first RPC might have succeeded.
-      if (scheduledErrorKind(rpcError) === "TypeError") {
-        let probe = "do_fetch_unavailable";
-        try {
-          const probeStub = coordinator.get(coordinatorId);
-          if (probeStub && typeof probeStub.fetch === "function") {
-            const response = await probeStub.fetch(
-              new Request("https://slot-coordinator.invalid/__probe", {method: "GET"})
-            );
-            probe = response?.status === 204 ? "do_fetch_204" :
-              response?.status === 404 ? "do_fetch_404" : "do_fetch_other";
-          }
-        } catch {
-          probe = "do_fetch_exception";
-        }
-        rpcError.safeRpcProbe = probe;
+    const response = await stub.fetch(new Request(
+      "https://slot-coordinator.invalid/__run-slot", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({scheduledTime})
       }
-      throw rpcError;
-    }
+    ));
+    if (!response.ok)
+      throw new Error("slot_coordinator_http_" + response.status);
+    const result = await response.json();
+    if (!result || !["DISPATCHED", "SKIPPED", "STALE", "DISABLED", "ERROR"].includes(result.status) ||
+        (result.status !== "ERROR" && result.slot !== slot.key))
+      throw new Error("slot_coordinator_response_invalid");
     if (result?.status === "ERROR" && result?.component === "slot_coordinator") {
       // A DO's console output is not necessarily visible in the Worker tail.
       // Carry only allowlisted error metadata across RPC; still fail the cron.

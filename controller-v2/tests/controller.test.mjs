@@ -100,7 +100,7 @@ test("Friday-night and weekend cron probes cannot dispatch GitHub", async () => 
   const times = [
     "2026-10-23T20:35:00Z", "2026-10-23T20:47:00Z",
     "2026-10-23T21:35:00Z", "2026-10-23T21:47:00Z",
-    "2026-10-24T18:35:00Z", "2026-10-25T20:47:00Z"
+    "2026-10-24T21:35:00Z", "2026-10-25T20:47:00Z"
   ];
   for (const utc of times) {
     const instant = Date.parse(utc);

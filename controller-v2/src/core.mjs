@@ -190,6 +190,18 @@ export function scheduledErrorCode(error) {
   return "unexpected_exception";
 }
 
+const SAFE_ERROR_KINDS = new Set([
+  "Error", "TypeError", "RangeError", "ReferenceError", "SyntaxError",
+  "DurableObjectError"
+]);
+const SAFE_DO_PHASES = new Set([
+  "block_concurrency", "storage_read", "github_read", "github_dispatch",
+  "storage_write"
+]);
+export function scheduledErrorKind(error) {
+  return SAFE_ERROR_KINDS.has(error?.name) ? error.name : "other";
+}
+
 // Keep the entire valid-slot path inside one catch boundary. In particular,
 // DO binding lookup used to happen BEFORE the catch in src/index.mjs, hiding
 // the actionable failure behind a generic Cloudflare Cron "exception" event.
@@ -213,13 +225,24 @@ export async function runScheduledController({scheduledTime, env, logger = conso
       throw new Error("slot_coordinator_stub_invalid");
     phase = "run_coordinator";
     const result = await stub.runSlot({scheduledTime});
+    if (result?.status === "ERROR" && result?.component === "slot_coordinator") {
+      // A DO's console output is not necessarily visible in the Worker tail.
+      // Carry only allowlisted error metadata across RPC; still fail the cron.
+      const reported = new Error(scheduledErrorCode({message: result.error}));
+      reported.safePhase = SAFE_DO_PHASES.has(result.phase)
+        ? result.phase : "run_coordinator";
+      reported.safeKind = scheduledErrorKind({name: result.error_kind});
+      throw reported;
+    }
     logger.log(JSON.stringify({controller: "v2", ...result}));
     return result;
   } catch (error) {
     logger.error(JSON.stringify({
       controller: "v2", status: "ERROR",
       slot: slot?.key || null, attempt: slot?.attempt || null,
-      phase, error: scheduledErrorCode(error)
+      phase: error?.safePhase || phase,
+      error: scheduledErrorCode(error),
+      error_kind: error?.safeKind || scheduledErrorKind(error)
     }));
     throw error; // preserve Cloudflare invocation error status
   }

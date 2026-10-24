@@ -301,7 +301,7 @@ test("a valid cron with missing DO binding reports a safe error before rethrow",
   assert.deepEqual(JSON.parse(logs[0]), {
     controller: "v2", status: "ERROR", slot: "2026-10-22T14:00",
     attempt: "primary", phase: "resolve_coordinator",
-    error: "slot_coordinator_binding_invalid"
+    error: "slot_coordinator_binding_invalid", error_kind: "Error"
   });
   assert.equal(logs[0].includes("TOP_SECRET"), false);
 });

@@ -4,7 +4,8 @@ name: V2 Cloudflare safe tail - one time
 # In contrast, Cloudflare weekdays are 1=Sun, 2=Mon, ... 7=Sat.
 # Date guard prevents later weeks from running. Friday push opens a two-hour live tail.
 # GitHub may drop schedules at minute 0 under high load; schedule once at :13
-# to reduce contention. A single daily trigger avoids duplicate tail captures.
+# to reduce contention. Saturday hourly captures are date-guarded and
+# stop before the next hour; never overlap with the first two-hour capture.
 on:
   push:
     branches: [main]
@@ -12,9 +13,15 @@ on:
   schedule:
     - cron: '13 6 * * 1'
     - cron: '13 6 * * 6,0'
+    # Saturday 24 OCT only: bounded hourly tail 12:26..22:26 Madrid.
+    # Begins after the existing 10:16-12:21 long capture has ended.
+    - cron: '26 10-20 * * 6'
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: auto-public-v2-hourly-tail
+  cancel-in-progress: false
 jobs:
   tail:
     runs-on: ubuntu-24.04
@@ -27,6 +34,8 @@ jobs:
       - name: Gate one-date diagnostic window
         id: window
         shell: bash
+        env:
+          EVENT_CRON: ${{ github.event.schedule }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -39,12 +48,17 @@ jobs:
              os.getenv("GITHUB_EVENT_NAME")=="push")
           today_is_manual_saturday=(now.date()==dt.date(2026,10,24) and
              dt.time(8,0) <= now.time() < dt.time(10,45) and
-             os.getenv("GITHUB_EVENT_NAME") in ("workflow_dispatch","push"))
-          enabled=(today_is_manual_saturday or today_is_safe_friday or
+             os.getenv("GITHUB_EVENT_NAME")=="workflow_dispatch")
+          hourly_saturday=(now.date()==dt.date(2026,10,24) and
+             os.getenv("GITHUB_EVENT_NAME")=="schedule" and
+             os.getenv("EVENT_CRON")=="26 10-20 * * 6" and
+             10 <= now.hour <= 20 and 26 <= now.minute <= 52)
+          enabled=(hourly_saturday or today_is_manual_saturday or today_is_safe_friday or
              (now.date() in dates and now < cutoff and
               os.getenv("GITHUB_EVENT_NAME") in ("workflow_dispatch","schedule")))
           with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf-8") as out:
               out.write("enabled="+str(enabled).lower()+"\n")
+              out.write("capture_mode="+("hourly" if hourly_saturday else "long")+"\n")
           print("TAIL_WINDOW="+("ACTIVE" if enabled else "SKIPPED_late_or_other_day"))
           PY
       - name: Validate Cloudflare credentials are present
@@ -61,9 +75,15 @@ jobs:
         shell: bash
         run: |
           set -uo pipefail
-          # Shared filter has regression tests and always emits a zero-frame summary.
+          # Shared filter always emits a zero-frame summary, even on no frames.
+          # Hourly tail stops before the next capture; original long window stays intact.
+          case '${{ steps.window.outputs.capture_mode }}' in
+            hourly) capture_seconds=3240 ;;
+            long) capture_seconds=7500 ;;
+            *) echo '::error::Invalid capture mode'; exit 1 ;;
+          esac
           set +e
-          timeout -s INT 7500 npx --yes wrangler@4.139.0 tail auto-public-controller-v2 --format=json --config controller-v2/wrangler.toml 2>/tmp/v2-tail-stderr.txt | python3 -u controller-v2/safe_tail_filter.py | tee v2-safe-traces.jsonl
+          timeout -s INT "$capture_seconds" npx --yes wrangler@4.139.0 tail auto-public-controller-v2 --format=json --config controller-v2/wrangler.toml 2>/tmp/v2-tail-stderr.txt | python3 -u controller-v2/safe_tail_filter.py | tee v2-safe-traces.jsonl
           codes=( "${PIPESTATUS[@]}" )
           set -e
           if [[ "${codes[0]}" != "0" && "${codes[0]}" != "124" ]]; then

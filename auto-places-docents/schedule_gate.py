@@ -69,23 +69,11 @@ def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
     key, kind = "", "manual"
     local = now.astimezone(TZ)
     if event == "schedule":
-        # Temporary bounded Saturday scan exercise, deliberately UNSLOTTED.
-        # It tests GitHub's real sources/persistence path, NOT Worker -> DO.
+        # The temporary unslotted GitHub Saturday cron is retired:
+        # Cloudflare now supplies date-guarded genuine hourly V2 slots.
+        # A delayed legacy GitHub schedule must NEVER cause a duplicate scan.
         if cron.strip() == "27 8-21 * * 6":
-            utc = now.astimezone(timezone.utc)
-            expected = utc.replace(minute=27, second=0, microsecond=0)
-            lag = (utc - expected).total_seconds()
-            if (utc.date() != date(2026, 10, 24) or
-                    not 8 <= expected.hour <= 21 or not 0 <= lag <= 45 * 60):
-                return False, "saturday_probe_outside_window", "", "saturday_probe"
-            try:
-                prior = datetime.fromisoformat(h.get("generated_at", ""))
-                age = (now - prior).total_seconds()
-                if prior.tzinfo is not None and 0 <= age < 50 * 60:
-                    return False, "saturday_probe_recent_scan", "", "saturday_probe"
-            except (ValueError, TypeError):
-                pass
-            return True, "RUN_SCAN", "", "saturday_probe"
+            return False, "saturday_probe_superseded_by_cloudflare", "", "saturday_probe"
         # Two UTC cron candidates per local slot, one for each DST regime.
         # GitHub schedules 12 minutes apart. Backup skips a prior PASS.
         m = re.fullmatch(r"(35|47) (6|7|8|9|11|12|13|14) \* \* 1-5", cron.strip())
@@ -105,6 +93,10 @@ def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
         key = nominal.strftime("%Y-%m-%dT%H:00")
         kind = "backup" if minute == 47 else "primary"
     elif event == "push":
+        # Code/workflow update pushes during the single Saturday test must
+        # not compete with the Cloudflare-scheduled hourly source scans.
+        if local.date() == date(2026, 10, 24) and not marker_changed:
+            return False, "saturday_cloudflare_exclusive", "", "push"
         if not force and trigger_sha and trigger_sha == processed_sha:
             return False, "duplicate_push", "", "push"
         if marker_changed:
@@ -116,7 +108,9 @@ def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
                     return False, "rescue_slot_expired", key, kind
     elif event == "workflow_dispatch" and slot_input:
         one_day_probe = slot_input == "2026-10-22T20:00"
-        if not (one_day_probe or re.fullmatch(r"\d{4}-\d{2}-\d{2}T(09|11|14|16):00", slot_input)):
+        saturday_hourly = re.fullmatch(r"2026-10-24T(09|1[0-9]|2[0-3]):00", slot_input)
+        if not (one_day_probe or saturday_hourly or
+                re.fullmatch(r"\d{4}-\d{2}-\d{2}T(09|11|14|16):00", slot_input)):
             return False, "invalid_v2_slot", "", "invalid"
         if attempt_input not in ("primary", "backup"):
             return False, "invalid_v2_attempt", "", "invalid"

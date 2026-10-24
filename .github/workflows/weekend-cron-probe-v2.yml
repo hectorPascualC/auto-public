@@ -9,7 +9,10 @@ name: AUTO PUBLIC V2 - temporary weekend cron probe
 # The existing date gate, Cloudflare allowlist, GET/PUT/GET, and concurrency
 # are mandatory; if a scheduled cleanup wins the race, this run is idempotent.
 # If GitHub scheduled runs are delayed, an SRE-reviewed push changing ONLY this
-# workflow path can trigger the same date-gated Saturday/Monday cleanup.
+# workflow path can trigger the same date-gated Saturday/Sunday/Monday guard.
+# 2026-10-24: authorized Sunday E2E continuation; push triggers exactly one
+# guarded verify/readback and migrates the known weekend 6-20 UTC to 6-21 UTC.
+# Production weekday cron, secrets, dispatch logic and Monday cleanup stay intact.
 on:
   push:
     branches: [main]

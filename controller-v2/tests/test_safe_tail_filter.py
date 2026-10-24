@@ -73,7 +73,7 @@ class TailEvidenceTests(unittest.TestCase):
                    "message":secret
                })]}], "exceptions":[{"message":secret}]}
         output=io.StringIO()
-        FILTER.process(io.StringIO(json.dumps(frame)+"\\n"),output)
+        FILTER.process(io.StringIO(json.dumps(frame)+"\n"),output)
         self.assertNotIn(secret,output.getvalue())
         record=json.loads(output.getvalue().splitlines()[0])
         self.assertEqual(record["slot"],"2026-10-24T12:00")

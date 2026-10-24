@@ -97,7 +97,7 @@ class TestSchedule(unittest.TestCase):
             self.assertEqual(answer[1], "saturday_probe_outside_window", when)
         # Saturday 24 only: genuine Cloudflare V2 slots are allowed.
         v2=schedule_gate.decide("workflow_dispatch","",
-            at("2026-10-24T10:27:00+02:00"),{}, {},
+            at("2026-10-24T10:35:00+02:00"),{}, {},
             slot_input="2026-10-24T11:00", attempt_input="primary")
         self.assertEqual(v2,(True,"RUN_SCAN","2026-10-24T11:00","v2_primary"))
         for forbidden in ("2026-10-25T11:00", "2026-10-31T11:00"):

@@ -87,6 +87,23 @@ class WeekendCronTests(unittest.TestCase):
         self.assertEqual(result["status"], "PASS_CONFIG_ONLY")
         self.assertFalse(result["runtime_invocations_verified"])
 
+    def test_sunday_extended_cet_hour_migrates_old_weekend_safely(self):
+        self.assertEqual(guard.OLD_WEEKEND, "35,47 6-20 * * 1,7")
+        self.assertEqual(guard.WEEKEND, "35,47 6-21 * * 1,7")
+        cf = FakeCF([guard.PRIMARY, guard.OLD_WEEKEND])
+        result = guard.run("verify", cf)
+        self.assertTrue(result["updated"])
+        self.assertEqual(set(cf.schedules), {guard.PRIMARY, guard.WEEKEND})
+        self.assertFalse(guard.run("verify", cf)["updated"])
+        guard.run("restore", cf)
+        self.assertEqual(cf.schedules, [guard.PRIMARY])
+
+    def test_monday_restores_old_weekend_if_sunday_migration_delayed(self):
+        cf = FakeCF([guard.PRIMARY, guard.OLD_WEEKEND])
+        result = guard.run("restore", cf)
+        self.assertTrue(result["updated"])
+        self.assertEqual(cf.schedules, [guard.PRIMARY])
+
     def test_verify_is_read_only(self):
         cf = FakeCF([guard.PRIMARY, guard.WEEKEND])
         result = guard.run("verify", cf)

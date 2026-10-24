@@ -128,17 +128,17 @@ class TailEvidenceTests(unittest.TestCase):
                 self.assertEqual(result.returncode == 0, accepted)
                 self.assertEqual("GATE_PASS" in result.stdout, accepted)
 
-    def test_weekend_tail_schedules_once_per_day_off_busy_minute_zero(self):
-        # GitHub may delay/drop schedule events on the hour; do not duplicate
-        # long-running tail sessions by adding multiple cron triggers per day.
+    def test_daily_tail_and_date_guarded_short_saturday_captures(self):
+        # Keep existing weekend/Monday slots, and Saturday-only short
+        # captures; the short-capture regression suite checks date and overlap.
         import yaml
         workflow = Path(__file__).resolve().parents[2] / ".github/workflows/v2-cloudflare-safe-tail.yml"
         content = workflow.read_text(encoding="utf-8")
         parsed = yaml.safe_load(content)
         triggers = parsed[True]["schedule"]  # PyYAML 1.1 treats "on" as True
         self.assertEqual([x["cron"] for x in triggers],
-                         ["13 6 * * 1", "13 6 * * 6,0"])
-        self.assertEqual(len(triggers), 2)
+                         ["13 6 * * 1", "13 6 * * 6,0", "26 10-20 * * 6"])
+        self.assertEqual(len(triggers), 3)
         self.assertIn("dt.time(8,0)", content)
         self.assertIn("dt.date(2026,10,26)", content)
 

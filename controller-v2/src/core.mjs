@@ -224,7 +224,30 @@ export async function runScheduledController({scheduledTime, env, logger = conso
     if (!stub || typeof stub.runSlot !== "function")
       throw new Error("slot_coordinator_stub_invalid");
     phase = "run_coordinator";
-    const result = await stub.runSlot({scheduledTime});
+    let result;
+    try {
+      result = await stub.runSlot({scheduledTime});
+    } catch (rpcError) {
+      // A TypeError without a DO phase may happen before runSlot is entered.
+      // Probe ONLY the DO's read-only GET endpoint. Never dispatch a second
+      // attempt from this catch: the first RPC could have reached GitHub.
+      if (scheduledErrorKind(rpcError) === "TypeError") {
+        let probe = "do_fetch_unavailable";
+        if (typeof stub.fetch === "function") {
+          try {
+            const response = await stub.fetch(
+              new Request("https://slot-coordinator.invalid/__probe", {method: "GET"})
+            );
+            probe = response?.status === 204 ? "do_fetch_204" :
+              response?.status === 404 ? "do_fetch_404" : "do_fetch_other";
+          } catch {
+            probe = "do_fetch_exception";
+          }
+        }
+        rpcError.safeRpcProbe = probe;
+      }
+      throw rpcError;
+    }
     if (result?.status === "ERROR" && result?.component === "slot_coordinator") {
       // A DO's console output is not necessarily visible in the Worker tail.
       // Carry only allowlisted error metadata across RPC; still fail the cron.
@@ -242,7 +265,8 @@ export async function runScheduledController({scheduledTime, env, logger = conso
       slot: slot?.key || null, attempt: slot?.attempt || null,
       phase: error?.safePhase || phase,
       error: scheduledErrorCode(error),
-      error_kind: error?.safeKind || scheduledErrorKind(error)
+      error_kind: error?.safeKind || scheduledErrorKind(error),
+      ...(error?.safeRpcProbe ? {rpc_probe: error.safeRpcProbe} : {})
     }));
     throw error; // preserve Cloudflare invocation error status
   }

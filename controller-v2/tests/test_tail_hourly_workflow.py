@@ -1,4 +1,4 @@
-"""Offline tests for Saturday hourly Cloudflare tail capture schedule."""
+"""Offline tests for date-bounded Saturday/Sunday hourly capture."""
 from __future__ import annotations
 
 import contextlib
@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[2]
 PATH = ROOT / ".github/workflows/v2-cloudflare-safe-tail.yml"
 
 
-class SaturdayHourlyTailTests(unittest.TestCase):
+class WeekendHourlyTailTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.workflow = yaml.safe_load(PATH.read_text(encoding="utf-8"))
@@ -59,9 +59,23 @@ class SaturdayHourlyTailTests(unittest.TestCase):
                              {"enabled": "true", "capture_mode": "hourly"})
         for utc in ("2026-10-24T09:59:00+00:00",
                     "2026-10-24T21:00:00+00:00",
-                    "2026-10-25T10:26:00+00:00",
                     "2026-10-31T10:26:00+00:00"):
             self.assertEqual(self.evaluate(utc)["enabled"], "false")
+
+    def test_sunday_hourly_after_cet_fallback(self):
+        cron = "26 6-21 * * 0"
+        for utc in ("2026-10-25T06:26:00+00:00",
+                    "2026-10-25T10:26:00+00:00",
+                    "2026-10-25T21:26:00+00:00",
+                    "2026-10-25T22:02:00+00:00"):
+            self.assertEqual(self.evaluate(utc, cron=cron),
+                             {"enabled": "true", "capture_mode": "hourly"})
+        for utc in ("2026-10-25T05:59:00+00:00",
+                    "2026-10-25T23:00:00+00:00",
+                    "2026-11-01T10:26:00+00:00"):
+            self.assertEqual(self.evaluate(utc, cron=cron)["enabled"], "false")
+        self.assertEqual(self.evaluate("2026-10-25T10:26:00+00:00")
+                         ["enabled"], "false")
 
     def test_no_push_duplicate_and_wrong_schedule(self):
         self.assertEqual(self.evaluate(
@@ -95,7 +109,7 @@ class SaturdayHourlyTailTests(unittest.TestCase):
     def test_preserve_normal_schedule_redaction_and_nonoverlap(self):
         crons = [item["cron"] for item in self.config["schedule"]]
         self.assertEqual(set(crons),
-            {"13 6 * * 1", "13 6 * * 6,0", "26 10-20 * * 6"})
+            {"13 6 * * 1", "13 6 * * 6", "26 10-20 * * 6", "26 6-21 * * 0"})
         self.assertEqual(self.workflow["permissions"], {"contents": "read"})
         self.assertFalse(self.workflow["concurrency"]["cancel-in-progress"])
         tail = next(step for step in

@@ -65,6 +65,13 @@ class SaturdayHourlyTailTests(unittest.TestCase):
         self.assertEqual(self.evaluate(
             "2026-10-24T09:30:00+00:00", "workflow_dispatch"),
             {"enabled": "true", "capture_mode": "long"})
+        self.assertEqual(self.evaluate(
+            "2026-10-24T10:36:00+00:00", "workflow_dispatch"),
+            {"enabled": "true", "capture_mode": "short"})
+        self.assertEqual(self.evaluate(
+            "2026-10-24T10:45:00+00:00", "workflow_dispatch")["enabled"], "false")
+        self.assertEqual(self.evaluate(
+            "2026-10-25T10:36:00+00:00", "workflow_dispatch")["enabled"], "false")
 
     def test_preserve_normal_schedule_redaction_and_nonoverlap(self):
         crons = [item["cron"] for item in self.config["schedule"]]
@@ -75,6 +82,7 @@ class SaturdayHourlyTailTests(unittest.TestCase):
         tail = next(step for step in
                     self.workflow["jobs"]["tail"]["steps"]
                     if step.get("name") == "Read Cloudflare events with strict log redaction")
+        self.assertIn("capture_seconds=1080", tail["run"])
         self.assertIn("capture_seconds=3240", tail["run"])
         self.assertIn("capture_seconds=7500", tail["run"])
         self.assertIn("controller-v2/safe_tail_filter.py", tail["run"])

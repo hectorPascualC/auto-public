@@ -306,31 +306,40 @@ test("a valid cron with missing DO binding reports a safe error before rethrow",
   assert.equal(logs[0].includes("TOP_SECRET"), false);
 });
 
-test("a valid cron calls the DO RPC and emits a structured result", async () => {
+test("valid cron uses one private DO HTTP POST and never invokes RPC", async () => {
   const scheduledTime = Date.parse("2026-10-22T11:47:00Z");
   const seen = [], logs = [];
   const env = {SLOT_COORDINATOR: {
     idFromName: key => {seen.push(key); return {key};},
-    get: id => ({runSlot: async event => {
-      seen.push(id.key, event.scheduledTime);
-      return {status:"DISPATCHED", slot:id.key, attempt:"backup"};
-    }})
+    get: id => ({
+      runSlot: async () => assert.fail("RPC must never be used"),
+      fetch: async request => {
+        seen.push(id.key, request.method, new URL(request.url).pathname);
+        assert.deepEqual(await request.json(), {scheduledTime});
+        return Response.json({status:"DISPATCHED",slot:id.key,attempt:"backup"});
+      }
+    })
   }};
-  const result = await runScheduledController({
-    scheduledTime, env,
-    logger: {log: x => logs.push(JSON.parse(x)), error: () => assert.fail("unexpected error")}
+  const result = await runScheduledController({scheduledTime,env,
+    logger:{log:x=>logs.push(JSON.parse(x)),error:()=>assert.fail("unexpected error")}
   });
-  assert.deepEqual(seen, ["2026-10-22T14:00", "2026-10-22T14:00", scheduledTime]);
-  assert.equal(result.status, "DISPATCHED");
-  assert.equal(logs[0].status, "DISPATCHED");
+  assert.deepEqual(seen, ["2026-10-22T14:00","2026-10-22T14:00",
+    "POST","/__run-slot"]);
+  assert.equal(result.status,"DISPATCHED");
+  assert.equal(logs[0].status,"DISPATCHED");
+  const source=readFileSync(new URL("../src/index.mjs",import.meta.url),"utf8");
+  assert.match(source,/pathname === "\/__run-slot"/);
+  assert.match(source,/await this\.runSlot\(/);
+  assert.match(source,/Object\.keys\(event\)\.length !== 1/);
+  assert.match(source,/async fetch\(\) \{\s+return new Response\("Not found"/);
 });
 
-test("DO structured error survives RPC with safe phase, without secret data", async () => {
+test("DO structured HTTP error preserves safe phase and redacts secrets", async () => {
   const scheduledTime=Date.parse("2026-10-24T11:35:00Z");
   const logs=[];
   const env={SLOT_COORDINATOR:{
     idFromName:key=>key,
-    get:()=>({runSlot:async()=>({
+    get:()=>({fetch:async()=>Response.json({
       status:"ERROR",component:"slot_coordinator",
       phase:"github_read",error:"github_http_403",error_kind:"TypeError",
       private_token:"DO_NOT_PRINT_ME"
@@ -345,99 +354,44 @@ test("DO structured error survives RPC with safe phase, without secret data", as
   assert.equal(logs[0].error,"github_http_403");
   assert.equal(logs[0].error_kind,"TypeError");
   assert.equal(JSON.stringify(logs).includes("DO_NOT_PRINT_ME"),false);
-  const doSource=readFileSync(new URL("../src/index.mjs",import.meta.url),"utf8");
-  assert.match(doSource,/status: "ERROR", component: "slot_coordinator", phase/);
-  assert.match(doSource,/error_kind: scheduledErrorKind\(error\)/);
 });
 
-test("RPC exceptions preserve known API codes and redact arbitrary errors", async () => {
-  const scheduledTime = Date.parse("2026-10-22T11:35:00Z");
-  for (const [reason, expected] of [
-    ["github_http_403", "github_http_403"],
-    ["unexpected sensitive token leaked", "unexpected_exception"]
+test("HTTP failures and malformed responses fail closed with safe codes", async () => {
+  const scheduledTime=Date.parse("2026-10-24T11:35:00Z");
+  for (const [status,reply,expected] of [
+    [503,null,"slot_coordinator_http_503"],
+    [200,{status:"DISPATCHED",slot:"2026-10-24T15:00"},"slot_coordinator_response_invalid"],
+    [200,{status:"OTHER",slot:"2026-10-24T14:00"},"slot_coordinator_response_invalid"]
   ]) {
-    const logs = [];
-    const env = {SLOT_COORDINATOR: {
-      idFromName: key => key,
-      get: () => ({runSlot: async () => {throw new Error(reason);}})
-    }};
-    await assert.rejects(runScheduledController({
-      scheduledTime, env,
-      logger: {log: () => assert.fail("unexpected success"), error: x => logs.push(JSON.parse(x))}
-    }));
-    assert.equal(logs[0].phase, "run_coordinator");
-    assert.equal(logs[0].error, expected);
-    assert.equal(JSON.stringify(logs).includes("sensitive token"), false);
-  }
-});
-
-
-test("read-only probe uses a FRESH DO stub after a poisoned RPC stub", async () => {
-  const scheduledTime = Date.parse("2026-10-24T11:35:00Z");
-  for (const [status, expected] of [[204,"do_fetch_204"],[404,"do_fetch_404"]]) {
-    const logs = [], calls = [];
-    const env = {SLOT_COORDINATOR: {
-      idFromName: key => key,
-      get: id => {
-        calls.push("get:" + id);
-        if (calls.filter(x => x.startsWith("get:")).length === 1) {
-          return {
-            runSlot: async () => {
-              calls.push("rpc");
-              throw new TypeError("secret-data");
-            },
-            fetch: async () => {
-              assert.fail("the poisoned RPC stub must never be reused");
-            }
-          };
-        }
-        return {
-          fetch: async request => {
-            calls.push("probe");
-            assert.equal(request.method,"GET");
-            assert.equal(new URL(request.url).pathname,"/__probe");
-            return new Response(null,{status});
-          }
-        };
-      }
+    const logs=[];
+    const env={SLOT_COORDINATOR:{
+      idFromName:key=>key,
+      get:()=>({fetch:async()=>status===200?Response.json(reply):
+        new Response(null,{status})})
     }};
     await assert.rejects(runScheduledController({scheduledTime,env,
-      logger:{log:()=>assert.fail("unexpected dispatch"),error:x=>logs.push(JSON.parse(x))}
-    }),TypeError);
-    assert.deepEqual(calls,[
-      "get:2026-10-24T14:00","rpc","get:2026-10-24T14:00","probe"
-    ]);
-    assert.equal(logs[0].phase,"run_coordinator");
-    assert.equal(logs[0].rpc_probe,expected);
-    assert.equal(logs[0].error_kind,"TypeError");
-    assert.equal(JSON.stringify(logs).includes("secret-data"),false);
+      logger:{log:()=>assert.fail("false success"),error:x=>logs.push(JSON.parse(x))}
+    }),new RegExp(expected));
+    assert.equal(logs.length,1);
+    assert.equal(logs[0].error,expected);
   }
 });
 
-test("fresh DO stub probe failure is redacted and never retries dispatch", async () => {
-  const logs=[], calls=[];
+test("transport failure never retries dispatch and redacts arbitrary exception", async () => {
+  const calls=[], logs=[];
   const env={SLOT_COORDINATOR:{
     idFromName:key=>key,
-    get:()=> {
-      calls.push("get");
-      if (calls.filter(x=>x==="get").length===1) {
-        return {runSlot:async()=>{
-          calls.push("rpc");
-          throw new TypeError("sensitive");
-        }};
-      }
-      return {fetch:async()=>{
-        calls.push("probe");
-        throw new Error("secret");
-      }};
-    }
+    get:()=>({fetch:async request=>{
+      calls.push(request.method);
+      throw new TypeError("sensitive token");
+    }})
   }};
   await assert.rejects(runScheduledController({
     scheduledTime:Date.parse("2026-10-24T11:35:00Z"),env,
-    logger:{log:()=>assert.fail("unexpected"),error:x=>logs.push(JSON.parse(x))}
+    logger:{log:()=>assert.fail("unexpected success"),error:x=>logs.push(JSON.parse(x))}
   }),TypeError);
-  assert.deepEqual(calls,["get","rpc","get","probe"]);
-  assert.equal(logs[0].rpc_probe,"do_fetch_exception");
-  assert.equal(JSON.stringify(logs).includes("sensitive"),false);
-  assert.equal(JSON.stringify(logs).includes("secret"),false);
+  assert.deepEqual(calls,["POST"]);
+  assert.equal(logs[0].phase,"run_coordinator");
+  assert.equal(logs[0].error,"unexpected_exception");
+  assert.equal(JSON.stringify(logs).includes("sensitive token"),false);
 });

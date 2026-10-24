@@ -14,9 +14,11 @@ import re
 import sys
 from datetime import datetime, timezone
 
-FIELDS = ("status", "slot", "attempt", "phase", "error", "error_kind", "reason")
+FIELDS = ("status", "slot", "attempt", "phase", "error", "error_kind", "reason", "rpc_probe")
 VALUES = {
     "status": {"IGNORED", "STALE", "DISABLED", "SKIPPED", "DISPATCHED", "ERROR"},
+    "rpc_probe": {"do_fetch_204", "do_fetch_404", "do_fetch_other",
+                  "do_fetch_exception", "do_fetch_unavailable"},
     "attempt": {"primary", "backup"},
     "error_kind": {"Error", "TypeError", "RangeError", "ReferenceError",
                    "SyntaxError", "DurableObjectError", "other"},

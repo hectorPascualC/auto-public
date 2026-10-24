@@ -164,6 +164,19 @@ test("evidence is strict and must match same slot", () => {
   assert.equal(isValidReceipt(DAY,null,e.health,e.consumer),false);
 });
 
+test("real DO path emits only fixed safe phase labels", async () => {
+  const instant=Date.parse("2026-10-24T09:35:00Z");
+  const m=mockGithub(), phases=[];
+  const result=await processScheduled({scheduledTime:instant, nowMs:instant,
+    env:m.env,fetcher:m.fetcher,state:m.state,onPhase:p=>phases.push(p)});
+  assert.equal(result.status,"DISPATCHED");
+  assert.deepEqual(phases,["storage_read","github_read","github_dispatch","storage_write"]);
+  const source=readFileSync(new URL("../src/index.mjs",import.meta.url),"utf8");
+  assert.match(source,/scheduledErrorCode\(error\)/);
+  assert.match(source,/onPhase: next/);
+  assert.doesNotMatch(source,/console\.error\(error\)/);
+});
+
 test("primary dispatches once with typed inputs and no duplicate", async () => {
   const m=mockGithub();
   const x={scheduledTime:SU,nowMs:SU,env:m.env,fetcher:m.fetcher,state:m.state};

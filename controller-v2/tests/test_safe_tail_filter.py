@@ -58,6 +58,28 @@ class TailEvidenceTests(unittest.TestCase):
         self.assertEqual(records[1]["controller_log_frames"], 1)
         self.assertEqual(records[1]["verdict"], "CONTROLLER_LOGS_OBSERVED")
 
+    def test_saturday_hourly_slot_and_do_phase_survive_redaction(self):
+        for hour in range(9, 24):
+            slot=f"2026-10-24T{hour:02}:00"
+            self.assertEqual(FILTER.safe_value("slot", slot), slot)
+        self.assertEqual(FILTER.safe_value("slot", "2026-10-24T08:00"), "REDACTED")
+        self.assertEqual(FILTER.safe_value("phase", "github_read"), "github_read")
+        secret="Bearer-never-leak"
+        frame={"outcome":"exception", "event":{"cron":"35,47 6-20 * * 1,7"},
+               "logs":[{"message":[json.dumps({
+                   "controller":"v2", "status":"ERROR",
+                   "slot":"2026-10-24T12:00", "phase":"github_read",
+                   "error":"github_http_403",
+                   "message":secret
+               })]}], "exceptions":[{"message":secret}]}
+        output=io.StringIO()
+        FILTER.process(io.StringIO(json.dumps(frame)+"\n"),output)
+        self.assertNotIn(secret,output.getvalue())
+        record=json.loads(output.getvalue().splitlines()[0])
+        self.assertEqual(record["slot"],"2026-10-24T12:00")
+        self.assertEqual(record["phase"],"github_read")
+        self.assertEqual(record["error"],"github_http_403")
+
     def test_pretty_printed_scheduled_invocations_are_not_lost(self):
         secret = "Bearer-super-secret-never-printed"
         def pretty(status, minute):

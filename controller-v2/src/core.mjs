@@ -92,7 +92,7 @@ export function decideAttempt({slot, attempt, ledger, health, consumer, runs}) {
   return "dispatch";
 }
 
-export async function processScheduled({scheduledTime, nowMs = Date.now(), env, fetcher = fetch, state}) {
+export async function processScheduled({scheduledTime, nowMs = Date.now(), env, fetcher = fetch, state, onPhase = () => {}}) {
   const slot = scheduledSlot(scheduledTime);
   if (!slot) return {status: "IGNORED", reason: "not_a_nominal_slot"};
   if (!Number.isFinite(nowMs) ||
@@ -102,6 +102,7 @@ export async function processScheduled({scheduledTime, nowMs = Date.now(), env, 
 
   // A Durable Object provides serialized per-slot access. Persist the attempt
   // before allowing a later invocation for the same slot to proceed.
+  onPhase("storage_read");
   if (await state.get(slot.attempt) === "sent") {
     return {status: "SKIPPED", slot: slot.key, reason: "already_sent"};
   }
@@ -142,6 +143,7 @@ export async function processScheduled({scheduledTime, nowMs = Date.now(), env, 
     // An explicit API schema change is a failure, not an empty PASS.
     throw new Error("github_contents_unexpected_schema");
   }
+  onPhase("github_read");
   const [ledger, health, consumer, runResponse] = await Promise.all([
     jsonFile("auto-places-docents/state/slot-ledger.json"),
     jsonFile("auto-places-docents/state/health.json"),
@@ -158,6 +160,7 @@ export async function processScheduled({scheduledTime, nowMs = Date.now(), env, 
     return {status: "SKIPPED", slot: slot.key, attempt: slot.attempt, reason: verdict};
 
   // The workflow must already exist on main and accept both V2 inputs.
+  onPhase("github_dispatch");
   await github("/actions/workflows/auto-places-docents.yml/dispatches", {
     method: "POST",
     body: {
@@ -166,6 +169,7 @@ export async function processScheduled({scheduledTime, nowMs = Date.now(), env, 
         slot_local: slot.key, trigger_attempt: slot.attempt}
     }
   });
+  onPhase("storage_write");
   await state.put(slot.attempt, "sent");
   return {status: "DISPATCHED", slot: slot.key, attempt: slot.attempt};
 }
@@ -178,7 +182,7 @@ const KNOWN_SCHEDULED_ERRORS = new Set([
   "github_runs_unexpected_schema"
 ]);
 
-function scheduledErrorCode(error) {
+export function scheduledErrorCode(error) {
   // Never log exception text from dependencies: it could contain account data.
   const message = typeof error?.message === "string" ? error.message : "";
   if (KNOWN_SCHEDULED_ERRORS.has(message) || /^github_http_[0-9]{3}$/.test(message))

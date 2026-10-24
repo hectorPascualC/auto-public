@@ -4,6 +4,10 @@ name: AUTO PUBLIC V2 - temporary weekend cron probe
 # Friday late-night and weekend invocations are IGNORED by the Worker.
 # Friday extra trigger is removed on the first Saturday verification; the
 # weekend trigger is removed on Monday with guarded redundant attempts.
+# 2026-10-24 Saturday 00:25 UTC: guarded one-time push recovery requested
+# after 00:05 UTC schedule was absent from recent runs; no change to behavior.
+# The existing date gate, Cloudflare allowlist, GET/PUT/GET, and concurrency
+# are mandatory; if a scheduled cleanup wins the race, this run is idempotent.
 # If GitHub scheduled runs are delayed, an SRE-reviewed push changing ONLY this
 # workflow path can trigger the same date-gated Saturday/Monday cleanup.
 on:

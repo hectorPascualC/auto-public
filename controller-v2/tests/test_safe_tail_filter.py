@@ -194,6 +194,37 @@ class TailEvidenceTests(unittest.TestCase):
         self.assertIn('os.getenv("GITHUB_EVENT_NAME")=="push"', content)
         self.assertIn("manual_short or diagnostic_bridge", content)
 
+    def test_saturday_tail_accepts_delayed_github_cron_and_postdeploy_push(self):
+        # Execute the actual embedded Python gate at representative UTC times.
+        import os
+        import tempfile
+        import yaml
+        workflow = Path(__file__).resolve().parents[2] / ".github/workflows/v2-cloudflare-safe-tail.yml"
+        steps = yaml.safe_load(workflow.read_text(encoding="utf-8"))["jobs"]["tail"]["steps"]
+        gate = next(step["run"] for step in steps if step.get("name") == "Gate one-date diagnostic window")
+        script = gate.split("python3 - <<'PY'\\n", 1)[1].split("\\n          PY", 1)[0]
+        for when, event, cron, enabled in (
+            ((2026, 10, 24, 14, 2), "schedule", "26 10-20 * * 6", True),
+            ((2026, 10, 24, 15, 42), "push", "", True),
+            ((2026, 10, 25, 14, 2), "schedule", "26 10-20 * * 6", False),
+        ):
+            with self.subTest(when=when, event=event):
+                injected = script.replace(
+                    "now=dt.datetime.now(dt.timezone.utc)",
+                    "now=dt.datetime(%s,tzinfo=dt.timezone.utc)" %
+                    ",".join(str(x) for x in when))
+                with tempfile.NamedTemporaryFile(mode="w+", encoding="utf-8") as output:
+                    env = dict(os.environ, GITHUB_OUTPUT=output.name,
+                               GITHUB_EVENT_NAME=event, EVENT_CRON=cron)
+                    result = subprocess.run(["python3", "-c", injected],
+                                            env=env, capture_output=True, text=True)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    output.seek(0)
+                    values = output.read()
+                    self.assertIn("enabled=" + str(enabled).lower(), values)
+                    if enabled:
+                        self.assertIn("capture_mode=hourly", values)
+
     def test_token_shaped_metadata_never_leaks(self):
         self.assertEqual(FILTER.safe_value("reason", "github_pat_abcd"), "REDACTED")
         self.assertEqual(FILTER.safe_value("error", "ghp_abcd"), "REDACTED")

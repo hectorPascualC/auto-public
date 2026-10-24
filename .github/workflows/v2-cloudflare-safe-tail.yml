@@ -37,7 +37,10 @@ jobs:
           today_is_safe_friday=(now.date()==dt.date(2026,10,23) and
              dt.time(19,0) <= now.time() < dt.time(21,30) and
              os.getenv("GITHUB_EVENT_NAME")=="push")
-          enabled=(today_is_safe_friday or
+          today_is_manual_saturday=(now.date()==dt.date(2026,10,24) and
+             dt.time(8,0) <= now.time() < dt.time(10,45) and
+             os.getenv("GITHUB_EVENT_NAME") in ("workflow_dispatch","push"))
+          enabled=(today_is_manual_saturday or today_is_safe_friday or
              (now.date() in dates and now < cutoff and
               os.getenv("GITHUB_EVENT_NAME") in ("workflow_dispatch","schedule")))
           with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf-8") as out:

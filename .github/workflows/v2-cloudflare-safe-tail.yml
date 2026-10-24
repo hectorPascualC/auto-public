@@ -44,8 +44,7 @@ jobs:
              (now.date() in dates and now < cutoff and
               os.getenv("GITHUB_EVENT_NAME") in ("workflow_dispatch","schedule")))
           with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf-8") as out:
-              out.write("enabled="+str(enabled).lower()+"
-")
+              out.write("enabled="+str(enabled).lower()+"\n")
           print("TAIL_WINDOW="+("ACTIVE" if enabled else "SKIPPED_late_or_other_day"))
           PY
       - name: Validate Cloudflare credentials are present

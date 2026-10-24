@@ -69,6 +69,9 @@ class SaturdayHourlyTailTests(unittest.TestCase):
             "2026-10-24T10:36:00+00:00", "workflow_dispatch"),
             {"enabled": "true", "capture_mode": "short"})
         self.assertEqual(self.evaluate(
+            "2026-10-24T10:36:00+00:00", "push"),
+            {"enabled": "true", "capture_mode": "short"})
+        self.assertEqual(self.evaluate(
             "2026-10-24T10:45:00+00:00", "workflow_dispatch")["enabled"], "false")
         self.assertEqual(self.evaluate(
             "2026-10-25T10:36:00+00:00", "workflow_dispatch")["enabled"], "false")

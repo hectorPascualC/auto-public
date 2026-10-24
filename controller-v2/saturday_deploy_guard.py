@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Read-only Cloudflare pre/postflight and fail-closed runtime config generation.
 
-One-day deployment 2026-10-24 ONLY. Never writes schedules or secrets.
+Date-scoped deployment 2026-10-24/25 ONLY. Never writes schedules or secrets.
 The temp Wrangler config OMITs [triggers], preserving live registered crons.
 """
 from __future__ import annotations
@@ -17,9 +17,11 @@ from zoneinfo import ZoneInfo
 
 PRODUCTION = "35,47 6,7,8,9,11,12,13,14 * * 2-6"
 WEEKEND = "35,47 6-20 * * 1,7"
+SUNDAY_EXTENDED = "35,47 6-21 * * 1,7"  # CET slots through 23:00 Madrid
 EXPECTED = {PRODUCTION, WEEKEND}
+EXPECTED_EXTENDED = {PRODUCTION, SUNDAY_EXTENDED}
 WORKER = "auto-public-controller-v2"
-DATE = dt.date(2026, 10, 24)
+DATES = {dt.date(2026, 10, 24), dt.date(2026, 10, 25)}
 TIMEZONE = ZoneInfo("Europe/Madrid")
 SOURCE = Path("controller-v2/wrangler.toml")
 RUNTIME = Path("controller-v2/wrangler.saturday-runtime.toml")
@@ -27,7 +29,7 @@ RUNTIME = Path("controller-v2/wrangler.saturday-runtime.toml")
 
 def date_guard(now=None):
     now = now or dt.datetime.now(dt.timezone.utc)
-    return now.astimezone(TIMEZONE).date() == DATE
+    return now.astimezone(TIMEZONE).date() in DATES
 
 
 def make_runtime(source):
@@ -76,7 +78,7 @@ def validate_live(schedules, settings):
         raise ValueError("cron_response_schema")
     rows = schedules["schedules"]
     crons = [x.get("cron") if isinstance(x, dict) else None for x in rows]
-    if len(crons) != len(EXPECTED) or set(crons) != EXPECTED:
+    if len(crons) != len(EXPECTED) or set(crons) not in (EXPECTED, EXPECTED_EXTENDED):
         raise ValueError("unexpected_live_cron_configuration")
     bindings = settings.get("bindings") if isinstance(settings, dict) else None
     if not isinstance(bindings, list):

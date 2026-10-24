@@ -48,13 +48,13 @@ jobs:
              os.getenv("GITHUB_EVENT_NAME")=="push")
           today_is_manual_saturday=(now.date()==dt.date(2026,10,24) and
              dt.time(8,0) <= now.time() < dt.time(10,45) and
-             os.getenv("GITHUB_EVENT_NAME") in ("workflow_dispatch","push"))
+             os.getenv("GITHUB_EVENT_NAME")=="workflow_dispatch")
           # One bounded manual capture to diagnose the confirmed DO exception
           # after today's hotfix. Existing GitHub cron missed its 10:26 UTC
           # observation; reuse the SAME concurrency group, no parallel tail.
           manual_short=(now.date()==dt.date(2026,10,24) and
              dt.time(10,35) <= now.time() < dt.time(10,45) and
-             os.getenv("GITHUB_EVENT_NAME")=="workflow_dispatch")
+             os.getenv("GITHUB_EVENT_NAME") in ("workflow_dispatch","push"))
           hourly_saturday=(now.date()==dt.date(2026,10,24) and
              os.getenv("GITHUB_EVENT_NAME")=="schedule" and
              os.getenv("EVENT_CRON")=="26 10-20 * * 6" and

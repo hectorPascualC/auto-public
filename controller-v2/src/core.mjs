@@ -198,7 +198,8 @@ const SAFE_ERROR_KINDS = new Set([
 ]);
 const SAFE_DO_PHASES = new Set([
   "block_concurrency", "storage_read", "github_read", "github_dispatch",
-  "storage_write"
+  "storage_write", "parse_request", "validate_request", "invoke_slot",
+  "encode_response"
 ]);
 export function scheduledErrorKind(error) {
   return SAFE_ERROR_KINDS.has(error?.name) ? error.name : "other";
@@ -230,14 +231,38 @@ export async function runScheduledController({scheduledTime, env, logger = conso
     // RPC runSlot method fails with TypeError before returning a safe phase.
     // Use exactly ONE private HTTP POST, never RPC followed by an HTTP retry:
     // the first invocation could have already dispatched a scan.
-    phase = "run_coordinator";
-    const response = await stub.fetch(new Request(
-      "https://slot-coordinator.invalid/__run-slot", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({scheduledTime})
+    phase = "build_request";
+    const request = new Request("https://slot-coordinator.invalid/__run-slot", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({scheduledTime})
+    });
+    phase = "send_request";
+    let response;
+    try {
+      response = await stub.fetch(request);
+    } catch (error) {
+      // Read-only diagnostic ONLY. The POST may already have dispatched;
+      // never retry POST, RPC, or workflow_dispatch after this exception.
+      if (scheduledErrorKind(error) === "TypeError") {
+        let probe = "do_fetch_unavailable";
+        try {
+          const freshStub = coordinator.get(coordinatorId);
+          if (freshStub && typeof freshStub.fetch === "function") {
+            const checked = await freshStub.fetch("https://slot-coordinator.invalid/__probe");
+            probe = checked.status === 204 ? "do_fetch_204" :
+              checked.status === 404 ? "do_fetch_404" : "do_fetch_other";
+          }
+        } catch {
+          probe = "do_fetch_exception";
+        }
+        const safe = new TypeError("slot_coordinator_transport_failure");
+        safe.safeRpcProbe = probe;
+        throw safe;
       }
-    ));
+      throw error;
+    }
+    phase = "parse_response";
     if (!response.ok)
       throw new Error("slot_coordinator_http_" + response.status);
     const result = await response.json();

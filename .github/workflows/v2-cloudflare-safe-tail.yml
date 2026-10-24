@@ -67,16 +67,24 @@ jobs:
           diagnostic_probe=(now.date()==dt.date(2026,10,24) and
              dt.time(12,40) <= now.time() < dt.time(12,55) and
              os.getenv("GITHUB_EVENT_NAME")=="push")
+          # GitHub may deliver a :26 schedule at :02 in the following hour.
+          # Do not reject a real Saturday run solely because its minute drifted.
+          # The shared concurrency group still prevents overlapping captures.
           hourly_saturday=(now.date()==dt.date(2026,10,24) and
              os.getenv("GITHUB_EVENT_NAME")=="schedule" and
              os.getenv("EVENT_CRON")=="26 10-20 * * 6" and
-             10 <= now.hour <= 20 and 26 <= now.minute <= 52)
-          enabled=(manual_short or diagnostic_bridge or diagnostic_probe or hourly_saturday or today_is_manual_saturday or today_is_safe_friday or
+             10 <= now.hour <= 20)
+          # One post-deployment read-only tail for the fresh-stub DO probe.
+          # A push to THIS workflow is the only trigger; no monitor scan.
+          diagnostic_postdeploy=(now.date()==dt.date(2026,10,24) and
+             dt.time(15,30) <= now.time() < dt.time(16,15) and
+             os.getenv("GITHUB_EVENT_NAME")=="push")
+          enabled=(manual_short or diagnostic_bridge or diagnostic_probe or diagnostic_postdeploy or hourly_saturday or today_is_manual_saturday or today_is_safe_friday or
              (now.date() in dates and now < cutoff and
               os.getenv("GITHUB_EVENT_NAME") in ("workflow_dispatch","schedule")))
           with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf-8") as out:
               out.write("enabled="+str(enabled).lower()+"\n")
-              out.write("capture_mode="+("short" if (manual_short or diagnostic_bridge) else "hourly" if (hourly_saturday or diagnostic_probe) else "long")+"\n")
+              out.write("capture_mode="+("short" if (manual_short or diagnostic_bridge) else "hourly" if (hourly_saturday or diagnostic_probe or diagnostic_postdeploy) else "long")+"\n")
           print("TAIL_WINDOW="+("ACTIVE" if enabled else "SKIPPED_late_or_other_day"))
           PY
       - name: Validate Cloudflare credentials are present

@@ -202,7 +202,7 @@ class TailEvidenceTests(unittest.TestCase):
         workflow = Path(__file__).resolve().parents[2] / ".github/workflows/v2-cloudflare-safe-tail.yml"
         steps = yaml.safe_load(workflow.read_text(encoding="utf-8"))["jobs"]["tail"]["steps"]
         gate = next(step["run"] for step in steps if step.get("name") == "Gate one-date diagnostic window")
-        script = gate.split("python3 - <<'PY'\\n", 1)[1].split("\\n          PY", 1)[0]
+        script = gate.split("python3 - <<'PY'\\n", 1)[1].split("\\nPY", 1)[0]
         for when, event, cron, enabled in (
             ((2026, 10, 24, 14, 2), "schedule", "26 10-20 * * 6", True),
             ((2026, 10, 24, 15, 42), "push", "", True),

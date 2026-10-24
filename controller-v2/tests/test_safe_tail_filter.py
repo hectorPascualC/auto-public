@@ -64,6 +64,12 @@ class TailEvidenceTests(unittest.TestCase):
             self.assertEqual(FILTER.safe_value("slot", slot), slot)
         self.assertEqual(FILTER.safe_value("slot", "2026-10-24T08:00"), "REDACTED")
         self.assertEqual(FILTER.safe_value("phase", "github_read"), "github_read")
+        for phase in ("build_request", "send_request", "parse_response",
+                      "parse_request", "validate_request", "invoke_slot",
+                      "encode_response"):
+            self.assertEqual(FILTER.safe_value("phase", phase), phase)
+        self.assertEqual(FILTER.safe_value("error", "slot_coordinator_http_500"),
+                         "slot_coordinator_http_500")
         self.assertEqual(FILTER.safe_value("error_kind", "TypeError"), "TypeError")
         self.assertEqual(FILTER.safe_value("error_kind", "Bearer-secret"), "REDACTED")
         secret="Bearer-never-leak"

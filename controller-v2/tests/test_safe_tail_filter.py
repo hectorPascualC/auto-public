@@ -98,7 +98,7 @@ class TailEvidenceTests(unittest.TestCase):
                      "error_kind": "TypeError", "private": secret
                  })]}], "exceptions": [{"message": secret}]}
         out = io.StringIO()
-        FILTER.process(io.StringIO(json.dumps(frame)+"\\n"), out)
+        FILTER.process(io.StringIO(json.dumps(frame)+"\n"), out)
         record = json.loads(out.getvalue().splitlines()[0])
         self.assertEqual(record["rpc_probe"], "do_fetch_204")
         self.assertNotIn(secret, out.getvalue())

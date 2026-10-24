@@ -50,8 +50,15 @@ class SaturdayHourlyTailTests(unittest.TestCase):
                     "2026-10-24T20:47:00+00:00"):
             self.assertEqual(self.evaluate(utc),
                              {"enabled": "true", "capture_mode": "hourly"})
+        # GitHub delivered the 13:26 UTC run at 14:02 UTC.
+        # A delayed but still date-scoped schedule must capture, not SKIP.
         for utc in ("2026-10-24T10:15:00+00:00",
                     "2026-10-24T10:53:00+00:00",
+                    "2026-10-24T14:02:00+00:00"):
+            self.assertEqual(self.evaluate(utc),
+                             {"enabled": "true", "capture_mode": "hourly"})
+        for utc in ("2026-10-24T09:59:00+00:00",
+                    "2026-10-24T21:00:00+00:00",
                     "2026-10-25T10:26:00+00:00",
                     "2026-10-31T10:26:00+00:00"):
             self.assertEqual(self.evaluate(utc)["enabled"], "false")
@@ -75,6 +82,15 @@ class SaturdayHourlyTailTests(unittest.TestCase):
             "2026-10-24T10:45:00+00:00", "workflow_dispatch")["enabled"], "false")
         self.assertEqual(self.evaluate(
             "2026-10-25T10:36:00+00:00", "workflow_dispatch")["enabled"], "false")
+
+    def test_postdeploy_push_is_single_day_and_bounded(self):
+        self.assertEqual(self.evaluate(
+            "2026-10-24T15:42:00+00:00", "push"),
+            {"enabled": "true", "capture_mode": "hourly"})
+        self.assertEqual(self.evaluate(
+            "2026-10-24T16:15:00+00:00", "push")["enabled"], "false")
+        self.assertEqual(self.evaluate(
+            "2026-10-25T15:42:00+00:00", "push")["enabled"], "false")
 
     def test_preserve_normal_schedule_redaction_and_nonoverlap(self):
         crons = [item["cron"] for item in self.config["schedule"]]

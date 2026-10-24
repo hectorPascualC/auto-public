@@ -11,17 +11,32 @@ export class SlotCoordinator extends DurableObject {
     // Only the bound Worker can reach this DO fetch handler. The public
     // Worker fetch endpoint remains 404. Exactly one POST per cron attempt.
     if (request.method === "POST" && pathname === "/__run-slot") {
-      let event;
+      let phase = "parse_request";
       try {
-        event = await request.json();
-      } catch {
-        return new Response(null, {status: 400});
+        let event;
+        try {
+          event = await request.json();
+        } catch {
+          return new Response(null, {status: 400});
+        }
+        phase = "validate_request";
+        if (!event || typeof event !== "object" ||
+            !Number.isFinite(event.scheduledTime) ||
+            Object.keys(event).length !== 1)
+          return new Response(null, {status: 400});
+        phase = "invoke_slot";
+        const result = await this.runSlot({scheduledTime: event.scheduledTime});
+        phase = "encode_response";
+        return Response.json(result);
+      } catch (error) {
+        // A thrown exception in the HTTP handler otherwise crosses the DO
+        // boundary as a bare TypeError. Return only fixed safe metadata.
+        // The Worker rethrows it, preserving failed-cron semantics.
+        return Response.json({
+          status: "ERROR", component: "slot_coordinator", phase,
+          error: scheduledErrorCode(error), error_kind: scheduledErrorKind(error)
+        });
       }
-      if (!event || typeof event !== "object" ||
-          !Number.isFinite(event.scheduledTime) ||
-          Object.keys(event).length !== 1)
-        return new Response(null, {status: 400});
-      return Response.json(await this.runSlot({scheduledTime: event.scheduledTime}));
     }
     return new Response("Not found", {status: 404});
   }

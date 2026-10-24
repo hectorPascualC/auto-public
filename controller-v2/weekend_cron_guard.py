@@ -18,7 +18,8 @@ import urllib.request
 WORKER = "auto-public-controller-v2"
 LEGACY = "35,47 6,7,8,9,11,12,13,14 * * 1-5"  # WRONG: Sunday-Thursday on Cloudflare
 PRIMARY = "35,47 6,7,8,9,11,12,13,14 * * 2-6"  # MON-FRI on Cloudflare
-WEEKEND = "35,47 6-20 * * 1,7"  # SUN,SAT on Cloudflare
+OLD_WEEKEND = "35,47 6-20 * * 1,7"  # live Saturday schedule; safely migrate
+WEEKEND = "35,47 6-21 * * 1,7"  # Sunday CET 22:35 -> Madrid 23:00
 FRIDAY_NIGHT = "35,47 20,21 * * 6"  # Fri 20:35/47,21:35/47 UTC; local nighttime => IGNORED
 START = dt.date(2026, 10, 23)
 DAYS = {dt.date(2026, 10, 24), dt.date(2026, 10, 25)}
@@ -50,7 +51,8 @@ def extract_schedules(obj):
 def safe_expected(crons):
     return len(crons) == len(set(crons)) and set(crons) in (
         {LEGACY}, {PRIMARY}, {LEGACY, WEEKEND}, {PRIMARY, WEEKEND},
-        {PRIMARY, WEEKEND, FRIDAY_NIGHT}
+        {PRIMARY, WEEKEND, FRIDAY_NIGHT},
+        {PRIMARY, OLD_WEEKEND}, {PRIMARY, OLD_WEEKEND, FRIDAY_NIGHT}
     )
 
 class Cloudflare:
@@ -109,7 +111,8 @@ def transition(current, mode):
     elif mode == "verify":
         # Retire the short-lived Friday probe on Saturday while retaining the
         # two known crons, and preserve the no-write path if already removed.
-        if set(current) not in ({PRIMARY, WEEKEND}, {PRIMARY, WEEKEND, FRIDAY_NIGHT}):
+        if set(current) not in ({PRIMARY, WEEKEND}, {PRIMARY, WEEKEND, FRIDAY_NIGHT},
+                                 {PRIMARY, OLD_WEEKEND}, {PRIMARY, OLD_WEEKEND, FRIDAY_NIGHT}):
             raise RuntimeError("weekend_schedule_missing")
         expected = [PRIMARY, WEEKEND]
     else:

@@ -2,6 +2,16 @@ import { DurableObject } from "cloudflare:workers";
 import { processScheduled, runScheduledController, scheduledErrorCode, scheduledErrorKind } from "./core.mjs";
 
 export class SlotCoordinator extends DurableObject {
+  // Read-only, internal-only probe used to distinguish a failed DO RPC call
+  // from a failed DO binding. The public Worker fetch handler stays 404.
+  async fetch(request) {
+    if (request.method === "GET" &&
+        new URL(request.url).pathname === "/__probe") {
+      return new Response(null, {status: 204});
+    }
+    return new Response("Not found", {status: 404});
+  }
+
   async runSlot(event) {
     let phase = "block_concurrency";
     try {

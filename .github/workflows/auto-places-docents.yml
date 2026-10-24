@@ -4,6 +4,10 @@ run-name: ${{ inputs.slot_local && format('AUTO V2 {0} / {1}', inputs.slot_local
 
 on:
   schedule:
+    # SATURDAY 2026-10-24 ONLY: date-gated real 12-source scan every hour.
+    # GitHub schedule is UTC; gate refuses all other Saturdays and stale invocations.
+    # No synthetic V2 slot or Worker dispatch is claimed. Remove after weekend.
+    - cron: '27 8-21 * * 6'
     # GitHub cron UTC. Pre-slot Madrid schedule at (HH-1):35 primary
     # and (HH-1):47 conditional backup for nominal HH=09,11,14,16.
     # Gate converts CET/CEST and ignores off-season UTC candidates.

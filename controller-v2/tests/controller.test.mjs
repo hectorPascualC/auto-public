@@ -325,6 +325,31 @@ test("a valid cron calls the DO RPC and emits a structured result", async () => 
   assert.equal(logs[0].status, "DISPATCHED");
 });
 
+test("DO structured error survives RPC with safe phase, without secret data", async () => {
+  const scheduledTime=Date.parse("2026-10-24T11:35:00Z");
+  const logs=[];
+  const env={SLOT_COORDINATOR:{
+    idFromName:key=>key,
+    get:()=>({runSlot:async()=>({
+      status:"ERROR",component:"slot_coordinator",
+      phase:"github_read",error:"github_http_403",error_kind:"TypeError",
+      private_token:"DO_NOT_PRINT_ME"
+    })})
+  }};
+  await assert.rejects(runScheduledController({scheduledTime,env,
+    logger:{log:()=>assert.fail("false success"),error:x=>logs.push(JSON.parse(x))}
+  }),/github_http_403/);
+  assert.equal(logs.length,1);
+  assert.equal(logs[0].slot,"2026-10-24T14:00");
+  assert.equal(logs[0].phase,"github_read");
+  assert.equal(logs[0].error,"github_http_403");
+  assert.equal(logs[0].error_kind,"TypeError");
+  assert.equal(JSON.stringify(logs).includes("DO_NOT_PRINT_ME"),false);
+  const doSource=readFileSync(new URL("../src/index.mjs",import.meta.url),"utf8");
+  assert.match(doSource,/status: "ERROR", component: "slot_coordinator", phase/);
+  assert.match(doSource,/error_kind: scheduledErrorKind\(error\)/);
+});
+
 test("RPC exceptions preserve known API codes and redact arbitrary errors", async () => {
   const scheduledTime = Date.parse("2026-10-22T11:35:00Z");
   for (const [reason, expected] of [

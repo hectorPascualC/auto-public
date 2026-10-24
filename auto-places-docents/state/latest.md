@@ -1,21 +1,21 @@
-# Passada directa 2026-10-22T19:40:23+02:00
+# Passada directa 2026-10-24T10:29:07+02:00
 
 Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
 
 | Àmbit | Frescor | 507 hits (diag.) | F57 hits (diag.) | 627 hits (diag.) | F87 hits (diag.) | Àncora global |
 |---|---|---:|---:|---:|---:|---|
 | Alt Pirineu i Aran | **FRESC** | 0 | 0 | 8 | 0 | APA-2627-S061 |
-| Baix Llobregat | **FRESC** | 2 | 0 | 5 | 0 | 19780786 |
-| Barcelonès | **FRESC** | 3 | 0 | 2 | 0 | 19764412 |
+| Baix Llobregat | **FRESC** | 2 | 0 | 7 | 0 | 19795310 |
+| Barcelonès | **FRESC** | 2 | 0 | 2 | 0 | 19790791 |
 | Catalunya Central | **FRESC** | 0 | 1 | 0 | 0 | — |
-| Girona | **FRESC** | 4 | 0 | 1 | 0 | — |
+| Girona | **FRESC** | 3 | 0 | 1 | 0 | — |
 | Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/113 |
 | Maresme-Vallès Oriental | **FRESC** | 0 | 0 | 0 | 0 | — |
 | Penedès | **FRESC** | 0 | 0 | 1 | 1 | 19792298 |
 | Tarragona | **FRESC** | 0 | 3 | 0 | 0 | — |
 | Terres de l'Ebre | **FRESC** | 0 | 0 | 1 | 0 | — |
 | Vallès Occidental | **FRESC** | 8 | 2 | 9 | 1 | — |
-| EDUBCN | **FRESC** | 4 | 1 | 3 | 1 | GENSEC_2627_187 |
+| EDUBCN | **FRESC** | 4 | 1 | 3 | 1 | GENSEC_2627_189 |
 
 ## Notes de frescor
 - Cap incidència final de frescor.
@@ -24,9 +24,9 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 
 ## EDUBCN probe v3 override
 - Frescor: **FRESC**
-- Àncora global: `GENSEC_2627_187`
-- GENSEC visibles: 46
-- Documents GENSEC recuperats: 69
+- Àncora global: `GENSEC_2627_189`
+- GENSEC visibles: 47
+- Documents GENSEC recuperats: 70
 - Places target validades en el mateix document: 8
 - Estratègia: agrupació per GENSEC + validació d'especialitat dins del mateix PDF/fitxa
 - `GENSEC_2627_064`: 627,F87 | Institut Mare de Déu de la Mercè | sencera de docent de PFI. | fi 31/08/2027 | resultat=True
@@ -61,10 +61,10 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | Àmbit | Frescor | Autoritativa | 507 | F57 | 627 | F87 | Mode |
 |---|---|---|---:|---:|---:|---:|---|
 | Alt Pirineu i Aran | FRESC | sí | 0 | 0 | 1 | 0 | offer-documents |
-| Baix Llobregat | FRESC | sí | 1 | 0 | 0 | 0 | offer-documents |
-| Barcelonès | FRESC | sí | 3 | 0 | 2 | 0 | offer-documents |
+| Baix Llobregat | FRESC | sí | 1 | 0 | 1 | 0 | offer-documents |
+| Barcelonès | FRESC | sí | 2 | 0 | 2 | 0 | offer-documents |
 | Catalunya Central | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
-| Girona | FRESC | sí | 1 | 0 | 0 | 0 | offer-documents |
+| Girona | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Lleida | FRESC | sí | 1 | 0 | 0 | 0 | offer-documents |
 | Maresme-Vallès Oriental | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Penedès | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
@@ -75,10 +75,10 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 
 ### Places actuals detectades
 - **Alt Pirineu i Aran**: `APA-2627-S056` (627)
-- **Baix Llobregat**: `19711802` (507)
-- **Barcelonès**: `19650726` (627), `19659466` (507), `19664257` (627), `19697257` (507), `19736796` (507)
+- **Baix Llobregat**: `19711802` (507), `19793301` (627)
+- **Barcelonès**: `19650726` (627), `19659466` (507), `19664257` (627), `19736796` (507)
 - **Catalunya Central**: cap
-- **Girona**: `204S/2026-2027` (507)
+- **Girona**: cap
 - **Lleida**: `2026/SEC/089` (507)
 - **Maresme-Vallès Oriental**: cap
 - **Penedès**: cap
@@ -96,10 +96,10 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | Àmbit | FRESC | Autoritativa | Hits actuals | Hits identificats | Sense ID | Places actives |
 |---|---|---|---:|---:|---:|---:|
 | Alt Pirineu i Aran | sí | sí | 1 | 1 | 0 | 1 |
-| Baix Llobregat | sí | sí | 1 | 1 | 0 | 1 |
-| Barcelonès | sí | sí | 5 | 5 | 0 | 5 |
+| Baix Llobregat | sí | sí | 2 | 2 | 0 | 2 |
+| Barcelonès | sí | sí | 4 | 4 | 0 | 4 |
 | Catalunya Central | sí | sí | 0 | 0 | 0 | 0 |
-| Girona | sí | sí | 1 | 1 | 0 | 1 |
+| Girona | sí | sí | 0 | 0 | 0 | 0 |
 | Lleida | sí | sí | 1 | 1 | 0 | 1 |
 | Maresme-Vallès Oriental | sí | sí | 0 | 0 | 0 | 0 |
 | Penedès | sí | sí | 0 | 0 | 0 | 0 |

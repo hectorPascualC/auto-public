@@ -1,7 +1,7 @@
 {
   "audit_version": 2,
-  "generated_at": "2026-10-22T19:46:51+02:00",
-  "source_generated_at": "2026-10-22T19:40:23+02:00",
+  "generated_at": "2026-10-24T10:36:19+02:00",
+  "source_generated_at": "2026-10-24T10:29:07+02:00",
   "status": "PASS",
   "sstt_checked": 11,
   "scopes_checked": 12,
@@ -39,15 +39,16 @@
       "freshness": "FRESC",
       "presence_authoritative": true,
       "current_offer_sources": 7,
-      "raw_target_hits": 1,
-      "parsed_target_hits": 1,
+      "raw_target_hits": 2,
+      "parsed_target_hits": 2,
       "unidentified_target_hits": 0,
-      "active_positions": 1,
+      "active_positions": 2,
       "covered_by_results": [],
       "unresolved_result_ids": [
         "19623804",
         "19628596",
         "19631281",
+        "19631282",
         "19650835",
         "19651090",
         "19657384"
@@ -60,6 +61,11 @@
           "code": "507",
           "id": "19711802",
           "kind": "NUMERIC"
+        },
+        {
+          "code": "627",
+          "id": "19793301",
+          "kind": "NUMERIC"
         }
       ]
     },
@@ -67,10 +73,10 @@
       "freshness": "FRESC",
       "presence_authoritative": true,
       "current_offer_sources": 8,
-      "raw_target_hits": 5,
-      "parsed_target_hits": 5,
+      "raw_target_hits": 4,
+      "parsed_target_hits": 4,
       "unidentified_target_hits": 0,
-      "active_positions": 5,
+      "active_positions": 4,
       "covered_by_results": [],
       "unresolved_result_ids": [],
       "id_kinds": [
@@ -85,11 +91,6 @@
         {
           "code": "507",
           "id": "19659466",
-          "kind": "NUMERIC"
-        },
-        {
-          "code": "507",
-          "id": "19697257",
           "kind": "NUMERIC"
         },
         {
@@ -123,10 +124,10 @@
       "freshness": "FRESC",
       "presence_authoritative": true,
       "current_offer_sources": 7,
-      "raw_target_hits": 1,
-      "parsed_target_hits": 1,
+      "raw_target_hits": 0,
+      "parsed_target_hits": 0,
       "unidentified_target_hits": 0,
-      "active_positions": 1,
+      "active_positions": 0,
       "covered_by_results": [],
       "unresolved_result_ids": [
         "157S/2026-2027",
@@ -134,16 +135,8 @@
         "182S/2026-2027",
         "191S/2026-2027"
       ],
-      "id_kinds": [
-        "GIRONA"
-      ],
-      "parsed_ids": [
-        {
-          "code": "507",
-          "id": "204S/2026-2027",
-          "kind": "GIRONA"
-        }
-      ]
+      "id_kinds": [],
+      "parsed_ids": []
     },
     "Lleida": {
       "freshness": "FRESC",

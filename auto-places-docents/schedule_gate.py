@@ -124,7 +124,9 @@ def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
             nominal = datetime.strptime(slot_input, "%Y-%m-%dT%H:%M").replace(tzinfo=TZ)
         except ValueError:
             return False, "invalid_v2_slot", "", "invalid"
-        if nominal.weekday() > 4 or not (
+        # Only Saturday 2026-10-24 is allowed to claim a real V2 slot.
+        saturday_live_test = nominal.date() == date(2026, 10, 24) and nominal.weekday() == 5
+        if (nominal.weekday() > 4 and not saturday_live_test) or not (
                 nominal - timedelta(minutes=25) <= local <
                 nominal + timedelta(minutes=45)):
             return False, "stale_v2_slot", slot_input, "stale"

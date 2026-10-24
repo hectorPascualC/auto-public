@@ -382,7 +382,8 @@ test("transport failure never retries dispatch and redacts arbitrary exception",
   const env={SLOT_COORDINATOR:{
     idFromName:key=>key,
     get:()=>({fetch:async request=>{
-      calls.push(request.method);
+      calls.push(request.method || "GET");
+      if (request.method !== "POST") return new Response(null,{status:204});
       throw new TypeError("sensitive token");
     }})
   }};
@@ -390,8 +391,36 @@ test("transport failure never retries dispatch and redacts arbitrary exception",
     scheduledTime:Date.parse("2026-10-24T11:35:00Z"),env,
     logger:{log:()=>assert.fail("unexpected success"),error:x=>logs.push(JSON.parse(x))}
   }),TypeError);
-  assert.deepEqual(calls,["POST"]);
-  assert.equal(logs[0].phase,"run_coordinator");
+  assert.deepEqual(calls,["POST","GET"]);
+  assert.equal(logs[0].phase,"send_request");
+  assert.equal(logs[0].rpc_probe,"do_fetch_204");
   assert.equal(logs[0].error,"unexpected_exception");
   assert.equal(JSON.stringify(logs).includes("sensitive token"),false);
+});
+
+test("DO POST handler has a fail-closed sanitized phase boundary", () => {
+  const source=readFileSync(new URL("../src/index.mjs",import.meta.url),"utf8");
+  for (const phase of ["parse_request","validate_request","invoke_slot","encode_response"])
+    assert.match(source,new RegExp('phase = "'+phase+'"'));
+  assert.match(source,/component: "slot_coordinator", phase/);
+  assert.doesNotMatch(source,/console\\.error\\(error\\)/);
+});
+
+test("TypeError probe failure is redacted and does not retry POST", async () => {
+  const scheduledTime=Date.parse("2026-10-24T11:35:00Z"), calls=[], logs=[];
+  const env={SLOT_COORDINATOR:{
+    idFromName:key=>key,
+    get:()=>({fetch:async request=>{
+      calls.push(request.method || "GET");
+      throw new TypeError("never-log-this-secret");
+    }})
+  }};
+  await assert.rejects(runScheduledController({scheduledTime,env,
+    logger:{log:()=>assert.fail("false success"),error:x=>logs.push(JSON.parse(x))}
+  }),TypeError);
+  assert.deepEqual(calls,["POST","GET"]);
+  assert.equal(logs[0].phase,"send_request");
+  assert.equal(logs[0].rpc_probe,"do_fetch_exception");
+  assert.equal(logs[0].error,"unexpected_exception");
+  assert.equal(JSON.stringify(logs).includes("never-log-this-secret"),false);
 });

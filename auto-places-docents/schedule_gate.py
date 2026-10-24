@@ -4,7 +4,7 @@ import json
 import os
 import re
 import subprocess
-from datetime import datetime, time, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -69,6 +69,23 @@ def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
     key, kind = "", "manual"
     local = now.astimezone(TZ)
     if event == "schedule":
+        # Temporary bounded Saturday scan exercise, deliberately UNSLOTTED.
+        # It tests GitHub's real sources/persistence path, NOT Worker -> DO.
+        if cron.strip() == "27 8-21 * * 6":
+            utc = now.astimezone(timezone.utc)
+            expected = utc.replace(minute=27, second=0, microsecond=0)
+            lag = (utc - expected).total_seconds()
+            if (utc.date() != date(2026, 10, 24) or
+                    not 8 <= expected.hour <= 21 or not 0 <= lag <= 45 * 60):
+                return False, "saturday_probe_outside_window", "", "saturday_probe"
+            try:
+                prior = datetime.fromisoformat(h.get("generated_at", ""))
+                age = (now - prior).total_seconds()
+                if prior.tzinfo is not None and 0 <= age < 50 * 60:
+                    return False, "saturday_probe_recent_scan", "", "saturday_probe"
+            except (ValueError, TypeError):
+                pass
+            return True, "RUN_SCAN", "", "saturday_probe"
         # Two UTC cron candidates per local slot, one for each DST regime.
         # GitHub schedules 12 minutes apart. Backup skips a prior PASS.
         m = re.fullmatch(r"(35|47) (6|7|8|9|11|12|13|14) \* \* 1-5", cron.strip())

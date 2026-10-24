@@ -84,6 +84,25 @@ class TailEvidenceTests(unittest.TestCase):
         self.assertEqual(record["error"],"github_http_403")
         self.assertEqual(record["error_kind"],"TypeError")
 
+    def test_rpc_probe_verdict_is_safe_and_not_leaked(self):
+        for verdict in ("do_fetch_204", "do_fetch_404", "do_fetch_other",
+                        "do_fetch_exception", "do_fetch_unavailable"):
+            self.assertEqual(FILTER.safe_value("rpc_probe", verdict), verdict)
+        self.assertEqual(FILTER.safe_value("rpc_probe", "secret-token"),
+                         "REDACTED")
+        secret = "github_pat_NEVER_ECHO"
+        frame = {"outcome": "exception", "event": {"cron": "35,47 6-20 * * 1,7"},
+                 "logs": [{"message": [json.dumps({
+                     "controller": "v2", "status": "ERROR",
+                     "slot": "2026-10-24T15:00", "rpc_probe": "do_fetch_204",
+                     "error_kind": "TypeError", "private": secret
+                 })]}], "exceptions": [{"message": secret}]}
+        out = io.StringIO()
+        FILTER.process(io.StringIO(json.dumps(frame)+"\\n"), out)
+        record = json.loads(out.getvalue().splitlines()[0])
+        self.assertEqual(record["rpc_probe"], "do_fetch_204")
+        self.assertNotIn(secret, out.getvalue())
+
     def test_pretty_printed_scheduled_invocations_are_not_lost(self):
         secret = "Bearer-super-secret-never-printed"
         def pretty(status, minute):

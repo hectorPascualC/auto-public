@@ -370,3 +370,50 @@ test("RPC exceptions preserve known API codes and redact arbitrary errors", asyn
     assert.equal(JSON.stringify(logs).includes("sensitive token"), false);
   }
 });
+
+
+test("read-only DO fetch probe classifies RPC TypeError without a second dispatch", async () => {
+  const scheduledTime = Date.parse("2026-10-24T11:35:00Z");
+  for (const [status, expected] of [[204,"do_fetch_204"],[404,"do_fetch_404"]]) {
+    const logs = [], calls = [];
+    const env = {SLOT_COORDINATOR: {
+      idFromName: key => key,
+      get: () => ({
+        runSlot: async () => { calls.push("rpc"); throw new TypeError("secret-data"); },
+        fetch: async request => {
+          calls.push("probe");
+          assert.equal(request.method,"GET");
+          assert.equal(new URL(request.url).pathname,"/__probe");
+          return new Response(null,{status});
+        }
+      })
+    }};
+    await assert.rejects(runScheduledController({scheduledTime,env,
+      logger:{log:()=>assert.fail("unexpected dispatch"),error:x=>logs.push(JSON.parse(x))}
+    }),TypeError);
+    assert.deepEqual(calls,["rpc","probe"]);
+    assert.equal(logs[0].phase,"run_coordinator");
+    assert.equal(logs[0].rpc_probe,expected);
+    assert.equal(logs[0].error_kind,"TypeError");
+    assert.equal(JSON.stringify(logs).includes("secret-data"),false);
+  }
+});
+
+test("DO probe failure is redacted and never retries dispatch", async () => {
+  const logs=[], calls=[];
+  const env={SLOT_COORDINATOR:{
+    idFromName:key=>key,
+    get:()=>({
+      runSlot:async()=>{calls.push("rpc");throw new TypeError("sensitive");},
+      fetch:async()=>{calls.push("probe");throw new Error("secret");}
+    })
+  }};
+  await assert.rejects(runScheduledController({
+    scheduledTime:Date.parse("2026-10-24T11:35:00Z"),env,
+    logger:{log:()=>assert.fail("unexpected"),error:x=>logs.push(JSON.parse(x))}
+  }),TypeError);
+  assert.deepEqual(calls,["rpc","probe"]);
+  assert.equal(logs[0].rpc_probe,"do_fetch_exception");
+  assert.equal(JSON.stringify(logs).includes("sensitive"),false);
+  assert.equal(JSON.stringify(logs).includes("secret"),false);
+});

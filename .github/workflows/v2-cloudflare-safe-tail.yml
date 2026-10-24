@@ -49,16 +49,22 @@ jobs:
           today_is_manual_saturday=(now.date()==dt.date(2026,10,24) and
              dt.time(8,0) <= now.time() < dt.time(10,45) and
              os.getenv("GITHUB_EVENT_NAME")=="workflow_dispatch")
+          # One bounded manual capture to diagnose the confirmed DO exception
+          # after today's hotfix. Existing GitHub cron missed its 10:26 UTC
+          # observation; reuse the SAME concurrency group, no parallel tail.
+          manual_short=(now.date()==dt.date(2026,10,24) and
+             dt.time(10,35) <= now.time() < dt.time(10,45) and
+             os.getenv("GITHUB_EVENT_NAME")=="workflow_dispatch")
           hourly_saturday=(now.date()==dt.date(2026,10,24) and
              os.getenv("GITHUB_EVENT_NAME")=="schedule" and
              os.getenv("EVENT_CRON")=="26 10-20 * * 6" and
              10 <= now.hour <= 20 and 26 <= now.minute <= 52)
-          enabled=(hourly_saturday or today_is_manual_saturday or today_is_safe_friday or
+          enabled=(manual_short or hourly_saturday or today_is_manual_saturday or today_is_safe_friday or
              (now.date() in dates and now < cutoff and
               os.getenv("GITHUB_EVENT_NAME") in ("workflow_dispatch","schedule")))
           with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf-8") as out:
               out.write("enabled="+str(enabled).lower()+"\n")
-              out.write("capture_mode="+("hourly" if hourly_saturday else "long")+"\n")
+              out.write("capture_mode="+("short" if manual_short else "hourly" if hourly_saturday else "long")+"\n")
           print("TAIL_WINDOW="+("ACTIVE" if enabled else "SKIPPED_late_or_other_day"))
           PY
       - name: Validate Cloudflare credentials are present
@@ -78,6 +84,7 @@ jobs:
           # Shared filter always emits a zero-frame summary, even on no frames.
           # Hourly tail stops before the next capture; original long window stays intact.
           case '${{ steps.window.outputs.capture_mode }}' in
+            short) capture_seconds=1080 ;; # 18m, catches the :47 backup
             hourly) capture_seconds=3240 ;;
             long) capture_seconds=7500 ;;
             *) echo '::error::Invalid capture mode'; exit 1 ;;

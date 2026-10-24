@@ -36,6 +36,16 @@ class SaturdayDeployTests(unittest.TestCase):
         self.assertIn('DISPATCH_ENABLED = "false"', original)
         self.assertIn(guard.PRODUCTION, original)
 
+    def test_manual_deploy_requires_explicit_confirm_and_never_schedules(self):
+        import yaml
+        name = ROOT.parent / ".github/workflows/v2-saturday-manual-deploy.yml"
+        workflow = yaml.safe_load(name.read_text(encoding="utf-8"))
+        on = workflow.get("on", workflow.get(True))
+        self.assertEqual(set(on), {"workflow_dispatch"})
+        self.assertTrue(on["workflow_dispatch"]["inputs"]["confirm_saturday"]["required"])
+        self.assertEqual(workflow["permissions"]["contents"], "read")
+        self.assertIn("concurrency", workflow)
+
     def test_unexpected_source_or_live_config_fails_closed(self):
         src = (ROOT / "wrangler.toml").read_text(encoding="utf-8")
         with self.assertRaises(ValueError):

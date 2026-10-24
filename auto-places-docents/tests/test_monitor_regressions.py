@@ -74,6 +74,36 @@ class TestSchedule(unittest.TestCase):
         for cron,when in cases:
             self.assertFalse(schedule_gate.decide("schedule",cron,at(when),{}, {})[0],(cron,when))
 
+    def test_saturday_one_day_hourly_probe_is_unslotted_and_safe(self):
+        cron="27 8-21 * * 6"
+        for hour_utc in (8, 12, 21):
+            when=at(f"2026-10-24T{hour_utc:02}:27:00+00:00")
+            self.assertEqual(schedule_gate.decide("schedule", cron, when, {}, {}),
+                             (True, "RUN_SCAN", "", "saturday_probe"))
+        # A just completed real scan is reused instead of duplicating activity.
+        recent=health("2026-10-24T10:20:00+02:00",
+                      "2026-10-24T10:22:00+02:00")
+        self.assertEqual(schedule_gate.decide("schedule",cron,
+            at("2026-10-24T10:27:00+02:00"),recent,{})[1],
+            "saturday_probe_recent_scan")
+        for when in (
+            "2026-10-25T10:27:00+01:00",
+            "2026-10-31T10:27:00+01:00",
+            "2026-10-24T10:26:00+02:00",
+            "2026-10-24T11:13:00+02:00",
+            "2026-10-24T23:27:00+02:00",
+        ):
+            answer=schedule_gate.decide("schedule",cron,at(when),{}, {})
+            self.assertEqual(answer[1], "saturday_probe_outside_window", when)
+        # Cloudflare's normal Saturday-disallowed V2 slot must stay blocked.
+        v2=schedule_gate.decide("workflow_dispatch","",
+            at("2026-10-24T10:27:00+02:00"),{}, {},
+            slot_input="2026-10-24T11:00", attempt_input="primary")
+        self.assertFalse(v2[0])
+        # No Sunday or weekday cloud dispatch cron is added.
+        self.assertEqual(schedule_gate.decide("schedule",
+            "27 8-21 * * 6",at("2026-10-26T11:27:00+01:00"),{}, {})[0],False)
+
     def test_v2_dispatch_slot_and_backup(self):
         slot="2026-10-20T09:00"
         a=schedule_gate.decide("workflow_dispatch","",
@@ -307,10 +337,10 @@ class TestWorkflow(unittest.TestCase):
         on = data.get("on",data.get(True))
         times = on["schedule"]
         # UTC candidates cover pre-hour CET and CEST with a conditional backup.
-        self.assertEqual(len(times), 16)
+        self.assertEqual(len(times), 17)
         self.assertEqual({x["cron"] for x in times},
-            {f"{minute} {hour} * * 1-5" for minute in (35, 47)
-             for hour in (6, 7, 8, 9, 11, 12, 13, 14)})
+            ({f"{minute} {hour} * * 1-5" for minute in (35, 47)
+             for hour in (6, 7, 8, 9, 11, 12, 13, 14)} | {"27 8-21 * * 6"}))
         self.assertTrue(all("timezone" not in x for x in times))
         self.assertEqual(data["concurrency"]["queue"],"max")
         self.assertFalse(data["concurrency"]["cancel-in-progress"])

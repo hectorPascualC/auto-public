@@ -3,13 +3,15 @@ name: V2 Cloudflare safe tail - one time
 # All times UTC; Cron weekday semantics here are GITHUB (0=Sun, 1=Mon).
 # In contrast, Cloudflare weekdays are 1=Sun, 2=Mon, ... 7=Sat.
 # Date guard prevents later weeks from running. Friday push opens a two-hour live tail.
+# GitHub may drop schedules at minute 0 under high load; schedule once at :13
+# to reduce contention. A single daily trigger avoids duplicate tail captures.
 on:
   push:
     branches: [main]
     paths: ['.github/workflows/v2-cloudflare-safe-tail.yml']
   schedule:
-    - cron: '0 6 * * 1'
-    - cron: '0 6 * * 6,0'
+    - cron: '13 6 * * 1'
+    - cron: '13 6 * * 6,0'
   workflow_dispatch:
 permissions:
   contents: read
@@ -31,7 +33,7 @@ jobs:
           import datetime as dt, os
           now=dt.datetime.now(dt.timezone.utc)
           dates={dt.date(2026,10,24),dt.date(2026,10,25),dt.date(2026,10,26)}
-          cutoff=dt.datetime.combine(now.date(),dt.time(7,25),tzinfo=dt.timezone.utc)
+          cutoff=dt.datetime.combine(now.date(),dt.time(8,0),tzinfo=dt.timezone.utc)
           today_is_safe_friday=(now.date()==dt.date(2026,10,23) and
              dt.time(19,0) <= now.time() < dt.time(21,30) and
              os.getenv("GITHUB_EVENT_NAME")=="push")

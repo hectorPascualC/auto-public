@@ -95,11 +95,16 @@ class TestSchedule(unittest.TestCase):
         ):
             answer=schedule_gate.decide("schedule",cron,at(when),{}, {})
             self.assertEqual(answer[1], "saturday_probe_outside_window", when)
-        # Cloudflare's normal Saturday-disallowed V2 slot must stay blocked.
+        # Saturday 24 only: genuine Cloudflare V2 slots are allowed.
         v2=schedule_gate.decide("workflow_dispatch","",
-            at("2026-10-24T10:27:00+02:00"),{}, {},
+            at("2026-10-24T10:35:00+02:00"),{}, {},
             slot_input="2026-10-24T11:00", attempt_input="primary")
-        self.assertFalse(v2[0])
+        self.assertEqual(v2,(True,"RUN_SCAN","2026-10-24T11:00","v2_primary"))
+        for forbidden in ("2026-10-25T11:00", "2026-10-31T11:00"):
+            result=schedule_gate.decide("workflow_dispatch","",
+                at(forbidden[:10]+"T10:35:00+01:00"),{}, {},
+                slot_input=forbidden,attempt_input="primary")
+            self.assertFalse(result[0],forbidden)
         # No Sunday or weekday cloud dispatch cron is added.
         self.assertEqual(schedule_gate.decide("schedule",
             "27 8-21 * * 6",at("2026-10-26T11:27:00+01:00"),{}, {})[0],False)
@@ -130,7 +135,7 @@ class TestSchedule(unittest.TestCase):
         for s, now, attempt in (
             ("2026-10-20T09:00","2026-10-20T09:46:00+02:00","backup"),
             ("2026-10-20T09:00","2026-10-20T08:34:00+02:00","primary"),
-            ("2026-10-24T09:00","2026-10-24T08:35:00+02:00","primary")):
+            ("2026-10-25T09:00","2026-10-25T08:35:00+01:00","primary")):
             x=schedule_gate.decide("workflow_dispatch","",at(now),{}, {},
                 slot_input=s,attempt_input=attempt)
             self.assertFalse(x[0],(s,now))

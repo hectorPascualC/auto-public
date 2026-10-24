@@ -25,7 +25,12 @@ export function scheduledSlot(scheduledTime) {
       attempt: minute === 15 ? "primary" : "backup", scheduledTime};
   }
 
-  if (!["Mon", "Tue", "Wed", "Thu", "Fri"].includes(p.weekday) ||
+  // Only 2026-10-24: dispatch standard Madrid slots on Saturday too.
+  // All other weekends stay blocked by the regular weekday gate.
+  const saturdayLiveTest = p.year === "2026" && p.month === "10" &&
+    p.day === "24" && p.weekday === "Sat";
+  if ((!["Mon", "Tue", "Wed", "Thu", "Fri"].includes(p.weekday) &&
+       !saturdayLiveTest) ||
       !HOURS.has(localHour) || ![35, 47].includes(minute) ||
       !SLOT_HOURS.has(localHour + 1)) return null;
   const date = p.year + "-" + p.month + "-" + p.day;

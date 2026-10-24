@@ -87,7 +87,12 @@ test("CET/CEST, nominal hours and exact backup identities", () => {
   assert.equal(scheduledSlot(Date.parse("2026-10-23T18:15:00Z")), null);
   assert.equal(scheduledSlot(Date.parse("2026-10-23T18:27:00Z")), null);
   assert.equal(scheduledSlot(Date.parse("2026-10-20T07:35:00Z")), null);
-  assert.equal(scheduledSlot(Date.parse("2026-10-24T06:35:00Z")), null);
+  assert.equal(scheduledSlot(Date.parse("2026-10-24T06:35:00Z")).key, "2026-10-24T09:00");
+  assert.equal(scheduledSlot(Date.parse("2026-10-24T08:47:00Z")).key, "2026-10-24T11:00");
+  assert.equal(scheduledSlot(Date.parse("2026-10-24T11:35:00Z")).key, "2026-10-24T14:00");
+  assert.equal(scheduledSlot(Date.parse("2026-10-24T13:47:00Z")).key, "2026-10-24T16:00");
+  assert.equal(scheduledSlot(Date.parse("2026-10-25T09:35:00Z")), null);
+  assert.equal(scheduledSlot(Date.parse("2026-10-31T07:35:00Z")), null);
   assert.equal(scheduledSlot(Number.NaN), null);
 });
 
@@ -95,7 +100,7 @@ test("Friday-night and weekend cron probes cannot dispatch GitHub", async () => 
   const times = [
     "2026-10-23T20:35:00Z", "2026-10-23T20:47:00Z",
     "2026-10-23T21:35:00Z", "2026-10-23T21:47:00Z",
-    "2026-10-24T06:35:00Z", "2026-10-25T20:47:00Z"
+    "2026-10-24T18:35:00Z", "2026-10-25T20:47:00Z"
   ];
   for (const utc of times) {
     const instant = Date.parse(utc);
@@ -107,6 +112,30 @@ test("Friday-night and weekend cron probes cannot dispatch GitHub", async () => 
     });
     assert.equal(result.status, "IGNORED", utc);
     assert.equal(mock.calls.length, 0, utc);
+  }
+});
+
+
+test("one-day Saturday genuine primary/backup dispatches without duplicating", async () => {
+  for (const [utc, attempt] of [
+    ["2026-10-24T08:35:00Z", "primary"],
+    ["2026-10-24T08:47:00Z", "backup"]
+  ]) {
+    const scheduledTime = Date.parse(utc);
+    const m = mockGithub();
+    const args = {scheduledTime, nowMs:scheduledTime, env:m.env,
+      fetcher:m.fetcher, state:m.state};
+    const result = await processScheduled(args);
+    assert.equal(result.status, "DISPATCHED");
+    assert.equal(result.slot, "2026-10-24T11:00");
+    assert.equal(result.attempt, attempt);
+    const posts = m.calls.filter(c => c.method === "POST");
+    assert.equal(posts.length, 1);
+    const inputs = JSON.parse(posts[0].body).inputs;
+    assert.equal(inputs.slot_local, "2026-10-24T11:00");
+    assert.equal(inputs.trigger_attempt, attempt);
+    assert.equal((await processScheduled(args)).reason, "already_sent");
+    assert.equal(m.calls.filter(c => c.method === "POST").length, 1);
   }
 });
 

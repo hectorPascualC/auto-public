@@ -91,7 +91,7 @@ class TestSchedule(unittest.TestCase):
             "2026-10-31T10:27:00+01:00",
             "2026-10-24T10:26:00+02:00",
             "2026-10-24T11:13:00+02:00",
-            "2026-10-24T23:27:00+02:00",
+            "2026-10-25T00:27:00+02:00",
         ):
             answer=schedule_gate.decide("schedule",cron,at(when),{}, {})
             self.assertEqual(answer[1], "saturday_probe_outside_window", when)

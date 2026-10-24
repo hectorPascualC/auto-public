@@ -91,16 +91,17 @@ test("CET/CEST, nominal hours and exact backup identities", () => {
   assert.equal(scheduledSlot(Date.parse("2026-10-24T08:47:00Z")).key, "2026-10-24T11:00");
   assert.equal(scheduledSlot(Date.parse("2026-10-24T11:35:00Z")).key, "2026-10-24T14:00");
   assert.equal(scheduledSlot(Date.parse("2026-10-24T13:47:00Z")).key, "2026-10-24T16:00");
-  assert.equal(scheduledSlot(Date.parse("2026-10-25T09:35:00Z")), null);
+  assert.equal(scheduledSlot(Date.parse("2026-10-25T09:35:00Z")).key,
+    "2026-10-25T12:00");
   assert.equal(scheduledSlot(Date.parse("2026-10-31T07:35:00Z")), null);
   assert.equal(scheduledSlot(Number.NaN), null);
 });
 
-test("Friday-night and weekend cron probes cannot dispatch GitHub", async () => {
+test("Friday-night and out-of-window weekend cron probes cannot dispatch GitHub", async () => {
   const times = [
     "2026-10-23T20:35:00Z", "2026-10-23T20:47:00Z",
     "2026-10-23T21:35:00Z", "2026-10-23T21:47:00Z",
-    "2026-10-24T21:35:00Z", "2026-10-25T20:47:00Z"
+    "2026-10-24T21:35:00Z", "2026-10-25T22:47:00Z"
   ];
   for (const utc of times) {
     const instant = Date.parse(utc);
@@ -126,8 +127,42 @@ test("Saturday hourly slots 09 to 23 Madrid only on 24 October", () => {
     }
   }
   for (const utc of ["2026-10-24T05:35:00Z", "2026-10-24T21:35:00Z",
-    "2026-10-25T08:35:00Z", "2026-10-31T08:35:00Z"]) {
+    "2026-10-25T06:35:00Z", "2026-10-31T08:35:00Z"]) {
     assert.equal(scheduledSlot(Date.parse(utc)),null,utc);
+  }
+});
+
+test("Sunday 25 real hourly slots cover 09..23 after CET change only", () => {
+  for (let hour = 7; hour <= 21; hour++) {
+    for (const [minute, attempt] of [[35, "primary"], [47, "backup"]]) {
+      const utc = "2026-10-25T" + String(hour).padStart(2, "0") +
+        ":" + minute + ":00Z";
+      const result = scheduledSlot(Date.parse(utc));
+      assert.equal(result?.key, "2026-10-25T" +
+        String(hour + 2).padStart(2, "0") + ":00", utc);
+      assert.equal(result?.attempt, attempt, utc);
+    }
+  }
+  for (const utc of ["2026-10-25T06:35:00Z", "2026-10-25T22:35:00Z",
+    "2026-11-01T07:35:00Z", "2026-10-31T07:35:00Z"])
+    assert.equal(scheduledSlot(Date.parse(utc)), null, utc);
+});
+
+test("Sunday primary and backup each dispatch at most once", async () => {
+  for (const [utc, attempt] of [
+    ["2026-10-25T07:35:00Z", "primary"],
+    ["2026-10-25T07:47:00Z", "backup"]
+  ]) {
+    const instant = Date.parse(utc), m = mockGithub();
+    const args = {scheduledTime: instant, nowMs: instant, env: m.env,
+      fetcher: m.fetcher, state: m.state};
+    const first = await processScheduled(args);
+    assert.equal(first.status, "DISPATCHED");
+    assert.equal(first.slot, "2026-10-25T09:00");
+    assert.equal(first.attempt, attempt);
+    assert.equal(m.calls.filter(x => x.method === "POST").length, 1);
+    assert.equal((await processScheduled(args)).reason, "already_sent");
+    assert.equal(m.calls.filter(x => x.method === "POST").length, 1);
   }
 });
 

@@ -219,6 +219,16 @@ export async function runScheduledController({scheduledTime, env, logger = conso
       logger.log(JSON.stringify({controller: "v2", ...result}));
       return result;
     }
+    // Production ownership transfers to GitHub Actions for all weekdays.
+    // Keep the existing Cloudflare triggers installed for guarded rollback and
+    // Sunday 25 diagnostic slots, but never dispatch a competing weekday scan.
+    if (env?.WEEKDAY_SCHEDULER === "github" &&
+        ["Mon", "Tue", "Wed", "Thu", "Fri"].includes(madridParts(scheduledTime).weekday)) {
+      const result = {status: "IGNORED", reason: "github_native_weekday_owner",
+        slot: slot.key, attempt: slot.attempt};
+      logger.log(JSON.stringify({controller: "v2", ...result}));
+      return result;
+    }
     phase = "resolve_coordinator";
     const coordinator = env?.SLOT_COORDINATOR;
     if (!coordinator || typeof coordinator.idFromName !== "function" ||

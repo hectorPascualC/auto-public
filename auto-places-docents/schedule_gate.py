@@ -93,10 +93,11 @@ def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
         key = nominal.strftime("%Y-%m-%dT%H:00")
         kind = "backup" if minute == 47 else "primary"
     elif event == "push":
-        # Code/workflow update pushes during the single Saturday test must
-        # not compete with the Cloudflare-scheduled hourly source scans.
-        if local.date() == date(2026, 10, 24) and not marker_changed:
-            return False, "saturday_cloudflare_exclusive", "", "push"
+        # Code/workflow pushes on the date-guarded weekend must not compete
+        # with Cloudflare-scheduled scans. An explicit external-trigger
+        # marker is the only allowed manual rescue on these two dates.
+        if local.date() in (date(2026, 10, 24), date(2026, 10, 25)) and not marker_changed:
+            return False, "weekend_cloudflare_exclusive", "", "push"
         if not force and trigger_sha and trigger_sha == processed_sha:
             return False, "duplicate_push", "", "push"
         if marker_changed:
@@ -108,8 +109,8 @@ def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
                     return False, "rescue_slot_expired", key, kind
     elif event == "workflow_dispatch" and slot_input:
         one_day_probe = slot_input == "2026-10-22T20:00"
-        saturday_hourly = re.fullmatch(r"2026-10-24T(09|1[0-9]|2[0-3]):00", slot_input)
-        if not (one_day_probe or saturday_hourly or
+        weekend_hourly = re.fullmatch(r"2026-10-(24|25)T(09|1[0-9]|2[0-3]):00", slot_input)
+        if not (one_day_probe or weekend_hourly or
                 re.fullmatch(r"\d{4}-\d{2}-\d{2}T(09|11|14|16):00", slot_input)):
             return False, "invalid_v2_slot", "", "invalid"
         if attempt_input not in ("primary", "backup"):
@@ -118,9 +119,11 @@ def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
             nominal = datetime.strptime(slot_input, "%Y-%m-%dT%H:%M").replace(tzinfo=TZ)
         except ValueError:
             return False, "invalid_v2_slot", "", "invalid"
-        # Only Saturday 2026-10-24 is allowed to claim a real V2 slot.
-        saturday_live_test = nominal.date() == date(2026, 10, 24) and nominal.weekday() == 5
-        if (nominal.weekday() > 4 and not saturday_live_test) or not (
+        # Only 24–25 Oct 2026 are allowed to claim hourly weekend V2
+        # slots; all subsequent weekends remain fail-closed.
+        weekend_live_test = (nominal.date() in (date(2026, 10, 24), date(2026, 10, 25))
+                             and nominal.weekday() in (5, 6))
+        if (nominal.weekday() > 4 and not weekend_live_test) or not (
                 nominal - timedelta(minutes=25) <= local <
                 nominal + timedelta(minutes=45)):
             return False, "stale_v2_slot", slot_input, "stale"

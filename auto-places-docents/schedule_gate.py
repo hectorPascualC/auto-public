@@ -9,7 +9,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 TZ = ZoneInfo("Europe/Madrid")
-HOURS = (9, 11, 14, 16)
+HOURS = (8, 11, 13, 17)
 MARKER = "auto-places-docents/state/external-trigger.txt"
 
 def show(path):
@@ -69,29 +69,36 @@ def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
     key, kind = "", "manual"
     local = now.astimezone(TZ)
     if event == "schedule":
-        # The temporary unslotted GitHub Saturday cron is retired:
-        # Cloudflare now supplies date-guarded genuine hourly V2 slots.
-        # A delayed legacy GitHub schedule must NEVER cause a duplicate scan.
+        # Cloudflare is no longer the owner of weekday scans. GitHub Actions
+        # schedules each local Madrid slot at four distinct non-round minutes:
+        # one primary, a conditional backup, and two recovery opportunities.
+        # Enforce a bounded health window and skip any old/stale UTC cron.
         if cron.strip() == "27 8-21 * * 6":
             return False, "saturday_probe_superseded_by_cloudflare", "", "saturday_probe"
-        # Two UTC cron candidates per local slot, one for each DST regime.
-        # GitHub schedules 12 minutes apart. Backup skips a prior PASS.
-        m = re.fullmatch(r"(35|47) (6|7|8|9|11|12|13|14) \* \* 1-5", cron.strip())
-        if not m:
+        cron_kind_and_offset = {
+            "37 7,10,12,16 * * 1-5": ("primary", -23),
+            "49 7,10,12,16 * * 1-5": ("backup", -11),
+            "13 8,11,13,17 * * 1-5": ("recovery", 13),
+            "27 8,11,13,17 * * 1-5": ("recovery_late", 27),
+        }
+        cfg = cron_kind_and_offset.get(cron.strip())
+        if cfg is None:
             return False, "unknown_schedule", "", "unknown"
-        minute, hour_utc = map(int, m.groups())
-        intended_utc = datetime.combine(
-            now.astimezone(timezone.utc).date(),
-            time(hour_utc, minute), tzinfo=timezone.utc)
-        intended_local = intended_utc.astimezone(TZ)
-        nominal = intended_local + timedelta(hours=1)
-        delay = (now - intended_utc).total_seconds()
-        if (intended_local.weekday() > 4 or
-                intended_local.hour not in (8, 10, 13, 15) or
-                nominal.hour not in HOURS or not 0 <= delay <= 3600):
+        kind, earliest_minutes = cfg
+        if local.weekday() > 4:
             return False, "stale_or_offseason_schedule", "", "stale"
-        key = nominal.strftime("%Y-%m-%dT%H:00")
-        kind = "backup" if minute == 47 else "primary"
+        # GitHub does not guarantee delivery at the cron minute. Reconcile a
+        # delayed trigger against the actual local slot, never invent a future
+        # or expired slot. A late trigger can recover a missed earlier run.
+        due = []
+        for hour in HOURS:
+            nominal = local.replace(hour=hour, minute=0, second=0, microsecond=0)
+            delta = (local - nominal).total_seconds() / 60
+            if earliest_minutes <= delta < 45:
+                due.append(nominal)
+        if len(due) != 1:
+            return False, "stale_or_offseason_schedule", "", "stale"
+        key = due[0].strftime("%Y-%m-%dT%H:00")
     elif event == "push":
         # Code/workflow pushes on the date-guarded weekend must not compete
         # with Cloudflare-scheduled scans. An explicit external-trigger
@@ -111,7 +118,7 @@ def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
         one_day_probe = slot_input == "2026-10-22T20:00"
         weekend_hourly = re.fullmatch(r"2026-10-(24|25)T(09|1[0-9]|2[0-3]):00", slot_input)
         if not (one_day_probe or weekend_hourly or
-                re.fullmatch(r"\d{4}-\d{2}-\d{2}T(09|11|14|16):00", slot_input)):
+                re.fullmatch(r"\d{4}-\d{2}-\d{2}T(08|11|13|17):00", slot_input)):
             return False, "invalid_v2_slot", "", "invalid"
         if attempt_input not in ("primary", "backup"):
             return False, "invalid_v2_attempt", "", "invalid"

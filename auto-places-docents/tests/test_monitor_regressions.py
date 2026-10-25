@@ -251,6 +251,7 @@ class TestSchedule(unittest.TestCase):
             "rescue_slot_expired")
         self.assertIsNone(schedule_gate.parse_rescue(marker.replace("+02:00","+01:00")))
 
+class TestPublicSanitizer(unittest.TestCase):
     def test_identifying_source_text_is_never_in_public_new_state(self):
         raw = {
             "generated_at":"2026-10-20T08:35:00+02:00",

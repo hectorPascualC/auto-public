@@ -1,4 +1,4 @@
-"""Offline regressions for a bounded, genuinely read-only cron test."""
+"""Offline regressions for archived 2026 cron transport experiment."""
 from __future__ import annotations
 
 import importlib.util
@@ -37,21 +37,11 @@ class TestCronSmoke(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "non_schedule_must_not_have_cron"):
             cron_smoke.inspect_run("push", cron_smoke.CRON, future)
 
-    def test_readonly_workflow_contract(self):
-        import yaml
-        contents = (REPO / ".github/workflows/cron-smoke-30m.yml").read_text()
-        doc = yaml.safe_load(contents)
-        on = doc.get("on", doc.get(True))
-        self.assertEqual(on["schedule"], [{"cron": cron_smoke.CRON}])
-        self.assertEqual(doc["permissions"], {"contents": "read"})
-        self.assertEqual(doc["concurrency"]["cancel-in-progress"], False)
-        self.assertTrue("workflow_dispatch" in on)
-        self.assertEqual(on["push"]["paths"], [".github/workflows/cron-smoke-30m.yml"])
-        steps = doc["jobs"]["probe"]["steps"]
-        self.assertEqual(steps[1]["run"], "python3 auto-places-docents/cron_smoke.py")
-        assert all(not any(term in str(step) for term in (
-            "monitor_v2.py", "edubcn_probe.py", "workflow_dispatches",
-            "CLOUDFLARE_API_TOKEN", "secrets.", "git push", "curl ")) for step in steps)
+    def test_temporary_workflow_has_been_retired(self):
+        # The read-only experiment completed on 2026-10-25.
+        # Keeping the test/archived script is safe; keeping the GitHub cron
+        # would silently reactivate every October 25-26 in future years.
+        self.assertFalse((REPO / ".github/workflows/cron-smoke-30m.yml").exists())
 
 
 if __name__ == "__main__":

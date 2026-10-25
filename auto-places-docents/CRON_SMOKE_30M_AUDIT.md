@@ -26,4 +26,28 @@ Objectiu: separar una execució automàtica **real** de GitHub Actions (`event=s
 
 ## Evidències
 
-Les URL, run IDs i hores de GitHub s'han d'afegir a l'informe SRE un cop siguin observades. **Aquest document descriu els criteris de prova, no afirma cap cron real verificat.**
+### Postflight — 25/10/2026 (Europe/Madrid)
+
+**PASS: GitHub ha lliurat dos esdeveniments reals `schedule` del workflow temporal, amb execució de l'script i pujada d'artifacts.**
+
+| Evidència | 1a activació | 2a activació |
+| --- | --- | --- |
+| URL | https://github.com/hectorPascualC/auto-public/actions/runs/40201436178 | https://github.com/hectorPascualC/auto-public/actions/runs/40218094773 |
+| GitHub event | `schedule` | `schedule` |
+| Run created UTC | 2026-10-25 14:16:09Z | 2026-10-25 17:46:41Z |
+| Runner observed Madrid | 2026-10-25 15:16:16 CET | 2026-10-25 18:46:49 CET |
+| Job | 121193250483 SUCCESS | 121243514250 SUCCESS |
+| Artifact | 12601839685 | 12608405361 |
+| `source_event` | `schedule` | `schedule` |
+| `status` | `SCHEDULE_DELIVERED` | `SCHEDULE_DELIVERED` |
+| `run_id` en JSON | 40201436178 | 40218094773 |
+| `schedule_expression` | `7,37 * 25,26 10 *` | `7,37 * 25,26 10 *` |
+| Fonts / dispatch / escriptures persistents reportats | 0 / 0 / 0 | 0 / 0 / 0 |
+
+L'auditoria ha comprovat el resultat dels jobs, els registres JSON i l'existència dels artifacts amb el nom i l'ID concordants. **No s'han descarregat els bytes interns dels artifacts**; els JSON equivalents s'han comprovat directament als logs. La comprovació de zero efectes laterals es basa en el codi del workflow/script, el registre i l'absència de passos de monitor, no en telemetria externa de xarxa.
+
+**Límit important: NO PASS per puntualitat de 30 minuts.** Les dues execucions observades estan separades per 3 h 30 min 32 s, malgrat que el cron demanava intervals de 30 minuts. El transport de GitHub funciona, però aquestes dues observacions no demostren regularitat ni SLA. L'hora exacta de la franja nominal no es pot inferir dels timestamps de creació. Tampoc s'ha demostrat encara la puntualitat de les quatre passades laborables reals.
+
+**Decisió:** retirar el workflow temporal per PR+CI; conservar l'script i els tests com a evidència reproduïble, i verificar que `main` ja no conté el cron. Això evita que el calendari `25,26 10` es reactivi cada any. No es canvien els crons de producció, secrets, Cloudflare ni dades del monitor.
+
+**Estat final de l'experiment:** `PASS` per dues entregues automàtiques reals, `NO ACREDITAT` per cadència regular de 30 minuts. La restauració Cloudflare de dilluns 26/10 és una verificació separada, encara pendent.

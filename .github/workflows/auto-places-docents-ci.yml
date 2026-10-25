@@ -9,6 +9,9 @@ on:
       - 'auto-places-docents/tests/**'
       - 'auto-places-docents/requirements.txt'
       - 'controller-v2/**'
+      - '.github/workflows/cron-synthetic-30m.yml'
+      - 'ops/cron_synthetic_30m.py'
+      - 'ops/tests/**'
   pull_request:
     branches: [main]
     paths:
@@ -20,6 +23,9 @@ on:
       - 'auto-places-docents/slot_ledger.py'
       - 'auto-places-docents/*.py'
       - 'auto-places-docents/tests/**'
+      - '.github/workflows/cron-synthetic-30m.yml'
+      - 'ops/cron_synthetic_30m.py'
+      - 'ops/tests/**'
   workflow_dispatch:
 permissions:
   contents: read
@@ -39,6 +45,7 @@ jobs:
           python -m compileall -q auto-places-docents
           python -m unittest discover -s auto-places-docents/tests -p 'test_*.py' -v
           python -m unittest discover -s controller-v2/tests -p 'test_*.py' -v
+          python -m unittest discover -s ops/tests -p 'test_*.py' -v
           # Cloudflare uses Sunday=1 and Monday-Friday=2-6, unlike GitHub cron.
           # Included in test_*.py: weekend production fix and auto-rollback tests.
 

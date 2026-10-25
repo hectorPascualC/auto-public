@@ -97,6 +97,19 @@ test("CET/CEST, nominal hours and exact backup identities", () => {
   assert.equal(scheduledSlot(Number.NaN), null);
 });
 
+test("weekday Cloudflare cron is inert when native GitHub owns production", async () => {
+  const logs = [];
+  const weekday = Date.parse("2026-10-26T07:35:00Z");
+  const env = {WEEKDAY_SCHEDULER:"github",
+    SLOT_COORDINATOR:{idFromName:()=>assert.fail("must not access Durable Object")}};
+  const result = await runScheduledController({scheduledTime:weekday,env,
+    logger:{log:x=>logs.push(JSON.parse(x)),error:()=>assert.fail("unexpected error")}});
+  assert.equal(result.status,"IGNORED");
+  assert.equal(result.reason,"github_native_weekday_owner");
+  assert.equal(result.slot,"2026-10-26T09:00");
+  assert.equal(logs[0].reason,"github_native_weekday_owner");
+});
+
 test("Friday-night and out-of-window weekend cron probes cannot dispatch GitHub", async () => {
   const times = [
     "2026-10-23T20:35:00Z", "2026-10-23T20:47:00Z",
@@ -300,6 +313,7 @@ test("Cloudflare config and GitHub contract are statically aligned", () => {
   const toml=readFileSync(new URL("../wrangler.toml",import.meta.url),"utf8");
   assert.match(toml,/^crons = \["35,47 6,7,8,9,11,12,13,14 \* \* 2-6"\]$/m);
   assert.match(toml,/DISPATCH_ENABLED = "false"/);
+  assert.match(toml,/WEEKDAY_SCHEDULER = "github"/);
   assert.match(toml,/^crons = \[/m); // A commented-out cron must never satisfy static coverage.
   assert.match(toml,/class_name = "SlotCoordinator"/);
   assert.match(toml,/new_sqlite_classes = \["SlotCoordinator"\]/);

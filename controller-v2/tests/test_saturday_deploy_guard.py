@@ -28,6 +28,7 @@ class SaturdayDeployTests(unittest.TestCase):
         original = (ROOT / "wrangler.toml").read_text(encoding="utf-8")
         runtime = guard.make_runtime(original)
         self.assertIn('DISPATCH_ENABLED = "true"', runtime)
+        self.assertIn('WEEKDAY_SCHEDULER = "github"', runtime)
         self.assertIn('name = "auto-public-controller-v2"', runtime)
         self.assertIn('class_name = "SlotCoordinator"', runtime)
         self.assertNotIn("[triggers]", runtime)
@@ -45,6 +46,14 @@ class SaturdayDeployTests(unittest.TestCase):
         self.assertTrue(on["workflow_dispatch"]["inputs"]["confirm_saturday"]["required"])
         self.assertEqual(workflow["permissions"]["contents"], "read")
         self.assertIn("concurrency", workflow)
+
+    def test_native_weekday_owner_requires_real_live_readback(self):
+        live = {"bindings": [{"name": "WEEKDAY_SCHEDULER", "text": "github"}]}
+        self.assertTrue(guard.validate_weekday_owner(live))
+        for wrong in ({}, {"bindings": []},
+                      {"bindings": [{"name": "WEEKDAY_SCHEDULER", "text": "cloudflare"}]}):
+            with self.assertRaisesRegex(ValueError, "weekday_native_owner_not_verified"):
+                guard.validate_weekday_owner(wrong)
 
     def test_unexpected_source_or_live_config_fails_closed(self):
         src = (ROOT / "wrangler.toml").read_text(encoding="utf-8")

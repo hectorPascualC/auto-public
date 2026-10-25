@@ -4,27 +4,21 @@ run-name: ${{ inputs.slot_local && format('AUTO V2 {0} / {1}', inputs.slot_local
 
 on:
   schedule:
-    # Saturday 2026-10-24 hourly REAL V2 dispatch is owned by Cloudflare.
-    # Never schedule a second unslotted Saturday scan from GitHub.
-    # GitHub cron UTC. Pre-slot Madrid schedule at (HH-1):35 primary
-    # and (HH-1):47 conditional backup for nominal HH=09,11,14,16.
-    # Gate converts CET/CEST and ignores off-season UTC candidates.
-    - cron: '35 6 * * 1-5'
-    - cron: '47 6 * * 1-5'
-    - cron: '35 7 * * 1-5'
-    - cron: '47 7 * * 1-5'
-    - cron: '35 8 * * 1-5'
-    - cron: '47 8 * * 1-5'
-    - cron: '35 9 * * 1-5'
-    - cron: '47 9 * * 1-5'
-    - cron: '35 11 * * 1-5'
-    - cron: '47 11 * * 1-5'
-    - cron: '35 12 * * 1-5'
-    - cron: '47 12 * * 1-5'
-    - cron: '35 13 * * 1-5'
-    - cron: '47 13 * * 1-5'
-    - cron: '35 14 * * 1-5'
-    - cron: '47 14 * * 1-5'
+    # Single production scheduler: GitHub Actions, Mon–Fri Madrid-local time.
+    # Target publication/check hours: 08:00, 11:00, 13:00, 17:00.
+    # Primary 23 minutes before; conditional backup 11 minutes before;
+    # recovery checks 13 and 27 minutes after if no validated PASS receipt.
+    # GitHub can delay/drop schedules, so serialized backups and the hourly
+    # SRE watch verify freshness; never run a second scan for a valid slot.
+    # IANA timezone handles both CET and CEST (no duplicate UTC schedules).
+    - cron: '37 7,10,12,16 * * 1-5'
+      timezone: 'Europe/Madrid'
+    - cron: '49 7,10,12,16 * * 1-5'
+      timezone: 'Europe/Madrid'
+    - cron: '13 8,11,13,17 * * 1-5'
+      timezone: 'Europe/Madrid'
+    - cron: '27 8,11,13,17 * * 1-5'
+      timezone: 'Europe/Madrid'
   workflow_dispatch:
     inputs:
       run_monitor:

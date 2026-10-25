@@ -47,6 +47,14 @@ class SaturdayDeployTests(unittest.TestCase):
         self.assertEqual(workflow["permissions"]["contents"], "read")
         self.assertIn("concurrency", workflow)
 
+    def test_native_weekday_owner_requires_real_live_readback(self):
+        live = {"bindings": [{"name": "WEEKDAY_SCHEDULER", "text": "github"}]}
+        self.assertTrue(guard.validate_weekday_owner(live))
+        for wrong in ({}, {"bindings": []},
+                      {"bindings": [{"name": "WEEKDAY_SCHEDULER", "text": "cloudflare"}]}):
+            with self.assertRaisesRegex(ValueError, "weekday_native_owner_not_verified"):
+                guard.validate_weekday_owner(wrong)
+
     def test_unexpected_source_or_live_config_fails_closed(self):
         src = (ROOT / "wrangler.toml").read_text(encoding="utf-8")
         with self.assertRaises(ValueError):

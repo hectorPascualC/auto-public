@@ -1,0 +1,36 @@
+name: AUTO PUBLIC - 30m cron smoke (no scans)
+# Time-boxed, read-only transport test. No monitor execution, no dispatch,
+# no Cloudflare, no repository writes, no personal data or credentials.
+on:
+  schedule:
+    # UTC. Only 25 and 26 October 2026; 7/37 avoid the busy minute zero.
+    - cron: '7,37 * 25,26 10 *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cron-smoke-30m.yml'
+permissions:
+  contents: read
+concurrency:
+  group: auto-public-readonly-cron-smoke-30m
+  cancel-in-progress: false
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Checkout read-only probe
+        uses: actions/checkout@v4
+      - name: Inspect event (no sources, no dispatch, no persistence)
+        env:
+          SCHEDULE_EXPRESSION: ${{ github.event.schedule || '' }}
+        run: python3 auto-places-docents/cron_smoke.py
+      - name: Upload harmless cron receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cron-30m-smoke-${{ github.run_id }}
+          path: ${{ runner.temp }}/github-cron-30m-smoke.json
+          if-no-files-found: warn
+          retention-days: 2

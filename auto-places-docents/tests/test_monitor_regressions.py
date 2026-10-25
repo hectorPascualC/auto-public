@@ -90,15 +90,42 @@ class TestSchedule(unittest.TestCase):
         # GitHub code pushes must not start a separate Saturday scan.
         self.assertEqual(schedule_gate.decide("push","",
             at("2026-10-24T11:05:00+02:00"),{}, {})[1],
-            "saturday_cloudflare_exclusive")
-        # Sunday and later Saturdays cannot dispatch even with a valid hour.
-        for date_str, offset in (("2026-10-25","+01:00"),("2026-10-31","+01:00")):
+            "weekend_cloudflare_exclusive")
+        # Later weekends cannot dispatch even with a valid hour.
+        for date_str, offset in (("2026-10-31","+01:00"),("2026-11-01","+01:00")):
             for hour in (9,11,14,16,22):
                 slot=f"{date_str}T{hour:02}:00"
                 when=at(f"{date_str}T{hour-1:02}:35:00{offset}")
                 result=schedule_gate.decide("workflow_dispatch","",when,{}, {},
                     slot_input=slot,attempt_input="primary")
                 self.assertFalse(result[0],slot)
+
+    def test_sunday_real_hourly_v2_and_no_duplicate_code_pushes(self):
+        # Sunday 25 October is CET (UTC+1), unlike Saturday CEST.
+        # Every nominal slot has exactly two allowed attempts.
+        for hour in range(9, 24):
+            for minute, attempt in ((35, "primary"), (47, "backup")):
+                slot = f"2026-10-25T{hour:02}:00"
+                when = at(f"2026-10-25T{hour-1:02}:{minute}:00+01:00")
+                self.assertEqual(
+                    schedule_gate.decide("workflow_dispatch", "", when, {}, {},
+                        slot_input=slot, attempt_input=attempt),
+                    (True, "RUN_SCAN", slot, "v2_" + attempt))
+        # Code pushes on Sunday must not create competing unslotted scans.
+        self.assertEqual(schedule_gate.decide("push", "",
+            at("2026-10-25T09:20:00+01:00"), {}, {})[1],
+            "weekend_cloudflare_exclusive")
+        # Explicit rescue triggers remain available to perform a one-off scan.
+        marker = "AUTO-PUBLIC manual public scan\npublic_data_only=true\n"
+        self.assertEqual(schedule_gate.decide("push", "",
+            at("2026-10-25T09:20:00+01:00"), {}, {},
+            marker_changed=True, marker_text=marker)[1], "RUN_SCAN")
+        for slot, when in (
+            ("2026-10-25T09:00", "2026-10-25T09:46:00+01:00"),
+            ("2026-10-25T10:00", "2026-10-25T08:34:00+01:00"),
+            ("2026-11-01T09:00", "2026-11-01T08:35:00+01:00")):
+            self.assertFalse(schedule_gate.decide("workflow_dispatch", "",
+                at(when), {}, {}, slot_input=slot, attempt_input="primary")[0])
 
     def test_v2_dispatch_slot_and_backup(self):
         slot="2026-10-20T09:00"
@@ -126,7 +153,7 @@ class TestSchedule(unittest.TestCase):
         for s, now, attempt in (
             ("2026-10-20T09:00","2026-10-20T09:46:00+02:00","backup"),
             ("2026-10-20T09:00","2026-10-20T08:34:00+02:00","primary"),
-            ("2026-10-25T09:00","2026-10-25T08:35:00+01:00","primary")):
+            ("2026-10-31T09:00","2026-10-31T08:35:00+01:00","primary")):
             x=schedule_gate.decide("workflow_dispatch","",at(now),{}, {},
                 slot_input=s,attempt_input=attempt)
             self.assertFalse(x[0],(s,now))

@@ -96,7 +96,7 @@ class TestGitHubRescueParity(unittest.TestCase):
     def test_ordinary_private_style_manual_push_path_is_preserved(self):
         ordinary = "AUTO-PUBLIC manual public scan\npublic_data_only=true\n"
         result = self.at("2026-10-26T10:01:00+01:00", marker_text=ordinary)
-        self.assertEqual(result, (True, "RUN_SCAN", "", "push"))
+        self.assertEqual(result, (True, "RUN_SCAN", "", "manual"))
 
     def test_production_cron_contract_remains_unchanged(self):
         workflow = (ROOT.parent / ".github/workflows/auto-places-docents.yml").read_text()

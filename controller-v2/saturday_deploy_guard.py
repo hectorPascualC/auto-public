@@ -108,6 +108,15 @@ def main():
     if sys.argv[1] == "preflight":
         RUNTIME.write_text(make_runtime(SOURCE.read_text(encoding="utf-8")),
                            encoding="utf-8")
+    else:
+        # Real Cloudflare settings readback: CI success alone is not a deploy.
+        # Preflight may run before this nonsecret variable exists, but
+        # postflight MUST prove the weekday dispatcher is disabled.
+        bindings = settings.get("bindings", [])
+        if not any(isinstance(x, dict) and x.get("name") == "WEEKDAY_SCHEDULER"
+                   and x.get("text") == "github" for x in bindings):
+            raise ValueError("weekday_native_owner_not_verified")
+        print("LIVE_WEEKDAY_OWNER=github")
     print("SATURDAY_V2_" + sys.argv[1].upper() + "=PASS")
     print("LIVE_CRONS_PRESERVED=weekday_plus_weekend")
     print("LIVE_DISPATCH_ENABLED=true")

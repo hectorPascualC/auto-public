@@ -1,3 +1,4 @@
-AUTO-PUBLIC scheduled-slot rescue
-slot_local=2026-10-20T14:00:00+02:00
+AUTO-PUBLIC manual public scan
+requested_date=2026-10-25
+reason=single_source_scan_without_cloudflare_dispatch
 public_data_only=true

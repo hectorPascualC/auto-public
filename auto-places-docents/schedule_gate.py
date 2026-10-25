@@ -47,6 +47,8 @@ def valid_health(h, slot):
 def parse_rescue(text):
     if not text.startswith("AUTO-PUBLIC scheduled-slot rescue\n"):
         return None
+    if not re.search(r"(?m)^public_data_only=true$", text):
+        return None
     m = re.search(r"(?m)^slot_local=(\S+)$", text)
     if not m:
         return None
@@ -107,13 +109,16 @@ def decide(event, cron, now, h, ledger, marker_changed=False, marker_text="",
             return False, "weekend_cloudflare_exclusive", "", "push"
         if not force and trigger_sha and trigger_sha == processed_sha:
             return False, "duplicate_push", "", "push"
-        if marker_changed:
-            key = parse_rescue(marker_text) or ""
-            kind = "rescue" if key else "push"
-            if key:
-                dt = datetime.fromisoformat(key).replace(tzinfo=TZ)
-                if dt > local or (local - dt).total_seconds() >= 4 * 3600:
-                    return False, "rescue_slot_expired", key, kind
+        if marker_changed and marker_text.startswith("AUTO-PUBLIC scheduled-slot rescue"):
+            # Never reinterpret a malformed rescue as a generic unslotted push.
+            # Existing ordinary manual markers remain supported.
+            key = parse_rescue(marker_text)
+            if not key:
+                return False, "invalid_rescue_marker", "", "invalid"
+            kind = "rescue"
+            dt = datetime.fromisoformat(key).replace(tzinfo=TZ)
+            if dt > local or (local - dt).total_seconds() >= 4 * 3600:
+                return False, "rescue_slot_expired", key, kind
     elif event == "workflow_dispatch" and slot_input:
         one_day_probe = slot_input == "2026-10-22T20:00"
         weekend_hourly = re.fullmatch(r"2026-10-(24|25)T(09|1[0-9]|2[0-3]):00", slot_input)

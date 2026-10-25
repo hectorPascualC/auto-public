@@ -1,4 +1,5 @@
 AUTO-PUBLIC manual public scan
 requested_date=2026-10-25
-reason=single_source_scan_without_cloudflare_dispatch
+requested_at_local=2026-10-25T09:47:23+01:00
+reason=forced_full_pass_507_627_F57_F87
 public_data_only=true

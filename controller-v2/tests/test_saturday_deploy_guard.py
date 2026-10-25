@@ -28,6 +28,7 @@ class SaturdayDeployTests(unittest.TestCase):
         original = (ROOT / "wrangler.toml").read_text(encoding="utf-8")
         runtime = guard.make_runtime(original)
         self.assertIn('DISPATCH_ENABLED = "true"', runtime)
+        self.assertIn('WEEKDAY_SCHEDULER = "github"', runtime)
         self.assertIn('name = "auto-public-controller-v2"', runtime)
         self.assertIn('class_name = "SlotCoordinator"', runtime)
         self.assertNotIn("[triggers]", runtime)

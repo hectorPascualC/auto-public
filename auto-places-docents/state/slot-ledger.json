@@ -10,6 +10,15 @@
       "kind": "rescue",
       "generated_at": "2026-10-26T11:36:57+01:00",
       "audit_at": "2026-10-26T11:44:23+01:00"
+    },
+    "2026-10-26T13:00": {
+      "status": "PASS",
+      "scan_run_id": "40323410954",
+      "snapshot_run_id": "20261026T133348+0100",
+      "trigger_sha": "0a25fe64089b01392e7f91f006dc130d429df170",
+      "kind": "rescue",
+      "generated_at": "2026-10-26T13:33:48+01:00",
+      "audit_at": "2026-10-26T13:40:49+01:00"
     }
   }
 }

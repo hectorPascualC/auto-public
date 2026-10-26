@@ -1,0 +1,40 @@
+name: V2 Cloudflare read-only token probe
+# Safe manual-only permission check. Does not deploy or modify Cloudflare.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      CLOUDFLARE_MONITOR_API_TOKEN: ${{ secrets.CLOUDFLARE_MONITOR_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Validate secret presence without exposing values
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_MONITOR_API_TOKEN:-}" || { echo "::error::Monitor token unavailable"; exit 1; }
+          test -n "${CLOUDFLARE_ACCOUNT_ID:-}" || { echo "::error::Account ID unavailable"; exit 1; }
+      - name: Probe Cloudflare read-only Workers scripts API
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, urllib.request, urllib.error
+          url = "https://api.cloudflare.com/client/v4/accounts/" + os.environ["CLOUDFLARE_ACCOUNT_ID"] + "/workers/scripts"
+          req = urllib.request.Request(url, headers={"Authorization":"Bearer "+os.environ["CLOUDFLARE_MONITOR_API_TOKEN"],"Accept":"application/json"})
+          try:
+              with urllib.request.urlopen(req,timeout=20) as response:
+                  payload=json.load(response)
+                  print("workers_scripts_read_http="+str(response.status))
+                  print("workers_scripts_read_success="+str(payload.get("success",False)).lower())
+                  if not payload.get("success"): raise SystemExit(1)
+                  scripts=payload.get("result",[])
+                  print("controller_present="+str(any(isinstance(s,dict) and s.get("id")=="auto-public-controller-v2" for s in scripts)).lower())
+          except urllib.error.HTTPError as error:
+              print("workers_scripts_read_http="+str(error.code))
+              raise SystemExit(1)
+          PY

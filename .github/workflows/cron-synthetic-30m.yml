@@ -1,0 +1,41 @@
+name: AUTO PUBLIC - synthetic cron 30m test
+# OBSERVABILITY ONLY: no vacancy fetching, dispatch, deployments or state writes.
+# Scheduled strictly on 25-26 October; a Python year/date guard keeps any
+# accidental future-year recurrence inert. Remove the temporary cron by PR
+# after observing at least two actual event=schedule executions.
+run-name: CRON30 probe - ${{ github.event_name }} - ${{ github.run_id }}
+on:
+  schedule:
+    - cron: '27,57 * 25-26 10 *'
+      timezone: 'Europe/Madrid'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cron-synthetic-30m.yml'
+      - 'ops/cron_synthetic_30m.py'
+      - 'ops/tests/test_cron_synthetic_30m.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+concurrency:
+  group: auto-public-cron-synthetic-30m
+  cancel-in-progress: false
+
+jobs:
+  synthetic-clock:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Checkout test-only observer
+        uses: actions/checkout@v4
+      - name: Classify real GitHub schedule vs smoke (no scans)
+        run: python3 ops/cron_synthetic_30m.py
+      - name: Preserve sanitized scheduling evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cron30-evidence
+          path: cron30-evidence.json
+          if-no-files-found: warn
+          retention-days: 2

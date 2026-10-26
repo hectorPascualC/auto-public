@@ -1,20 +1,20 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-26T13:33:48+01:00",
-  "run_id": "20261026T133348+0100",
+  "generated_at": "2026-10-26T17:30:39+01:00",
+  "run_id": "20261026T173039+0100",
   "source_strategy": "direct-http+cachebuster+validators+sha256; playwright-direct-edubcn",
   "activity_rule": "current-presence: keep while present in current official offer PDF/list even after deadline; remove on disappearance only from authoritative FRESH current source",
   "health": {
-    "generated_at": "2026-10-26T13:33:48+01:00",
-    "edubcn_probe_at": "2026-10-26T13:40:48+01:00",
+    "generated_at": "2026-10-26T17:30:39+01:00",
+    "edubcn_probe_at": "2026-10-26T17:38:01+01:00",
     "fresh": 12,
     "partial": 0,
     "cache_obsoleta": 0,
     "total": 12,
-    "active_snapshot_at": "2026-10-26T13:40:49+01:00",
+    "active_snapshot_at": "2026-10-26T17:38:01+01:00",
     "presence_authoritative": 12,
     "presence_non_authoritative": 0,
-    "audit_at": "2026-10-26T13:40:49+01:00",
+    "audit_at": "2026-10-26T17:38:01+01:00",
     "audit_status": "PASS",
     "audit_sstt_checked": 11,
     "audit_errors": 0
@@ -456,38 +456,22 @@
       "current_target_counts": {
         "507": 0,
         "F57": 0,
-        "627": 1,
+        "627": 0,
         "F87": 0
       },
-      "current_target_placements": [
-        {
-          "placement_id": "627-21/10",
-          "display_id": "627-21/10",
-          "id_kind": "LOCAL_DATED",
-          "target_codes": [
-            "627"
-          ],
-          "source_urls": [
-            "https://educacio.gencat.cat/web/.content/home/departament/serveis-territorials/valles-occidental/personal-docent/nomenaments-telematics/dificil-cobertura/secundaria/VOC-SEC-dificil-cobertura-oferta-vacants.pdf"
-          ],
-          "source_kinds": [
-            "offer"
-          ],
-          "evidence_snippets": [
-            "Identificador de la plaça Especialitat Presentació de sol·licituds 627-21/10 627-Sistemes i Aplicacions Informàtiques TERMINI OBERT Nom del centre Adreça"
-          ]
-        }
-      ],
+      "current_target_placements": [],
       "removed_since_previous": [],
       "covered_by_results": [],
       "unresolved_result_ids": [
-        "507-09/09 (3) I. La Ferreria Montcada i Reixac",
+        "507-09/09",
         "507-09/09 (4) I. Nicolau Copèrnic Terrassa",
         "507-30/09 (1) I. La Ferreria Montcada i Reixac",
         "627-09/09 (1) I. Sabadell Sabadell",
         "627-09/09 (2) I. Sabadell Sabadell",
         "627-09/09 (3) I. L'Estatut Rubí",
+        "627-09/10 I. Nicolau Copèrnic Terrassa",
         "627-21/09 I. L'Estatut Rubí",
+        "627-21/10 I. Escola Industrial Sabadell",
         "F87-03/07"
       ],
       "source_selection_diagnostics": {

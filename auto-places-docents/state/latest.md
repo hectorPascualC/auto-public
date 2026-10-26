@@ -1,10 +1,10 @@
-# Passada directa 2026-10-26T13:33:48+01:00
+# Passada directa 2026-10-26T17:30:39+01:00
 
 Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
 
 | Àmbit | Frescor | 507 hits (diag.) | F57 hits (diag.) | 627 hits (diag.) | F87 hits (diag.) | Àncora global |
 |---|---|---:|---:|---:|---:|---|
-| Alt Pirineu i Aran | **FRESC** | 0 | 0 | 8 | 0 | APA-2627-S061 |
+| Alt Pirineu i Aran | **FRESC** | 0 | 0 | 8 | 0 | APA-2627-S062 |
 | Baix Llobregat | **FRESC** | 2 | 0 | 7 | 0 | 19795310 |
 | Barcelonès | **FRESC** | 2 | 0 | 2 | 0 | 19790791 |
 | Catalunya Central | **FRESC** | 0 | 1 | 0 | 0 | — |
@@ -14,7 +14,7 @@ Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Fir
 | Penedès | **FRESC** | 0 | 0 | 1 | 1 | 19792298 |
 | Tarragona | **FRESC** | 0 | 3 | 0 | 0 | — |
 | Terres de l'Ebre | **FRESC** | 0 | 0 | 1 | 0 | — |
-| Vallès Occidental | **FRESC** | 8 | 2 | 9 | 1 | — |
+| Vallès Occidental | **FRESC** | 8 | 2 | 12 | 1 | — |
 | EDUBCN | **FRESC** | 4 | 1 | 3 | 1 | GENSEC_2627_189 |
 
 ## Notes de frescor
@@ -70,7 +70,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | Penedès | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Tarragona | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Terres de l'Ebre | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
-| Vallès Occidental | FRESC | sí | 0 | 0 | 1 | 0 | offer-documents |
+| Vallès Occidental | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | EDUBCN | FRESC | sí | 3 | 0 | 2 | 1 | edubcn-document-verified |
 
 ### Places actuals detectades
@@ -84,7 +84,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - **Penedès**: cap
 - **Tarragona**: cap
 - **Terres de l'Ebre**: cap
-- **Vallès Occidental**: `627-21/10` (627)
+- **Vallès Occidental**: cap
 - **EDUBCN**: `GENSEC_2627_064` (627,F87), `GENSEC_2627_162` (507), `GENSEC_2627_163` (627), `GENSEC_2627_180` (507), `GENSEC_2627_187` (507)
 
 ## Auditoria SSTT v2
@@ -105,4 +105,4 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | Penedès | sí | sí | 0 | 0 | 0 | 0 |
 | Tarragona | sí | sí | 0 | 0 | 0 | 0 |
 | Terres de l'Ebre | sí | sí | 0 | 0 | 0 | 0 |
-| Vallès Occidental | sí | sí | 1 | 1 | 0 | 1 |
+| Vallès Occidental | sí | sí | 0 | 0 | 0 | 0 |

@@ -1,4 +1,4 @@
-# Passada directa 2026-10-25T09:48:19+01:00
+# Passada directa 2026-10-26T11:36:57+01:00
 
 Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
 
@@ -25,8 +25,8 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 ## EDUBCN probe v3 override
 - Frescor: **FRESC**
 - Àncora global: `GENSEC_2627_189`
-- GENSEC visibles: 47
-- Documents GENSEC recuperats: 70
+- GENSEC visibles: 48
+- Documents GENSEC recuperats: 71
 - Places target validades en el mateix document: 8
 - Estratègia: agrupació per GENSEC + validació d'especialitat dins del mateix PDF/fitxa
 - `GENSEC_2627_064`: 627,F87 | Institut Mare de Déu de la Mercè | sencera de docent de PFI. | fi 31/08/2027 | resultat=True

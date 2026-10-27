@@ -1,4 +1,4 @@
-# Passada directa 2026-10-27T08:34:29+01:00
+# Passada directa 2026-10-27T11:34:03+01:00
 
 Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
 
@@ -9,7 +9,7 @@ Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Fir
 | Barcelonès | **FRESC** | 2 | 0 | 2 | 0 | 19790791 |
 | Catalunya Central | **FRESC** | 0 | 1 | 0 | 0 | — |
 | Girona | **FRESC** | 3 | 0 | 1 | 0 | — |
-| Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/113 |
+| Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/114 |
 | Maresme-Vallès Oriental | **FRESC** | 0 | 0 | 0 | 0 | — |
 | Penedès | **FRESC** | 0 | 0 | 1 | 1 | 19792298 |
 | Tarragona | **FRESC** | 0 | 3 | 0 | 0 | — |

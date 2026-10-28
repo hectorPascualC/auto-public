@@ -24,7 +24,7 @@ class TestRepairHarness(unittest.TestCase):
         self.state = {
             "run_id": "run-1", "generated_at": self.ts,
             "territories": {"T" + str(i): {"freshness": "FRESC"} for i in range(12)},
-            "active_snapshot": {"territories": {}},
+            "active_snapshot": {"territories": {"T" + str(i): {"presence_authoritative": True} for i in range(12)}},
         }
         self.health = {
             "generated_at": self.ts, "audit_at": self.audit_ts,
@@ -78,6 +78,21 @@ class TestRepairHarness(unittest.TestCase):
                 self.state["generated_at"] = self.ts
                 self.health["fresh"] = 12
                 self.audit["status"] = "PASS"
+
+    def test_unverified_active_snapshot_is_never_repaired(self):
+        self.state["active_snapshot"]["territories"].pop("T0")
+        self.write_fixture()
+        plan = repair_harness.diagnose(self.root, self.report_path)
+        self.assertEqual(plan["action"], "investigate")
+        self.assertEqual(repair_harness.apply_safe(self.root, plan), "NO_SAFE_ACTION")
+
+    def test_canonical_changes_after_plan_never_write(self):
+        plan = repair_harness.diagnose(self.root, self.report_path)
+        self.state["territories"]["T0"]["freshness_notes"] = ["changed"]
+        save(self.root / "latest.json", self.state)
+        with self.assertRaises(ValueError):
+            repair_harness.apply_safe(self.root, plan)
+        self.assertEqual(repair_harness.load(self.root / "consumer.json")["run_id"], "old-run")
 
     def test_missing_nominal_slot_never_triggers_unscheduled_scan(self):
         save(self.report_path, {"overall": "FAIL", "checks": [

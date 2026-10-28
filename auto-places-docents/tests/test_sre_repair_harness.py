@@ -115,7 +115,7 @@ class TestNoObsoleteScheduledWorkflows(unittest.TestCase):
         for name in ("v2-cloudflare-safe-tail.yml", "weekend-cron-probe-v2.yml"):
             with self.subTest(name=name):
                 yml = (ROOT.parent / ".github/workflows" / name).read_text(encoding="utf-8")
-                trigger = yml.split("\\non:\\n", 1)[1].split("\\npermissions:", 1)[0]
+                trigger = yml.split("\non:\n", 1)[1].split("\npermissions:", 1)[0]
                 self.assertEqual(trigger.strip(), "workflow_dispatch:")
 
 

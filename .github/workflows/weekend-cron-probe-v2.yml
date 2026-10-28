@@ -14,17 +14,8 @@ name: AUTO PUBLIC V2 - temporary weekend cron probe
 # guarded verify/readback and migrates the known weekend 6-20 UTC to 6-21 UTC.
 # Production weekday cron, secrets, dispatch logic and Monday cleanup stay intact.
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/weekend-cron-probe-v2.yml'
-  schedule:
-    # Saturday/Sunday: remove the late-Friday probe on first pass, then recheck.
-    # UTC GitHub weekday encoding: Sat=6, Sun=0 (unlike Cloudflare).
-    - cron: '5 0,2,4,8,12,16,20 * * 6,0'
-    # Monday rollback well BEFORE the first CET production 07:35 UTC event.
-    # Multiple guarded attempts accommodate GitHub scheduled-run delays.
-    - cron: '5 0,2,4,6 * * 1'
+  workflow_dispatch:
+
 permissions:
   contents: read
 concurrency:

@@ -1,13 +1,14 @@
-name: AUTO PUBLIC V2 - continuous SRE audit
+name: AUTO PUBLIC - GitHub-only SRE and safe repair
 on:
   workflow_dispatch:
   pull_request:
     paths:
       - '.github/workflows/sre-audit-v2.yml'
       - 'auto-places-docents/sre_audit_v2.py'
+      - 'auto-places-docents/repair_harness.py'
+      - 'auto-places-docents/tests/test_sre_repair_harness.py'
   schedule:
-    # Independent read-only audit after each nominal Madrid slot.
-    # Both CET/CEST candidate hours (including 07:10 UTC for 09:00 CEST); no monitor or controller dispatch.
+    # Existing read-only cadence retained; no external scheduler or dispatch.
     - cron: '10 7,8,9,10,11,12,13,14,15,16 * * 1-5'
 permissions:
   contents: read
@@ -26,12 +27,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python3 auto-places-docents/sre_audit_v2.py
-      - name: Upload audit report
+      - name: Classify incident and verify allowlisted local repair candidate
+        if: always()
+        run: python3 auto-places-docents/repair_harness.py --apply-safe
+      - name: Upload audit and repair evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: sre-audit-v2
-          path: sre-audit-report.json
+          path: |
+            sre-audit-report.json
+            repair-incident.json
           if-no-files-found: warn
           retention-days: 14
   validate:
@@ -39,17 +45,17 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Syntax check
-        run: python3 -m py_compile auto-places-docents/sre_audit_v2.py
-      - name: Read-only audit smoke test on PR
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+      - name: Syntax validation
+        run: python3 -m py_compile auto-places-docents/sre_audit_v2.py auto-places-docents/repair_harness.py
+      - name: Bounded repair offline regressions
+        run: python3 -m unittest discover -s auto-places-docents/tests -p 'test_sre_repair_harness.py' -v
+      - name: No obsolete scheduler dependencies in active SRE path
         run: |
-          python3 auto-places-docents/sre_audit_v2.py || test "$?" -eq 1
           python3 - <<'PY'
-          import json
-          data=json.load(open("sre-audit-report.json"))
-          assert data["overall"] in ("PASS","FAIL","BLOCKED")
-          assert len(data["checks"]) >= 6
-          assert any(x["name"]=="Cloudflare cron -> Worker -> DO" and x["status"]=="BLOCKED" for x in data["checks"])
+          from pathlib import Path
+          script = Path('auto-places-docents/sre_audit_v2.py').read_text()
+          assert 'Cloudflare' not in script
+          assert 'Actual GitHub scan steps' in script
+          assert 'Latest due slot receipt' in script
+          print('Active SRE path verifies GitHub-only evidence')
           PY

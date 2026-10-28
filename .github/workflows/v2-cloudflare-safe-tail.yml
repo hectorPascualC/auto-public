@@ -2,23 +2,13 @@ name: V2 Cloudflare safe tail - one time
 # Bounded Friday 2026-10-23 evening, weekend and Monday read-only capture.
 # All times UTC; Cron weekday semantics here are GITHUB (0=Sun, 1=Mon).
 # In contrast, Cloudflare weekdays are 1=Sun, 2=Mon, ... 7=Sat.
-# Date guard prevents later weeks from running. Friday push opens a two-hour live tail.
+# Retired: no automatic schedules or push triggers remain. Friday push opens a two-hour live tail.
 # GitHub may drop schedules at minute 0 under high load; schedule once at :13
 # to reduce contention. Saturday hourly captures are date-guarded and
 # stop before the next hour; never overlap with the first two-hour capture.
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/v2-cloudflare-safe-tail.yml']
-  schedule:
-    - cron: '13 6 * * 1'
-    - cron: '13 6 * * 6'
-    # Saturday 24 OCT only: bounded hourly tail 12:26..22:26 Madrid.
-    # Begins after the existing 10:16-12:21 long capture has ended.
-    - cron: '26 10-20 * * 6'
-    # Sunday 25 OCT: after DST fallback, hourly 07:26..22:26 Madrid.
-    - cron: '26 6-21 * * 0'
   workflow_dispatch:
+
 permissions:
   contents: read
 concurrency:

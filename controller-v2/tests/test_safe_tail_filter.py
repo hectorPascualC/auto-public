@@ -186,10 +186,9 @@ class TailEvidenceTests(unittest.TestCase):
         workflow = Path(__file__).resolve().parents[2] / ".github/workflows/v2-cloudflare-safe-tail.yml"
         content = workflow.read_text(encoding="utf-8")
         parsed = yaml.safe_load(content)
-        triggers = parsed[True]["schedule"]  # PyYAML 1.1 treats "on" as True
-        self.assertEqual([x["cron"] for x in triggers],
-                         ["13 6 * * 1", "13 6 * * 6", "26 10-20 * * 6", "26 6-21 * * 0"])
-        self.assertEqual(len(triggers), 4)
+        # Historical gate remains tested, but retired workflows no longer schedule.
+        triggers = parsed[True]  # PyYAML 1.1 treats "on" as True
+        self.assertEqual(set(triggers), {"workflow_dispatch"})
         self.assertIn("dt.time(8,0)", content)
         self.assertIn("dt.date(2026,10,26)", content)
         self.assertIn("diagnostic_bridge=", content)

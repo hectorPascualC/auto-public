@@ -7,6 +7,7 @@ on:
       - 'auto-places-docents/sre_audit_v2.py'
       - 'auto-places-docents/repair_harness.py'
       - 'auto-places-docents/tests/test_sre_repair_harness.py'
+      - 'auto-places-docents/tests/test_sre_audit_github_only.py'
   schedule:
     # Existing read-only cadence retained; no external scheduler or dispatch.
     - cron: '10 7,8,9,10,11,12,13,14,15,16 * * 1-5'
@@ -23,7 +24,7 @@ jobs:
     if: github.event_name != 'pull_request'
     steps:
       - uses: actions/checkout@v4
-      - name: Audit existing snapshots and deployment evidence without writes
+      - name: Audit current GitHub slot and actual scan steps without writes
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python3 auto-places-docents/sre_audit_v2.py
@@ -47,8 +48,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Syntax validation
         run: python3 -m py_compile auto-places-docents/sre_audit_v2.py auto-places-docents/repair_harness.py
-      - name: Bounded repair offline regressions
-        run: python3 -m unittest discover -s auto-places-docents/tests -p 'test_sre_repair_harness.py' -v
+      - name: Offline due-slot and repair regressions
+        run: |
+          python3 -m unittest discover -s auto-places-docents/tests -p 'test_sre_repair_harness.py' -v
+          python3 -m unittest discover -s auto-places-docents/tests -p 'test_sre_audit_github_only.py' -v
       - name: No obsolete scheduler dependencies in active SRE path
         run: |
           python3 - <<'PY'

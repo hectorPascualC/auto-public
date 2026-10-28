@@ -107,9 +107,8 @@ class WeekendHourlyTailTests(unittest.TestCase):
             "2026-10-25T15:42:00+00:00", "push")["enabled"], "false")
 
     def test_preserve_normal_schedule_redaction_and_nonoverlap(self):
-        crons = [item["cron"] for item in self.config["schedule"]]
-        self.assertEqual(set(crons),
-            {"13 6 * * 1", "13 6 * * 6", "26 10-20 * * 6", "26 6-21 * * 0"})
+        # Archived workflow remains testable, but must not auto-run after its date window.
+        self.assertEqual(set(self.config), {"workflow_dispatch"})
         self.assertEqual(self.workflow["permissions"], {"contents": "read"})
         self.assertFalse(self.workflow["concurrency"]["cancel-in-progress"])
         tail = next(step for step in

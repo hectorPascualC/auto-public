@@ -39,6 +39,12 @@ def canonical_candidate(root: Path) -> dict:
             or any(health.get(key) != 0 for key in ("partial", "cache_obsoleta", "audit_errors"))
             or len(state.get("territories") or {}) != 12):
         raise ValueError("Canonical source is partial, unverified or incomplete")
+    territories = state.get("territories") or {}
+    active = (state.get("active_snapshot") or {}).get("territories") or {}
+    if (set(active) != set(territories)
+            or not all((active[name] or {}).get("presence_authoritative") is True
+                       for name in territories)):
+        raise ValueError("Missing or unauthoritative active placement snapshot")
     return build_consumer_state(state, health)
 
 
@@ -77,6 +83,9 @@ def apply_safe(root: Path, plan: dict) -> str:
     if plan.get("action") != "rebuild_consumer":
         return "NO_SAFE_ACTION"
     expected = canonical_candidate(root)  # Recheck all preconditions at application time.
+    digest = hashlib.sha256(json.dumps(expected, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+    if digest != plan.get("expected_hash"):
+        raise ValueError("Canonical state changed since diagnosis")
     target = root / "consumer.json"
     try:
         if load(target) == expected:

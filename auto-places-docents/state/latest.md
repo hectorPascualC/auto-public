@@ -1,4 +1,4 @@
-# Passada directa 2026-10-27T17:30:14+01:00
+# Passada directa 2026-10-29T08:32:14+01:00
 
 Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
 
@@ -9,13 +9,13 @@ Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Fir
 | Barcelonès | **FRESC** | 2 | 0 | 2 | 0 | 19790791 |
 | Catalunya Central | **FRESC** | 0 | 1 | 0 | 0 | — |
 | Girona | **FRESC** | 4 | 0 | 1 | 0 | — |
-| Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/115 |
-| Maresme-Vallès Oriental | **FRESC** | 0 | 0 | 0 | 0 | — |
-| Penedès | **FRESC** | 0 | 0 | 1 | 1 | 19792298 |
+| Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/119 |
+| Maresme-Vallès Oriental | **FRESC** | 1 | 0 | 0 | 0 | — |
+| Penedès | **FRESC** | 1 | 0 | 1 | 1 | 19806796 |
 | Tarragona | **FRESC** | 0 | 3 | 0 | 0 | — |
 | Terres de l'Ebre | **FRESC** | 0 | 0 | 1 | 0 | — |
 | Vallès Occidental | **FRESC** | 8 | 2 | 12 | 1 | — |
-| EDUBCN | **FRESC** | 4 | 1 | 3 | 1 | GENSEC_2627_189 |
+| EDUBCN | **FRESC** | 4 | 1 | 3 | 1 | GENSEC_2627_190 |
 
 ## Notes de frescor
 - Cap incidència final de frescor.
@@ -24,9 +24,9 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 
 ## EDUBCN probe v3 override
 - Frescor: **FRESC**
-- Àncora global: `GENSEC_2627_189`
-- GENSEC visibles: 48
-- Documents GENSEC recuperats: 71
+- Àncora global: `GENSEC_2627_190`
+- GENSEC visibles: 49
+- Documents GENSEC recuperats: 75
 - Places target validades en el mateix document: 8
 - Estratègia: agrupació per GENSEC + validació d'especialitat dins del mateix PDF/fitxa
 - `GENSEC_2627_064`: 627,F87 | Institut Mare de Déu de la Mercè | sencera de docent de PFI. | fi 31/08/2027 | resultat=True
@@ -36,7 +36,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - `GENSEC_2627_175`: 627 | Institut Tecnològic de Barcelona | 0’5 | fi 31/08/2027 | resultat=True
 - `GENSEC_2627_180`: 507 | Institut TIC de Barcelona | SENCERA | fi Alta titular o 30/06/2027 | resultat=False
 - `GENSEC_2627_182`: F57 | Institut TIC de Barcelona | SENCERA | fi 28/10/2026 | resultat=True
-- `GENSEC_2627_187`: 507 | Institut Poblenou | Sencera | fi 20/11/26 | resultat=False
+- `GENSEC_2627_187`: 507 | Institut Poblenou | Sencera | fi 20/11/26 | resultat=True
 
 ## EDUBCN probe v4 final
 - Regla: especialitat target només si apareix al mateix document oficial de la plaça.
@@ -49,7 +49,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - `GENSEC_2627_175`: 627 | Institut Tecnològic de Barcelona | 0’5 | fi 31/08/2027 | resultat=True
 - `GENSEC_2627_180`: 507 | Institut TIC de Barcelona | SENCERA | fi Alta titular o 30/06/2027 | resultat=False
 - `GENSEC_2627_182`: F57 | Institut TIC de Barcelona | SENCERA | fi 28/10/2026 | resultat=True
-- `GENSEC_2627_187`: 507 | Institut Poblenou | Sencera | fi 20/11/26 | resultat=False
+- `GENSEC_2627_187`: 507 | Institut Poblenou | Sencera | fi 20/11/26 | resultat=True
 - `GENSEC_2627_093`: **NO VERIFICADA COM A TARGET** | hints DOM=— | No official Convocatòria/Resultat document was linked or retrieved for this code; not counted as a target place.
 
 ## Presència activa v1 — autoritativa
@@ -66,8 +66,8 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | Catalunya Central | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Girona | FRESC | sí | 1 | 0 | 0 | 0 | offer-documents |
 | Lleida | FRESC | sí | 1 | 0 | 0 | 0 | offer-documents |
-| Maresme-Vallès Oriental | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
-| Penedès | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
+| Maresme-Vallès Oriental | FRESC | sí | 1 | 0 | 0 | 0 | offer-documents |
+| Penedès | FRESC | sí | 1 | 0 | 0 | 0 | offer-documents |
 | Tarragona | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Terres de l'Ebre | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Vallès Occidental | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
@@ -80,8 +80,8 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - **Catalunya Central**: cap
 - **Girona**: `204S/2026-2027` (507)
 - **Lleida**: `2026/SEC/089` (507)
-- **Maresme-Vallès Oriental**: cap
-- **Penedès**: cap
+- **Maresme-Vallès Oriental**: `507-Mataró` (507)
+- **Penedès**: `19806796` (507)
 - **Tarragona**: cap
 - **Terres de l'Ebre**: cap
 - **Vallès Occidental**: cap
@@ -101,8 +101,8 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | Catalunya Central | sí | sí | 0 | 0 | 0 | 0 |
 | Girona | sí | sí | 1 | 1 | 0 | 1 |
 | Lleida | sí | sí | 1 | 1 | 0 | 1 |
-| Maresme-Vallès Oriental | sí | sí | 0 | 0 | 0 | 0 |
-| Penedès | sí | sí | 0 | 0 | 0 | 0 |
+| Maresme-Vallès Oriental | sí | sí | 1 | 1 | 0 | 1 |
+| Penedès | sí | sí | 1 | 1 | 0 | 1 |
 | Tarragona | sí | sí | 0 | 0 | 0 | 0 |
 | Terres de l'Ebre | sí | sí | 0 | 0 | 0 | 0 |
 | Vallès Occidental | sí | sí | 0 | 0 | 0 | 0 |

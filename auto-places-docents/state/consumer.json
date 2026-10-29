@@ -1,20 +1,20 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-27T17:30:14+01:00",
-  "run_id": "20261027T173014+0100",
+  "generated_at": "2026-10-29T08:32:14+01:00",
+  "run_id": "20261029T083214+0100",
   "source_strategy": "direct-http+cachebuster+validators+sha256; playwright-direct-edubcn",
   "activity_rule": "current-presence: keep while present in current official offer PDF/list even after deadline; remove on disappearance only from authoritative FRESH current source",
   "health": {
-    "generated_at": "2026-10-27T17:30:14+01:00",
-    "edubcn_probe_at": "2026-10-27T17:38:30+01:00",
+    "generated_at": "2026-10-29T08:32:14+01:00",
+    "edubcn_probe_at": "2026-10-29T08:39:32+01:00",
     "fresh": 12,
     "partial": 0,
     "cache_obsoleta": 0,
     "total": 12,
-    "active_snapshot_at": "2026-10-27T17:38:30+01:00",
+    "active_snapshot_at": "2026-10-29T08:39:32+01:00",
     "presence_authoritative": 12,
     "presence_non_authoritative": 0,
-    "audit_at": "2026-10-27T17:38:30+01:00",
+    "audit_at": "2026-10-29T08:39:32+01:00",
     "audit_status": "PASS",
     "audit_sstt_checked": 11,
     "audit_errors": 0
@@ -366,12 +366,30 @@
       "presence_authoritative": true,
       "source_mode": "offer-documents",
       "current_target_counts": {
-        "507": 0,
+        "507": 1,
         "F57": 0,
         "627": 0,
         "F87": 0
       },
-      "current_target_placements": [],
+      "current_target_placements": [
+        {
+          "placement_id": "507-Mataró",
+          "display_id": "507-Mataró",
+          "id_kind": "LOCAL_TAG",
+          "target_codes": [
+            "507"
+          ],
+          "source_urls": [
+            "https://educacio.gencat.cat/web/.content/home/departament/serveis-territorials/maresme-valles-oriental/personal-docent/nomenaments-telematics/dificil-cobertura/secundaria/MVO-SEC-dificil-cobertura-oferta-vacants.pdf"
+          ],
+          "source_kinds": [
+            "offer"
+          ],
+          "evidence_snippets": [
+            "☐Sí ☐No Observacions 507- Mataró 507- Informàtica Termini obert Institut Thos i Codina Mataró 937 414 203 Sencera La d'incorporació 31/08/2027"
+          ]
+        }
+      ],
       "removed_since_previous": [],
       "covered_by_results": [],
       "unresolved_result_ids": [],
@@ -392,12 +410,30 @@
       "presence_authoritative": true,
       "source_mode": "offer-documents",
       "current_target_counts": {
-        "507": 0,
+        "507": 1,
         "F57": 0,
         "627": 0,
         "F87": 0
       },
-      "current_target_placements": [],
+      "current_target_placements": [
+        {
+          "placement_id": "19806796",
+          "display_id": "19806796",
+          "id_kind": "NUMERIC",
+          "target_codes": [
+            "507"
+          ],
+          "source_urls": [
+            "https://educacio.gencat.cat/web/.content/home/departament/serveis-territorials/penedes/personal-docent/nomenaments-telematics/dificil-cobertura/secundaria/PEN-SEC-dificil-cobertura-oferta-vacants.pdf"
+          ],
+          "source_kinds": [
+            "offer"
+          ],
+          "evidence_snippets": [
+            "R/N: 16396/OR00053 1/1 OfertadevacantsosubstitucionsDadesdelaplaçaIdentificadordelaplaça 19806796 Especialitat 507 InformàticaPresentaciódesol·licituds Fins a la seva cobertura NomdelcentreInstitutEugeni d'OrsAdreçaMunicipiVilafranca del Penedès TelèfonJornada0,5Data02/11/2026Datadefinalitzacióprevista08/01/2027RequisitsMèritsEntrevistaSíNoProvadecapacitacióperreconèixer-nelaidoneïtatSíNoCalpresentarelcurrículumSíNoObservacionsEsrealitzaràentrevistasiescau."
+          ]
+        }
+      ],
       "removed_since_previous": [],
       "covered_by_results": [],
       "unresolved_result_ids": [
@@ -625,8 +661,8 @@
           "start": "Immediat",
           "end": "20/11/26",
           "jornada": "Sencera",
-          "result_present": false,
-          "result_document_present": false,
+          "result_present": true,
+          "result_document_present": true,
           "result_classification": "UNKNOWN",
           "coverage_confirmed": false,
           "source_urls": [
@@ -642,9 +678,9 @@
       "unresolved_result_ids": [],
       "source_selection_diagnostics": {},
       "discovery_diagnostics": {
-        "dom_gensec_observed": 48,
-        "documents_fetched": 71,
-        "documents_verified": 71,
+        "dom_gensec_observed": 49,
+        "documents_fetched": 75,
+        "documents_verified": 75,
         "complete_catalog_verified": false
       },
       "status_note": null

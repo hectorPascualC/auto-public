@@ -1,7 +1,7 @@
 {
   "audit_version": 2,
-  "generated_at": "2026-10-30T13:38:28+01:00",
-  "source_generated_at": "2026-10-30T13:30:50+01:00",
+  "generated_at": "2026-10-30T17:37:13+01:00",
+  "source_generated_at": "2026-10-30T17:30:13+01:00",
   "status": "PASS",
   "sstt_checked": 11,
   "scopes_checked": 12,
@@ -39,10 +39,10 @@
       "freshness": "FRESC",
       "presence_authoritative": true,
       "current_offer_sources": 7,
-      "raw_target_hits": 2,
-      "parsed_target_hits": 2,
+      "raw_target_hits": 1,
+      "parsed_target_hits": 1,
       "unidentified_target_hits": 0,
-      "active_positions": 2,
+      "active_positions": 1,
       "covered_by_results": [],
       "unresolved_result_ids": [
         "19623804",
@@ -61,11 +61,6 @@
           "code": "507",
           "id": "19711802",
           "kind": "NUMERIC"
-        },
-        {
-          "code": "627",
-          "id": "19793301",
-          "kind": "NUMERIC"
         }
       ]
     },
@@ -73,10 +68,10 @@
       "freshness": "FRESC",
       "presence_authoritative": true,
       "current_offer_sources": 8,
-      "raw_target_hits": 4,
-      "parsed_target_hits": 4,
+      "raw_target_hits": 5,
+      "parsed_target_hits": 5,
       "unidentified_target_hits": 0,
-      "active_positions": 4,
+      "active_positions": 5,
       "covered_by_results": [],
       "unresolved_result_ids": [],
       "id_kinds": [
@@ -85,12 +80,17 @@
       "parsed_ids": [
         {
           "code": "507",
-          "id": "19736796",
+          "id": "19659466",
           "kind": "NUMERIC"
         },
         {
           "code": "507",
-          "id": "19659466",
+          "id": "19815264",
+          "kind": "NUMERIC"
+        },
+        {
+          "code": "507",
+          "id": "19736796",
           "kind": "NUMERIC"
         },
         {

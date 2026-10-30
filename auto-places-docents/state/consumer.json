@@ -1,20 +1,20 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-30T13:30:50+01:00",
-  "run_id": "20261030T133050+0100",
+  "generated_at": "2026-10-30T17:30:13+01:00",
+  "run_id": "20261030T173013+0100",
   "source_strategy": "direct-http+cachebuster+validators+sha256; playwright-direct-edubcn",
   "activity_rule": "current-presence: keep while present in current official offer PDF/list even after deadline; remove on disappearance only from authoritative FRESH current source",
   "health": {
-    "generated_at": "2026-10-30T13:30:50+01:00",
-    "edubcn_probe_at": "2026-10-30T13:38:28+01:00",
+    "generated_at": "2026-10-30T17:30:13+01:00",
+    "edubcn_probe_at": "2026-10-30T17:37:12+01:00",
     "fresh": 12,
     "partial": 0,
     "cache_obsoleta": 0,
     "total": 12,
-    "active_snapshot_at": "2026-10-30T13:38:28+01:00",
+    "active_snapshot_at": "2026-10-30T17:37:13+01:00",
     "presence_authoritative": 12,
     "presence_non_authoritative": 0,
-    "audit_at": "2026-10-30T13:38:28+01:00",
+    "audit_at": "2026-10-30T17:37:13+01:00",
     "audit_status": "PASS",
     "audit_sstt_checked": 11,
     "audit_errors": 0
@@ -80,7 +80,7 @@
       "current_target_counts": {
         "507": 1,
         "F57": 0,
-        "627": 1,
+        "627": 0,
         "F87": 0
       },
       "current_target_placements": [
@@ -98,24 +98,7 @@
             "offer"
           ],
           "evidence_snippets": [
-            "Oferta de vacants o substitucions de difícil cobertura Dades de la plaça Identificador de la plaça Especialitat Presentació de s ol·licituds 507 - Informàtica 19711802 Fins a les 8:00:00 del dia 26/10/2026 Institut Gabriela Mistral Nom del centre Municipi"
-          ]
-        },
-        {
-          "placement_id": "19793301",
-          "display_id": "19793301",
-          "id_kind": "NUMERIC",
-          "target_codes": [
-            "627"
-          ],
-          "source_urls": [
-            "https://educacio.gencat.cat/web/.content/home/departament/serveis-territorials/baix-llobregat/personal-docent/nomenaments-telematics/dificil-cobertura/secundaria/PENDENTS_BLL-SEC-dificil-cobertura-oferta-vacants.pdf"
-          ],
-          "source_kinds": [
-            "offer"
-          ],
-          "evidence_snippets": [
-            "Oferta de vacants o substitucions de difícil cobertura Dades de la plaça Identificador de la plaça Especialitat Presentació de s ol·licituds 627 - Sistemes i aplicacions informàtiques 19793301 Fins a les 8:00:00 del dia 26/10/2026 Institut Les Salines Nom del centre Municipi"
+            "Oferta de vacants o substitucions de difícil cobertura Dades de la plaça Identificador de la plaça Especialitat Presentació de s ol·licituds 507 - Informàtica 19711802 Fins a les 8:00:00 del dia 2/11/2026 Institut Gabriela Mistral Nom del centre Municipi"
           ]
         }
       ],
@@ -147,7 +130,7 @@
       "presence_authoritative": true,
       "source_mode": "offer-documents",
       "current_target_counts": {
-        "507": 2,
+        "507": 3,
         "F57": 0,
         "627": 2,
         "F87": 0
@@ -161,13 +144,13 @@
             "627"
           ],
           "source_urls": [
-            "https://educacio.gencat.cat/web/.content/home/departament/serveis-territorials/barcelones/personal-docent/nomenaments-telematics/dificil-cobertura/primaria/DC-SEC-2310.pdf"
+            "https://educacio.gencat.cat/web/.content/home/departament/serveis-territorials/barcelones/personal-docent/nomenaments-telematics/dificil-cobertura/secundaria/DC-SEC-3010.pdf"
           ],
           "source_kinds": [
             "offer"
           ],
           "evidence_snippets": [
-            "Oferta de vacants o substitucions de difícil cobertura Dades de la plaça Identificador de la plaça Especialitat Presentació de sol·licituds 627 - Sistemes i aplicacions informàtiques19650726 Fins a les 23:59:00 del dia 25/10/2026 Institut Provençana Nom del centre Adreça Municipi"
+            "Oferta de vacants o substitucions de difícil cobertura Dades de la plaça Identificador de la plaça Especialitat Presentació de sol·licituds 627 - Sistemes i aplicacions informàtiques19650726 Fins a les 23:59:00 del dia 1/11/2026 Institut Provençana Nom del centre Adreça Municipi"
           ]
         },
         {
@@ -178,13 +161,13 @@
             "507"
           ],
           "source_urls": [
-            "https://educacio.gencat.cat/web/.content/home/departament/serveis-territorials/barcelones/personal-docent/nomenaments-telematics/dificil-cobertura/primaria/DC-SEC-2310.pdf"
+            "https://educacio.gencat.cat/web/.content/home/departament/serveis-territorials/barcelones/personal-docent/nomenaments-telematics/dificil-cobertura/secundaria/DC-SEC-3010.pdf"
           ],
           "source_kinds": [
             "offer"
           ],
           "evidence_snippets": [
-            "Oferta de vacants o substitucions de difícil cobertura Dades de la plaça Identificador de la plaça Especialitat Presentació de sol·licituds 507 - Informàtica19659466 Fins a les 23:59:00 del dia 25/10/2026 Institut Provençana Nom del centre Adreça Municipi"
+            "Oferta de vacants o substitucions de difícil cobertura Dades de la plaça Identificador de la plaça Especialitat Presentació de sol·licituds 507 - Informàtica19659466 Fins a les 23:59:00 del dia 1/11/2026 Institut Provençana Nom del centre Adreça Municipi"
           ]
         },
         {
@@ -195,13 +178,13 @@
             "627"
           ],
           "source_urls": [
-            "https://educacio.gencat.cat/web/.content/home/departament/serveis-territorials/barcelones/personal-docent/nomenaments-telematics/dificil-cobertura/primaria/DC-SEC-2310.pdf"
+            "https://educacio.gencat.cat/web/.content/home/departament/serveis-territorials/barcelones/personal-docent/nomenaments-telematics/dificil-cobertura/secundaria/DC-SEC-3010.pdf"
           ],
           "source_kinds": [
             "offer"
           ],
           "evidence_snippets": [
-            "Oferta de vacants o substitucions de difícil cobertura Dades de la plaça Identificador de la plaça Especialitat Presentació de sol·licituds 627 - Sistemes i aplicacions informàtiques19664257 Fins a les 23:59:00 del dia 25/10/2026 Institut Provençana Nom del centre Adreça Municipi"
+            "Oferta de vacants o substitucions de difícil cobertura Dades de la plaça Identificador de la plaça Especialitat Presentació de sol·licituds 627 - Sistemes i aplicacions informàtiques19664257 Fins a les 23:59:00 del dia 1/11/2026 Institut Provençana Nom del centre Adreça Municipi"
           ]
         },
         {
@@ -212,13 +195,30 @@
             "507"
           ],
           "source_urls": [
-            "https://educacio.gencat.cat/web/.content/home/departament/serveis-territorials/barcelones/personal-docent/nomenaments-telematics/dificil-cobertura/primaria/DC-SEC-2310.pdf"
+            "https://educacio.gencat.cat/web/.content/home/departament/serveis-territorials/barcelones/personal-docent/nomenaments-telematics/dificil-cobertura/secundaria/DC-SEC-3010.pdf"
           ],
           "source_kinds": [
             "offer"
           ],
           "evidence_snippets": [
-            "Oferta de vacants o substitucions de difícil cobertura Dades de la plaça Identificador de la plaça Especialitat Presentació de sol·licituds 507 - Informàtica19736796 Fins a les 23:59:00 del dia 25/10/2026 Institut Obert de Catalunya Nom del centre Adreça Municipi"
+            "Oferta de vacants o substitucions de difícil cobertura Dades de la plaça Identificador de la plaça Especialitat Presentació de sol·licituds 507 - Informàtica19736796 Fins a les 23:59:00 del dia 1/11/2026 Institut Obert de Catalunya Nom del centre Adreça Municipi"
+          ]
+        },
+        {
+          "placement_id": "19815264",
+          "display_id": "19815264",
+          "id_kind": "NUMERIC",
+          "target_codes": [
+            "507"
+          ],
+          "source_urls": [
+            "https://educacio.gencat.cat/web/.content/home/departament/serveis-territorials/barcelones/personal-docent/nomenaments-telematics/dificil-cobertura/secundaria/DC-SEC-3010.pdf"
+          ],
+          "source_kinds": [
+            "offer"
+          ],
+          "evidence_snippets": [
+            "Oferta de vacants o substitucions de difícil cobertura Dades de la plaça Identificador de la plaça Especialitat Presentació de sol·licituds 507 - Informàtica19815264 Fins a les 23:59:00 del dia 1/11/2026 Institut Provençana Nom del centre Adreça Municipi"
           ]
         }
       ],
@@ -660,9 +660,9 @@
       "unresolved_result_ids": [],
       "source_selection_diagnostics": {},
       "discovery_diagnostics": {
-        "dom_gensec_observed": 49,
-        "documents_fetched": 79,
-        "documents_verified": 79,
+        "dom_gensec_observed": 52,
+        "documents_fetched": 83,
+        "documents_verified": 83,
         "complete_catalog_verified": false
       },
       "status_note": null

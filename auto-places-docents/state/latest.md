@@ -1,12 +1,12 @@
-# Passada directa 2026-10-30T13:30:50+01:00
+# Passada directa 2026-10-30T17:30:13+01:00
 
 Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
 
 | Àmbit | Frescor | 507 hits (diag.) | F57 hits (diag.) | 627 hits (diag.) | F87 hits (diag.) | Àncora global |
 |---|---|---:|---:|---:|---:|---|
 | Alt Pirineu i Aran | **FRESC** | 0 | 0 | 8 | 0 | APA-2627-S062 |
-| Baix Llobregat | **FRESC** | 2 | 0 | 7 | 0 | 19795310 |
-| Barcelonès | **FRESC** | 2 | 0 | 2 | 0 | 19790791 |
+| Baix Llobregat | **FRESC** | 2 | 0 | 6 | 0 | 19805753 |
+| Barcelonès | **FRESC** | 3 | 0 | 2 | 0 | 19815271 |
 | Catalunya Central | **FRESC** | 0 | 1 | 0 | 0 | — |
 | Girona | **FRESC** | 3 | 0 | 1 | 0 | — |
 | Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/119 |
@@ -15,7 +15,7 @@ Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Fir
 | Tarragona | **FRESC** | 0 | 3 | 0 | 0 | — |
 | Terres de l'Ebre | **FRESC** | 0 | 0 | 1 | 0 | — |
 | Vallès Occidental | **FRESC** | 8 | 2 | 12 | 1 | — |
-| EDUBCN | **FRESC** | 4 | 1 | 3 | 1 | GENSEC_2627_190 |
+| EDUBCN | **FRESC** | 4 | 1 | 3 | 1 | GENSEC_2627_194 |
 
 ## Notes de frescor
 - Cap incidència final de frescor.
@@ -24,9 +24,9 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 
 ## EDUBCN probe v3 override
 - Frescor: **FRESC**
-- Àncora global: `GENSEC_2627_190`
-- GENSEC visibles: 49
-- Documents GENSEC recuperats: 79
+- Àncora global: `GENSEC_2627_194`
+- GENSEC visibles: 52
+- Documents GENSEC recuperats: 83
 - Places target validades en el mateix document: 8
 - Estratègia: agrupació per GENSEC + validació d'especialitat dins del mateix PDF/fitxa
 - `GENSEC_2627_064`: 627,F87 | Institut Mare de Déu de la Mercè | sencera de docent de PFI. | fi 31/08/2027 | resultat=True
@@ -61,8 +61,8 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | Àmbit | Frescor | Autoritativa | 507 | F57 | 627 | F87 | Mode |
 |---|---|---|---:|---:|---:|---:|---|
 | Alt Pirineu i Aran | FRESC | sí | 0 | 0 | 1 | 0 | offer-documents |
-| Baix Llobregat | FRESC | sí | 1 | 0 | 1 | 0 | offer-documents |
-| Barcelonès | FRESC | sí | 2 | 0 | 2 | 0 | offer-documents |
+| Baix Llobregat | FRESC | sí | 1 | 0 | 0 | 0 | offer-documents |
+| Barcelonès | FRESC | sí | 3 | 0 | 2 | 0 | offer-documents |
 | Catalunya Central | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Girona | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Lleida | FRESC | sí | 1 | 0 | 0 | 0 | offer-documents |
@@ -75,8 +75,8 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 
 ### Places actuals detectades
 - **Alt Pirineu i Aran**: `APA-2627-S056` (627)
-- **Baix Llobregat**: `19711802` (507), `19793301` (627)
-- **Barcelonès**: `19650726` (627), `19659466` (507), `19664257` (627), `19736796` (507)
+- **Baix Llobregat**: `19711802` (507)
+- **Barcelonès**: `19650726` (627), `19659466` (507), `19664257` (627), `19736796` (507), `19815264` (507)
 - **Catalunya Central**: cap
 - **Girona**: cap
 - **Lleida**: `2026/SEC/089` (507)
@@ -96,8 +96,8 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | Àmbit | FRESC | Autoritativa | Hits actuals | Hits identificats | Sense ID | Places actives |
 |---|---|---|---:|---:|---:|---:|
 | Alt Pirineu i Aran | sí | sí | 1 | 1 | 0 | 1 |
-| Baix Llobregat | sí | sí | 2 | 2 | 0 | 2 |
-| Barcelonès | sí | sí | 4 | 4 | 0 | 4 |
+| Baix Llobregat | sí | sí | 1 | 1 | 0 | 1 |
+| Barcelonès | sí | sí | 5 | 5 | 0 | 5 |
 | Catalunya Central | sí | sí | 0 | 0 | 0 | 0 |
 | Girona | sí | sí | 0 | 0 | 0 | 0 |
 | Lleida | sí | sí | 1 | 1 | 0 | 1 |

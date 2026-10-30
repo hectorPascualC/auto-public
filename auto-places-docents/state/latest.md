@@ -1,4 +1,4 @@
-# Passada directa 2026-10-29T08:32:14+01:00
+# Passada directa 2026-10-30T11:31:15+01:00
 
 Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
 
@@ -8,7 +8,7 @@ Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Fir
 | Baix Llobregat | **FRESC** | 2 | 0 | 7 | 0 | 19795310 |
 | Barcelonès | **FRESC** | 2 | 0 | 2 | 0 | 19790791 |
 | Catalunya Central | **FRESC** | 0 | 1 | 0 | 0 | — |
-| Girona | **FRESC** | 4 | 0 | 1 | 0 | — |
+| Girona | **FRESC** | 3 | 0 | 1 | 0 | — |
 | Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/119 |
 | Maresme-Vallès Oriental | **FRESC** | 1 | 0 | 0 | 0 | — |
 | Penedès | **FRESC** | 1 | 0 | 1 | 1 | 19806796 |
@@ -26,11 +26,11 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - Frescor: **FRESC**
 - Àncora global: `GENSEC_2627_190`
 - GENSEC visibles: 49
-- Documents GENSEC recuperats: 75
+- Documents GENSEC recuperats: 79
 - Places target validades en el mateix document: 8
 - Estratègia: agrupació per GENSEC + validació d'especialitat dins del mateix PDF/fitxa
 - `GENSEC_2627_064`: 627,F87 | Institut Mare de Déu de la Mercè | sencera de docent de PFI. | fi 31/08/2027 | resultat=True
-- `GENSEC_2627_162`: 507 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=False
+- `GENSEC_2627_162`: 507 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=True
 - `GENSEC_2627_163`: 627 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=False
 - `GENSEC_2627_171`: 507 | Institut Tecnològic de Barcelona | Sencera | fi 31/08/2027 | resultat=True
 - `GENSEC_2627_175`: 627 | Institut Tecnològic de Barcelona | 0’5 | fi 31/08/2027 | resultat=True
@@ -43,7 +43,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - Identitat: es conserva el codi complet, inclosos sufixos (`_SCO`, etc.); el número base només serveix per frescor.
 - Places documentals target verificades: 8
 - `GENSEC_2627_064`: 627,F87 | Institut Mare de Déu de la Mercè | sencera de docent de PFI. | fi 31/08/2027 | resultat=True
-- `GENSEC_2627_162`: 507 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=False
+- `GENSEC_2627_162`: 507 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=True
 - `GENSEC_2627_163`: 627 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=False
 - `GENSEC_2627_171`: 507 | Institut Tecnològic de Barcelona | Sencera | fi 31/08/2027 | resultat=True
 - `GENSEC_2627_175`: 627 | Institut Tecnològic de Barcelona | 0’5 | fi 31/08/2027 | resultat=True
@@ -64,7 +64,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | Baix Llobregat | FRESC | sí | 1 | 0 | 1 | 0 | offer-documents |
 | Barcelonès | FRESC | sí | 2 | 0 | 2 | 0 | offer-documents |
 | Catalunya Central | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
-| Girona | FRESC | sí | 1 | 0 | 0 | 0 | offer-documents |
+| Girona | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
 | Lleida | FRESC | sí | 1 | 0 | 0 | 0 | offer-documents |
 | Maresme-Vallès Oriental | FRESC | sí | 1 | 0 | 0 | 0 | offer-documents |
 | Penedès | FRESC | sí | 1 | 0 | 0 | 0 | offer-documents |
@@ -78,7 +78,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - **Baix Llobregat**: `19711802` (507), `19793301` (627)
 - **Barcelonès**: `19650726` (627), `19659466` (507), `19664257` (627), `19736796` (507)
 - **Catalunya Central**: cap
-- **Girona**: `204S/2026-2027` (507)
+- **Girona**: cap
 - **Lleida**: `2026/SEC/089` (507)
 - **Maresme-Vallès Oriental**: `507-Mataró` (507)
 - **Penedès**: `19806796` (507)
@@ -99,7 +99,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | Baix Llobregat | sí | sí | 2 | 2 | 0 | 2 |
 | Barcelonès | sí | sí | 4 | 4 | 0 | 4 |
 | Catalunya Central | sí | sí | 0 | 0 | 0 | 0 |
-| Girona | sí | sí | 1 | 1 | 0 | 1 |
+| Girona | sí | sí | 0 | 0 | 0 | 0 |
 | Lleida | sí | sí | 1 | 1 | 0 | 1 |
 | Maresme-Vallès Oriental | sí | sí | 1 | 1 | 0 | 1 |
 | Penedès | sí | sí | 1 | 1 | 0 | 1 |

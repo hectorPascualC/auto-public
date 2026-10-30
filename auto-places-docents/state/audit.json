@@ -1,7 +1,7 @@
 {
   "audit_version": 2,
-  "generated_at": "2026-10-29T08:39:32+01:00",
-  "source_generated_at": "2026-10-29T08:32:14+01:00",
+  "generated_at": "2026-10-30T11:38:05+01:00",
+  "source_generated_at": "2026-10-30T11:31:15+01:00",
   "status": "PASS",
   "sstt_checked": 11,
   "scopes_checked": 12,
@@ -10,7 +10,7 @@
     "Alt Pirineu i Aran": {
       "freshness": "FRESC",
       "presence_authoritative": true,
-      "current_offer_sources": 8,
+      "current_offer_sources": 9,
       "raw_target_hits": 1,
       "parsed_target_hits": 1,
       "unidentified_target_hits": 0,
@@ -22,7 +22,7 @@
         "APA-2627-S057",
         "APA-2627-S058",
         "APA-2627-S059",
-        "APA-2627-S061"
+        "APA-2627-S062"
       ],
       "id_kinds": [
         "APA"
@@ -124,10 +124,10 @@
       "freshness": "FRESC",
       "presence_authoritative": true,
       "current_offer_sources": 7,
-      "raw_target_hits": 1,
-      "parsed_target_hits": 1,
+      "raw_target_hits": 0,
+      "parsed_target_hits": 0,
       "unidentified_target_hits": 0,
-      "active_positions": 1,
+      "active_positions": 0,
       "covered_by_results": [],
       "unresolved_result_ids": [
         "157S/2026-2027",
@@ -135,16 +135,8 @@
         "182S/2026-2027",
         "191S/2026-2027"
       ],
-      "id_kinds": [
-        "GIRONA"
-      ],
-      "parsed_ids": [
-        {
-          "code": "507",
-          "id": "204S/2026-2027",
-          "kind": "GIRONA"
-        }
-      ]
+      "id_kinds": [],
+      "parsed_ids": []
     },
     "Lleida": {
       "freshness": "FRESC",
@@ -250,7 +242,7 @@
       "active_positions": 0,
       "covered_by_results": [],
       "unresolved_result_ids": [
-        "507-09/09",
+        "507-09/09 (3) I. La Ferreria Montcada i Reixac",
         "507-09/09 (4) I. Nicolau Copèrnic Terrassa",
         "507-30/09 (1) I. La Ferreria Montcada i Reixac",
         "627-09/09 (1) I. Sabadell Sabadell",

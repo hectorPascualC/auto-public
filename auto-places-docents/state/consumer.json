@@ -1,20 +1,20 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-29T08:32:14+01:00",
-  "run_id": "20261029T083214+0100",
+  "generated_at": "2026-10-30T11:31:15+01:00",
+  "run_id": "20261030T113115+0100",
   "source_strategy": "direct-http+cachebuster+validators+sha256; playwright-direct-edubcn",
   "activity_rule": "current-presence: keep while present in current official offer PDF/list even after deadline; remove on disappearance only from authoritative FRESH current source",
   "health": {
-    "generated_at": "2026-10-29T08:32:14+01:00",
-    "edubcn_probe_at": "2026-10-29T08:39:32+01:00",
+    "generated_at": "2026-10-30T11:31:15+01:00",
+    "edubcn_probe_at": "2026-10-30T11:38:04+01:00",
     "fresh": 12,
     "partial": 0,
     "cache_obsoleta": 0,
     "total": 12,
-    "active_snapshot_at": "2026-10-29T08:39:32+01:00",
+    "active_snapshot_at": "2026-10-30T11:38:05+01:00",
     "presence_authoritative": 12,
     "presence_non_authoritative": 0,
-    "audit_at": "2026-10-29T08:39:32+01:00",
+    "audit_at": "2026-10-30T11:38:05+01:00",
     "audit_status": "PASS",
     "audit_sstt_checked": 11,
     "audit_errors": 0
@@ -59,11 +59,11 @@
         "APA-2627-S057",
         "APA-2627-S058",
         "APA-2627-S059",
-        "APA-2627-S061"
+        "APA-2627-S062"
       ],
       "source_selection_diagnostics": {
-        "candidate_documents": 10,
-        "selected_documents": 10,
+        "candidate_documents": 11,
+        "selected_documents": 11,
         "omitted_current_offer_candidates": [],
         "complete_candidate_selection": true,
         "exhaustive_portal_verified": false
@@ -270,30 +270,12 @@
       "presence_authoritative": true,
       "source_mode": "offer-documents",
       "current_target_counts": {
-        "507": 1,
+        "507": 0,
         "F57": 0,
         "627": 0,
         "F87": 0
       },
-      "current_target_placements": [
-        {
-          "placement_id": "204S/2026-2027",
-          "display_id": "204S/2026-2027",
-          "id_kind": "GIRONA",
-          "target_codes": [
-            "507"
-          ],
-          "source_urls": [
-            "https://educacio.gencat.cat/web/.content/home/departament/serveis-territorials/girona/personal-docent/nomenaments-telematics/dificil-cobertura/secundaria/GIR-SEC-dificil-cobertura-oferta-vacants.pdf"
-          ],
-          "source_kinds": [
-            "offer"
-          ],
-          "evidence_snippets": [
-            "A1199-v01-15 Identificador de la Plaça: 204S/2026-2027 Especialitat 507 - Informàtica Nom del centre Adreça Municipi Telèfon Institut de Palamós c. Nàpols, 22 Palamós 972602344"
-          ]
-        }
-      ],
+      "current_target_placements": [],
       "removed_since_previous": [],
       "covered_by_results": [],
       "unresolved_result_ids": [
@@ -517,7 +499,7 @@
       "removed_since_previous": [],
       "covered_by_results": [],
       "unresolved_result_ids": [
-        "507-09/09",
+        "507-09/09 (3) I. La Ferreria Montcada i Reixac",
         "507-09/09 (4) I. Nicolau Copèrnic Terrassa",
         "507-30/09 (1) I. La Ferreria Montcada i Reixac",
         "627-09/09 (1) I. Sabadell Sabadell",
@@ -589,8 +571,8 @@
           "start": "immediat",
           "end": "Alta titular",
           "jornada": "sencera dins la Família professional d’Informàtica i",
-          "result_present": false,
-          "result_document_present": false,
+          "result_present": true,
+          "result_document_present": true,
           "result_classification": "UNKNOWN",
           "coverage_confirmed": false,
           "source_urls": [
@@ -679,8 +661,8 @@
       "source_selection_diagnostics": {},
       "discovery_diagnostics": {
         "dom_gensec_observed": 49,
-        "documents_fetched": 75,
-        "documents_verified": 75,
+        "documents_fetched": 79,
+        "documents_verified": 79,
         "complete_catalog_verified": false
       },
       "status_note": null

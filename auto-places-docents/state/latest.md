@@ -1,15 +1,15 @@
-# Passada directa 2026-10-30T17:30:13+01:00
+# Passada directa 2026-11-02T17:29:42+01:00
 
 Font: HTTP directe a Generalitat + Playwright directe a EDUBCN. Sense Tavily/Firecrawl.
 
 | Àmbit | Frescor | 507 hits (diag.) | F57 hits (diag.) | 627 hits (diag.) | F87 hits (diag.) | Àncora global |
 |---|---|---:|---:|---:|---:|---|
-| Alt Pirineu i Aran | **FRESC** | 0 | 0 | 8 | 0 | APA-2627-S062 |
+| Alt Pirineu i Aran | **FRESC** | 2 | 0 | 8 | 0 | APA-2627-S064 |
 | Baix Llobregat | **FRESC** | 2 | 0 | 6 | 0 | 19805753 |
 | Barcelonès | **FRESC** | 3 | 0 | 2 | 0 | 19815271 |
 | Catalunya Central | **FRESC** | 0 | 1 | 0 | 0 | — |
 | Girona | **FRESC** | 3 | 0 | 1 | 0 | — |
-| Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/119 |
+| Lleida | **FRESC** | 4 | 0 | 0 | 0 | 2026/SEC/121 |
 | Maresme-Vallès Oriental | **FRESC** | 1 | 0 | 0 | 0 | — |
 | Penedès | **FRESC** | 1 | 0 | 1 | 1 | 19806796 |
 | Tarragona | **FRESC** | 0 | 3 | 0 | 0 | — |
@@ -26,15 +26,15 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - Frescor: **FRESC**
 - Àncora global: `GENSEC_2627_194`
 - GENSEC visibles: 52
-- Documents GENSEC recuperats: 83
+- Documents GENSEC recuperats: 91
 - Places target validades en el mateix document: 8
 - Estratègia: agrupació per GENSEC + validació d'especialitat dins del mateix PDF/fitxa
 - `GENSEC_2627_064`: 627,F87 | Institut Mare de Déu de la Mercè | sencera de docent de PFI. | fi 31/08/2027 | resultat=True
 - `GENSEC_2627_162`: 507 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=True
-- `GENSEC_2627_163`: 627 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=False
+- `GENSEC_2627_163`: 627 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=True
 - `GENSEC_2627_171`: 507 | Institut Tecnològic de Barcelona | Sencera | fi 31/08/2027 | resultat=True
 - `GENSEC_2627_175`: 627 | Institut Tecnològic de Barcelona | 0’5 | fi 31/08/2027 | resultat=True
-- `GENSEC_2627_180`: 507 | Institut TIC de Barcelona | SENCERA | fi Alta titular o 30/06/2027 | resultat=False
+- `GENSEC_2627_180`: 507 | Institut TIC de Barcelona | SENCERA | fi Alta titular o 30/06/2027 | resultat=True
 - `GENSEC_2627_182`: F57 | Institut TIC de Barcelona | SENCERA | fi 28/10/2026 | resultat=True
 - `GENSEC_2627_187`: 507 | Institut Poblenou | Sencera | fi 20/11/26 | resultat=True
 
@@ -44,10 +44,10 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 - Places documentals target verificades: 8
 - `GENSEC_2627_064`: 627,F87 | Institut Mare de Déu de la Mercè | sencera de docent de PFI. | fi 31/08/2027 | resultat=True
 - `GENSEC_2627_162`: 507 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=True
-- `GENSEC_2627_163`: 627 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=False
+- `GENSEC_2627_163`: 627 | Institut Mare de Déu de la Mercè | sencera dins la Família professional d’Informàtica i | fi Alta titular | resultat=True
 - `GENSEC_2627_171`: 507 | Institut Tecnològic de Barcelona | Sencera | fi 31/08/2027 | resultat=True
 - `GENSEC_2627_175`: 627 | Institut Tecnològic de Barcelona | 0’5 | fi 31/08/2027 | resultat=True
-- `GENSEC_2627_180`: 507 | Institut TIC de Barcelona | SENCERA | fi Alta titular o 30/06/2027 | resultat=False
+- `GENSEC_2627_180`: 507 | Institut TIC de Barcelona | SENCERA | fi Alta titular o 30/06/2027 | resultat=True
 - `GENSEC_2627_182`: F57 | Institut TIC de Barcelona | SENCERA | fi 28/10/2026 | resultat=True
 - `GENSEC_2627_187`: 507 | Institut Poblenou | Sencera | fi 20/11/26 | resultat=True
 - `GENSEC_2627_093`: **NO VERIFICADA COM A TARGET** | hints DOM=— | No official Convocatòria/Resultat document was linked or retrieved for this code; not counted as a target place.
@@ -60,7 +60,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 
 | Àmbit | Frescor | Autoritativa | 507 | F57 | 627 | F87 | Mode |
 |---|---|---|---:|---:|---:|---:|---|
-| Alt Pirineu i Aran | FRESC | sí | 0 | 0 | 1 | 0 | offer-documents |
+| Alt Pirineu i Aran | FRESC | sí | 1 | 0 | 1 | 0 | offer-documents |
 | Baix Llobregat | FRESC | sí | 1 | 0 | 0 | 0 | offer-documents |
 | Barcelonès | FRESC | sí | 3 | 0 | 2 | 0 | offer-documents |
 | Catalunya Central | FRESC | sí | 0 | 0 | 0 | 0 | offer-documents |
@@ -74,7 +74,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 | EDUBCN | FRESC | sí | 3 | 0 | 2 | 1 | edubcn-document-verified |
 
 ### Places actuals detectades
-- **Alt Pirineu i Aran**: `APA-2627-S056` (627)
+- **Alt Pirineu i Aran**: `APA-2627-S056` (627), `APA-2627-S064` (507)
 - **Baix Llobregat**: `19711802` (507)
 - **Barcelonès**: `19650726` (627), `19659466` (507), `19664257` (627), `19736796` (507), `19815264` (507)
 - **Catalunya Central**: cap
@@ -95,7 +95,7 @@ Aquest fitxer és una síntesi tècnica. Per redactar la llista general i la sho
 
 | Àmbit | FRESC | Autoritativa | Hits actuals | Hits identificats | Sense ID | Places actives |
 |---|---|---|---:|---:|---:|---:|
-| Alt Pirineu i Aran | sí | sí | 1 | 1 | 0 | 1 |
+| Alt Pirineu i Aran | sí | sí | 2 | 2 | 0 | 2 |
 | Baix Llobregat | sí | sí | 1 | 1 | 0 | 1 |
 | Barcelonès | sí | sí | 5 | 5 | 0 | 5 |
 | Catalunya Central | sí | sí | 0 | 0 | 0 | 0 |

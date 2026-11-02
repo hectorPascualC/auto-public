@@ -1,20 +1,20 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-30T17:30:13+01:00",
-  "run_id": "20261030T173013+0100",
+  "generated_at": "2026-11-02T17:29:42+01:00",
+  "run_id": "20261102T172942+0100",
   "source_strategy": "direct-http+cachebuster+validators+sha256; playwright-direct-edubcn",
   "activity_rule": "current-presence: keep while present in current official offer PDF/list even after deadline; remove on disappearance only from authoritative FRESH current source",
   "health": {
-    "generated_at": "2026-10-30T17:30:13+01:00",
-    "edubcn_probe_at": "2026-10-30T17:37:12+01:00",
+    "generated_at": "2026-11-02T17:29:42+01:00",
+    "edubcn_probe_at": "2026-11-02T17:37:21+01:00",
     "fresh": 12,
     "partial": 0,
     "cache_obsoleta": 0,
     "total": 12,
-    "active_snapshot_at": "2026-10-30T17:37:13+01:00",
+    "active_snapshot_at": "2026-11-02T17:37:21+01:00",
     "presence_authoritative": 12,
     "presence_non_authoritative": 0,
-    "audit_at": "2026-10-30T17:37:13+01:00",
+    "audit_at": "2026-11-02T17:37:21+01:00",
     "audit_status": "PASS",
     "audit_sstt_checked": 11,
     "audit_errors": 0
@@ -27,7 +27,7 @@
       "presence_authoritative": true,
       "source_mode": "offer-documents",
       "current_target_counts": {
-        "507": 0,
+        "507": 1,
         "F57": 0,
         "627": 1,
         "F87": 0
@@ -48,6 +48,23 @@
           ],
           "evidence_snippets": [
             "Dades de la plaça Identificador de la plaça Lloc Límit presentació de sol·licituds APA-2627-S056 627 – Sistemes i aplicacions informàtiques Fins a la seva cobertura Nom del centre Adreça Municipi Telèfon Institut Pere Borrell C. Escoles Pies, 46 Puigcerdà 972 88 46 42"
+          ]
+        },
+        {
+          "placement_id": "APA-2627-S064",
+          "display_id": "APA-2627-S064",
+          "id_kind": "APA",
+          "target_codes": [
+            "507"
+          ],
+          "source_urls": [
+            "https://educacio.gencat.cat/web/.content/home/departament/serveis-territorials/alt-pirineu-aran/personal-docent/nomenaments-telematics/dificil-cobertura/secundaria/APA-SEC-dificil-cobertura-oferta-vacants.pdf"
+          ],
+          "source_kinds": [
+            "offer"
+          ],
+          "evidence_snippets": [
+            "Dades de la plaça Identificador de la plaça Lloc Límit presentació de sol·licituds APA-2627-S064 507 – Informàtica Fins el 4/11/2026 a les 15h Nom del centre Adreça Municipi Telèfon Institut Joan Brudieu C. Bisbe Iglesias, 27 La Seu d’Urgell 973 35 04 03"
           ]
         }
       ],
@@ -595,8 +612,8 @@
           "start": "immediat",
           "end": "Alta titular",
           "jornada": "sencera dins la Família professional d’Informàtica i",
-          "result_present": false,
-          "result_document_present": false,
+          "result_present": true,
+          "result_document_present": true,
           "result_classification": "UNKNOWN",
           "coverage_confirmed": false,
           "source_urls": [
@@ -619,8 +636,8 @@
           "start": "Immediata",
           "end": "Alta titular o 30/06/2027",
           "jornada": "SENCERA",
-          "result_present": false,
-          "result_document_present": false,
+          "result_present": true,
+          "result_document_present": true,
           "result_classification": "UNKNOWN",
           "coverage_confirmed": false,
           "source_urls": [
@@ -661,8 +678,8 @@
       "source_selection_diagnostics": {},
       "discovery_diagnostics": {
         "dom_gensec_observed": 52,
-        "documents_fetched": 83,
-        "documents_verified": 83,
+        "documents_fetched": 91,
+        "documents_verified": 91,
         "complete_catalog_verified": false
       },
       "status_note": null

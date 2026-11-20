@@ -109,6 +109,15 @@
       "kind": "primary",
       "generated_at": "2026-11-02T17:29:42+01:00",
       "audit_at": "2026-11-02T17:37:21+01:00"
+    },
+    "2026-11-20T17:00": {
+      "status": "PASS",
+      "scan_run_id": "44766059158",
+      "snapshot_run_id": "20261120T164411+0100",
+      "trigger_sha": "5dd61ceea17ecf0ca43fb7a681bc1a3f05e1ce9b",
+      "kind": "primary",
+      "generated_at": "2026-11-20T16:44:11+01:00",
+      "audit_at": "2026-11-20T16:49:52+01:00"
     }
   }
 }

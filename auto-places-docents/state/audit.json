@@ -1,7 +1,7 @@
 {
   "audit_version": 2,
-  "generated_at": "2026-11-02T17:37:21+01:00",
-  "source_generated_at": "2026-11-02T17:29:42+01:00",
+  "generated_at": "2026-11-20T16:49:52+01:00",
+  "source_generated_at": "2026-11-20T16:44:11+01:00",
   "status": "PASS",
   "sstt_checked": 11,
   "scopes_checked": 12,
@@ -11,18 +11,18 @@
       "freshness": "FRESC",
       "presence_authoritative": true,
       "current_offer_sources": 8,
-      "raw_target_hits": 2,
-      "parsed_target_hits": 2,
+      "raw_target_hits": 1,
+      "parsed_target_hits": 1,
       "unidentified_target_hits": 0,
-      "active_positions": 2,
+      "active_positions": 1,
       "covered_by_results": [],
       "unresolved_result_ids": [
-        "APA-2627-S031",
+        "APA-2627-S032",
         "APA-2627-S035",
-        "APA-2627-S057",
+        "APA-2627-S054",
         "APA-2627-S058",
         "APA-2627-S059",
-        "APA-2627-S062"
+        "APA-2627-S067"
       ],
       "id_kinds": [
         "APA"
@@ -32,11 +32,6 @@
           "code": "507",
           "id": "APA-2627-S064",
           "kind": "APA"
-        },
-        {
-          "code": "627",
-          "id": "APA-2627-S056",
-          "kind": "APA"
         }
       ]
     },
@@ -44,19 +39,14 @@
       "freshness": "FRESC",
       "presence_authoritative": true,
       "current_offer_sources": 7,
-      "raw_target_hits": 1,
-      "parsed_target_hits": 1,
+      "raw_target_hits": 2,
+      "parsed_target_hits": 2,
       "unidentified_target_hits": 0,
-      "active_positions": 1,
+      "active_positions": 2,
       "covered_by_results": [],
       "unresolved_result_ids": [
-        "19623804",
-        "19628596",
-        "19631281",
-        "19631282",
-        "19650835",
-        "19651090",
-        "19657384"
+        "19831268",
+        "19874761"
       ],
       "id_kinds": [
         "NUMERIC"
@@ -64,7 +54,12 @@
       "parsed_ids": [
         {
           "code": "507",
-          "id": "19711802",
+          "id": "19831268",
+          "kind": "NUMERIC"
+        },
+        {
+          "code": "507",
+          "id": "19874761",
           "kind": "NUMERIC"
         }
       ]
@@ -73,42 +68,14 @@
       "freshness": "FRESC",
       "presence_authoritative": true,
       "current_offer_sources": 8,
-      "raw_target_hits": 5,
-      "parsed_target_hits": 5,
+      "raw_target_hits": 0,
+      "parsed_target_hits": 0,
       "unidentified_target_hits": 0,
-      "active_positions": 5,
+      "active_positions": 0,
       "covered_by_results": [],
       "unresolved_result_ids": [],
-      "id_kinds": [
-        "NUMERIC"
-      ],
-      "parsed_ids": [
-        {
-          "code": "507",
-          "id": "19659466",
-          "kind": "NUMERIC"
-        },
-        {
-          "code": "507",
-          "id": "19815264",
-          "kind": "NUMERIC"
-        },
-        {
-          "code": "507",
-          "id": "19736796",
-          "kind": "NUMERIC"
-        },
-        {
-          "code": "627",
-          "id": "19650726",
-          "kind": "NUMERIC"
-        },
-        {
-          "code": "627",
-          "id": "19664257",
-          "kind": "NUMERIC"
-        }
-      ]
+      "id_kinds": [],
+      "parsed_ids": []
     },
     "Catalunya Central": {
       "freshness": "FRESC",
@@ -138,7 +105,9 @@
         "157S/2026-2027",
         "159S/2026-2027",
         "182S/2026-2027",
-        "191S/2026-2027"
+        "191S/2026-2027",
+        "213S/2026-2027",
+        "216S/2026-2027"
       ],
       "id_kinds": [],
       "parsed_ids": []
@@ -171,22 +140,14 @@
       "freshness": "FRESC",
       "presence_authoritative": true,
       "current_offer_sources": 7,
-      "raw_target_hits": 1,
-      "parsed_target_hits": 1,
+      "raw_target_hits": 0,
+      "parsed_target_hits": 0,
       "unidentified_target_hits": 0,
-      "active_positions": 1,
+      "active_positions": 0,
       "covered_by_results": [],
       "unresolved_result_ids": [],
-      "id_kinds": [
-        "LOCAL_TAG"
-      ],
-      "parsed_ids": [
-        {
-          "code": "507",
-          "id": "507-Mataró",
-          "kind": "LOCAL_TAG"
-        }
-      ]
+      "id_kinds": [],
+      "parsed_ids": []
     },
     "Penedès": {
       "freshness": "FRESC",
@@ -198,15 +159,16 @@
       "active_positions": 1,
       "covered_by_results": [],
       "unresolved_result_ids": [
-        "19654318"
+        "19654318",
+        "19827777"
       ],
       "id_kinds": [
         "NUMERIC"
       ],
       "parsed_ids": [
         {
-          "code": "507",
-          "id": "19806796",
+          "code": "627",
+          "id": "19862262",
           "kind": "NUMERIC"
         }
       ]
@@ -247,6 +209,7 @@
       "active_positions": 0,
       "covered_by_results": [],
       "unresolved_result_ids": [
+        "507-05/11 I. Nicolau Copèrnic Terrassa",
         "507-09/09 (3) I. La Ferreria Montcada i Reixac",
         "507-09/09 (4) I. Nicolau Copèrnic Terrassa",
         "507-30/09 (1) I. La Ferreria Montcada i Reixac",
@@ -254,6 +217,7 @@
         "627-09/09 (2) I. Sabadell Sabadell",
         "627-09/09 (3) I. L'Estatut Rubí",
         "627-09/10 I. Nicolau Copèrnic Terrassa",
+        "627-09/11 I. La Ferreria Montcada i Reixac",
         "627-21/09 I. L'Estatut Rubí",
         "627-21/10 I. Escola Industrial Sabadell",
         "F87-03/07"
@@ -264,7 +228,7 @@
     "EDUBCN": {
       "freshness": "FRESC",
       "presence_authoritative": true,
-      "active_positions": 5,
+      "active_positions": 0,
       "unidentified_target_hits": 0,
       "mode": "edubcn-document-verified"
     }
